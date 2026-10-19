@@ -1,0 +1,37 @@
+name: pages
+
+# 把 docs/ 作为官网发布到 GitHub Pages。
+# 触发:推 main(docs 有改动)或手动运行。
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["docs/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+      - name: 上传站点文件
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - name: 发布
+        id: deployment
+        uses: actions/deploy-pages@v4
