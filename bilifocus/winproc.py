@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import subprocess
 import sys
 
@@ -54,3 +55,19 @@ def taskkill(pid: int, timeout: int = 15) -> None:
         )
     except (OSError, subprocess.SubprocessError):
         pass
+
+
+def wait_pid_gone(pid: int, timeout: float = 3.0) -> bool:
+    """等某个进程真正退出(避免"旧的浏览器还没死,新实例抢不到 profile")。"""
+    if sys.platform != "win32":
+        return True
+    PROCESS_SYNCHRONIZE = 0x00100000
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(PROCESS_SYNCHRONIZE, False, int(pid))
+    if not handle:
+        return True  # 进程已经不在了
+    try:
+        result = kernel32.WaitForSingleObject(handle, int(max(0.0, timeout) * 1000))
+        return result == 0
+    finally:
+        kernel32.CloseHandle(handle)

@@ -32,7 +32,7 @@ from .browser_login import (
     find_free_port,
 )
 from .errors import BiliFocusError
-from .winproc import taskkill
+from .winproc import taskkill, wait_pid_gone
 
 # 采样间隔:2 秒足够算准观看时长,又不会把 CDP 打满
 POLL_INTERVAL = 2.0
@@ -186,6 +186,37 @@ class BrowserPlayer:
         return args
 
     # -- 主流程 -----------------------------------------------------------
+    def _log(self, message: str) -> None:
+        """播放器自己的日志:出问题时有据可查(不写敏感信息)。"""
+        try:
+            path = self.profile_dir.parent / "player.log"
+            if path.exists() and path.stat().st_size > 200_000:
+                path.write_text("", encoding="utf-8")
+            stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(f"[{stamp}] {message}\n")
+        except OSError:
+            pass
+
+    def _cleanup_stale(self, *, wait: bool = False) -> list[int]:
+        """清理上次残留的播放器浏览器;wait=True 时还会等它们真的退出。"""
+        try:
+            pids = _stale_instances(self.profile_dir)
+        except Exception as error:  # noqa: BLE001 - 清理失败不该阻断播放
+            self._log(f"查残留进程失败:{error}")
+            return []
+        if not pids:
+            return []
+        self._log(f"清理残留浏览器:{pids}")
+        for pid in pids:
+            taskkill(pid)
+        if wait:
+            for pid in pids:
+                wait_pid_gone(pid, timeout=3.0)
+            # 再确认一遍,避免"刚杀完又冒出来一个新进程"
+            time.sleep(0.2)
+        return pids
+
     def play(
         self,
         url: str,
@@ -196,28 +227,50 @@ class BrowserPlayer:
         if not url:
             raise PlaybackError("这条视频没有可打开的地址")
         self.profile_dir.mkdir(parents=True, exist_ok=True)
-        for pid in _stale_instances(self.profile_dir):
-            taskkill(pid)
 
-        self.port = find_free_port()
-        self._process = subprocess.Popen(
-            self.build_args(self.port), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-        cdp: _Cdp | None = None
-        try:
-            target_ws = self._wait_target()
-            self._browser_pids = []
-            cdp = _Cdp(target_ws, timeout=25.0)
-            self._prepare(cdp, sessdata)
-            cdp.call("Page.navigate", {"url": url})
-            return self._track(cdp, on_sample)
-        finally:
-            if cdp is not None:
-                try:
-                    cdp.close()
-                except Exception:  # noqa: BLE001 - 关连接失败不影响结果
-                    pass
-            self._shutdown()
+        last_error: Exception | None = None
+        for attempt in (1, 2):
+            cdp: _Cdp | None = None
+            started = time.monotonic()
+            try:
+                self._cleanup_stale(wait=True)
+                self.port = find_free_port()
+                self._log(f"第 {attempt} 次启动浏览器,调试端口 {self.port}")
+                self._process = subprocess.Popen(
+                    self.build_args(self.port),
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                target_ws = self._wait_target()
+                cdp = _Cdp(target_ws, timeout=25.0)
+                self._prepare(cdp, sessdata)
+                cdp.call("Page.navigate", {"url": url})
+                result = self._track(cdp, on_sample)
+                # 浏览器一启动就退出(常见于旧实例占着 profile)会出现 0 采样,
+                # 这种情况自动重来一次,而不是让用户看到"视频刚开就没了"。
+                if result.samples == 0 and time.monotonic() - started < 8:
+                    raise PlaybackError("播放器打开后立刻退出了")
+                self._log(f"第 {attempt} 次播放结束:采样 {result.samples}")
+                return result
+            except _ConnectionLost as error:
+                last_error = error
+                self._log(f"第 {attempt} 次连接断开:{error}")
+            except PlaybackError as error:
+                last_error = error
+                self._log(f"第 {attempt} 次启动失败:{error}")
+            finally:
+                if cdp is not None:
+                    try:
+                        cdp.close()
+                    except Exception:  # noqa: BLE001 - 关连接失败不影响结果
+                        pass
+                self._shutdown()
+            if attempt == 2:
+                break
+            self._log("准备重试一次…")
+            time.sleep(0.4)
+
+        raise PlaybackError(f"播放器反复启动失败:{last_error}")
 
     # -- CDP 细节 ---------------------------------------------------------
     def _wait_target(self) -> str:

@@ -561,7 +561,7 @@ $env:BILI_FOCUS_INTEGRATION='1'
 python -m unittest discover -s tests -t .
 ```
 
-当前:**269 项离线测试 + 3 项真实网络集成测试全部通过(共 272)**。
+当前:**338 项离线测试 + 3 项真实网络集成测试全部通过(共 341)**。
 
 两个界面测试(会真的建一个 Tk 窗口,约 1 秒):
 
@@ -639,6 +639,7 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 |---|---|
 | `%APPDATA%\bili-focus\state.json` | 凭证、已看标记、界面偏好(小、常改) |
 | `%APPDATA%\bili-focus\cache\fav-<fid>.json` | 收藏夹缓存(大、可丢) |
+| `%APPDATA%\bili-focus\player.log` | 播放器启动日志(排查「视频一开就退」用,可删) |
 
 用 `BILI_FOCUS_HOME` 环境变量可以整体改到别的目录(测试和便携用法靠它)。
 
