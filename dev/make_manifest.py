@@ -124,6 +124,8 @@ SECTIONS: tuple[tuple[str, str], ...] = (
     ("tests", "测试 tests/"),
     ("dev", "开发工具 dev/"),
     ("assets", "资源 assets/"),
+    ("dev/demo-covers", "示例封面 dev/demo-covers/"),
+    ("dev/demo-covers-small", "示例封面(日程小尺寸) dev/demo-covers-small/"),
     ("docs", "文档资源 docs/"),
     (".github/workflows", "CI .github/workflows/"),
 )

@@ -16,9 +16,9 @@ BiliFocus 2.0.0 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     10340 B  MANIFEST.txt
+     11357 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     32383 B  README.md
+     32605 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -74,7 +74,7 @@ BiliFocus 2.0.0 —— 文件清单
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
       6703 B  bilifocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
-     22365 B  bilifocus/ui_schedule.py
+     32374 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
       9203 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
@@ -140,7 +140,7 @@ BiliFocus 2.0.0 —— 文件清单
             打 Windows 安装包(内嵌 exe + 安装向导)
       2325 B  dev/check_imports.py
             无第三方 linter 时的未使用 import 检查
-      7796 B  dev/demo_data.py
+      8145 B  dev/demo_data.py
             示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)
        117 B  dev/edit-lab.cmd
             用记事本打开卡片实验室
@@ -148,9 +148,9 @@ BiliFocus 2.0.0 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
-     10171 B  dev/make_manifest.py
+     10318 B  dev/make_manifest.py
             生成本文件
-     12009 B  dev/make_screenshots.py
+     12283 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
       1726 B  dev/probe_network.py
             手动联调脚本:匿名打真实接口验证协议链路
@@ -171,29 +171,9 @@ BiliFocus 2.0.0 —— 文件清单
       6467 B  assets/make_icon.py
             生成图标(米白底 + 取景框 + 播放三角)
 
-— CI .github/workflows/ -----------------------
-      2023 B  .github/workflows/release.yml
-            CI:推 v* 标签自动打 exe 并发布 Release
-      1043 B  .github/workflows/tests.yml
-            CI:push/PR 跑四套 Python 版本的测试
-
-— 其他 ----------------------------------------
-       947 B  build-installer/BiliFocus-Setup-2.0.0.spec
-     28398 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
-  25016341 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
-      5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
-      3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
-   1948672 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
-     12234 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.toc
-   1394319 B  build-installer/BiliFocus-Setup-2.0.0/base_library.zip
-      5054 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod01_archive.pyc
-     32335 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod02_importers.pyc
-      6635 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod03_ctypes.pyc
-      1705 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod04_pywin32.pyc
-       307 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/struct.pyc
-      2059 B  build-installer/BiliFocus-Setup-2.0.0/warn-BiliFocus-Setup-2.0.0.txt
-    298086 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
+— 示例封面 dev/demo-covers/ -----------------------
       6800 B  dev/demo-covers/01.png
+            示例封面(合成图,供截图使用)
       6800 B  dev/demo-covers/02.png
       6800 B  dev/demo-covers/03.png
       6800 B  dev/demo-covers/04.png
@@ -210,13 +190,55 @@ BiliFocus 2.0.0 —— 文件清单
       8285 B  dev/demo-covers/15.png
       7644 B  dev/demo-covers/16.png
       7644 B  dev/demo-covers/17.png
+
+— 示例封面(日程小尺寸) dev/demo-covers-small/ ----------
+      7119 B  dev/demo-covers-small/01.png
+      7119 B  dev/demo-covers-small/02.png
+      7119 B  dev/demo-covers-small/03.png
+      7119 B  dev/demo-covers-small/04.png
+      7119 B  dev/demo-covers-small/05.png
+      7063 B  dev/demo-covers-small/06.png
+      7063 B  dev/demo-covers-small/07.png
+      7063 B  dev/demo-covers-small/08.png
+      5528 B  dev/demo-covers-small/09.png
+      5528 B  dev/demo-covers-small/10.png
+      5528 B  dev/demo-covers-small/11.png
+      6789 B  dev/demo-covers-small/12.png
+      6789 B  dev/demo-covers-small/13.png
+      7801 B  dev/demo-covers-small/14.png
+      7801 B  dev/demo-covers-small/15.png
+      7620 B  dev/demo-covers-small/16.png
+      7620 B  dev/demo-covers-small/17.png
+
+— CI .github/workflows/ -----------------------
+      2023 B  .github/workflows/release.yml
+            CI:推 v* 标签自动打 exe 并发布 Release
+      1043 B  .github/workflows/tests.yml
+            CI:push/PR 跑四套 Python 版本的测试
+
+— 其他 ----------------------------------------
+       947 B  build-installer/BiliFocus-Setup-2.0.0.spec
+     28398 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
+  25017805 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
+      5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
+      3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
+   1949186 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
+     12234 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.toc
+   1394319 B  build-installer/BiliFocus-Setup-2.0.0/base_library.zip
+      5054 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod01_archive.pyc
+     32335 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod02_importers.pyc
+      6635 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod03_ctypes.pyc
+      1705 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod04_pywin32.pyc
+       307 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/struct.pyc
+      2059 B  build-installer/BiliFocus-Setup-2.0.0/warn-BiliFocus-Setup-2.0.0.txt
+    298182 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
       4816 B  docs/promo/介绍文案.md
       6784 B  docs/promo/视频剧本.md
-     18342 B  docs/screenshots/farewell.png
-    172992 B  docs/screenshots/grouped.png
-     15893 B  docs/screenshots/qr-login.png
-    217888 B  docs/screenshots/reminder.png
-     48743 B  docs/screenshots/schedule.png
-    217061 B  docs/screenshots/ui.png
+     18315 B  docs/screenshots/farewell.png
+    172704 B  docs/screenshots/grouped.png
+     15890 B  docs/screenshots/qr-login.png
+    218275 B  docs/screenshots/reminder.png
+     89003 B  docs/screenshots/schedule.png
+    222920 B  docs/screenshots/ui.png
 
-共 118 个文件。
+共 135 个文件。

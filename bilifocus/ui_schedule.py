@@ -1,15 +1,26 @@
 """日程面板:什么时候看哪条视频。
 
 一条日程 = 时间 + 一条收藏视频(或文字计划)+ 重复规则。
-面板里做四件事:看今天要看的、加/改、勾完成、回看本周记录。
+
+界面按"时间轴 + 封面卡片"来做:
+- 左边是时间轴(时间、竖线、状态点),右边是封面 + 标题 + 标签;
+- "下一项"用强调色描边,已完成的整体变淡并打勾;
+- 没绑定视频的纯文字计划用占位封面。
+
+所有数据都通过 FavoritesService 读写,这里不碰存储。
 """
 
 from __future__ import annotations
 
+import base64
+import queue
+import threading
 import tkinter as tk
 from tkinter import ttk
 
 from . import schedule as schedule_mod
+from .covers import CoverFetcher
+from .models import format_seconds
 from .service import FavoritesService
 from .theme import (
     ACCENT,
@@ -27,6 +38,16 @@ from .theme import (
 
 WEEKDAY_SHORT = ("一", "二", "三", "四", "五", "六", "日")
 
+# 封面尺寸(设计像素,实际用 px() 换算)
+COVER_W_DESIGN = 116
+COVER_H_DESIGN = 66
+ROW_PAD_Y = 5
+
+
+def cover_size() -> tuple[int, int]:
+    """日程行里封面的实际像素尺寸(截图脚本生成示例封面时也用这个)。"""
+    return px(COVER_W_DESIGN), px(COVER_H_DESIGN)
+
 
 def _center_over(window: tk.Misc, parent: tk.Misc, width: int, height: int) -> None:
     parent.update_idletasks()
@@ -36,6 +57,7 @@ def _center_over(window: tk.Misc, parent: tk.Misc, width: int, height: int) -> N
 
 
 def _short(text: str, limit: int = 34) -> str:
+    text = " ".join((text or "").split())
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
@@ -137,9 +159,9 @@ class VideoPicker(tk.Toplevel):
 
 
 class ScheduleDialog(tk.Toplevel):
-    """今日日程。"""
+    """今日日程:时间轴 + 封面卡片。"""
 
-    WIDTH = 680
+    WIDTH = 760
 
     def __init__(
         self,
@@ -158,6 +180,17 @@ class ScheduleDialog(tk.Toplevel):
         self._editing_id: str | None = None
         self._picked_video = None
         self._weekday_vars = [tk.BooleanVar(value=False) for _ in range(7)]
+        self._items: list = []
+        self._next_id: str | None = None
+
+        # 封面:跟卡片网格共用同一份缓存目录,但用日程专用的尺寸
+        self.fetcher = CoverFetcher(service.store.home / "cache" / "covers")
+        self._photos: dict[str, tk.PhotoImage] = {}
+        self._failed: set[str] = set()
+        self._cover_urls: dict[str, str] = {}
+        self._queue: "queue.Queue[tuple[str, bytes | None]]" = queue.Queue()
+        self._fetching = False
+        self._drain_job = None
 
         self.title("日程")
         self.configure(bg=BG)
@@ -165,7 +198,7 @@ class ScheduleDialog(tk.Toplevel):
         self.transient(parent)
         self.bind("<Escape>", lambda _event: self.close())
         self.protocol("WM_DELETE_WINDOW", self.close)
-        _center_over(self, parent, px(self.WIDTH), px(540))
+        _center_over(self, parent, px(self.WIDTH), px(520))
 
         self._build()
         self._sync_repeat()
@@ -178,18 +211,26 @@ class ScheduleDialog(tk.Toplevel):
     # -- 构建 -------------------------------------------------------------
     def _build(self) -> None:
         head = tk.Frame(self, bg=BG)
-        head.pack(fill="x", padx=px(20), pady=(px(16), px(4)))
-        tk.Label(head, text="今日日程", bg=BG, fg=FG, font=font(15, "bold")).pack(side="left")
+        head.pack(fill="x", padx=px(22), pady=(px(18), px(2)))
+        tk.Label(head, text="今日日程", bg=BG, fg=FG, font=font(16, "bold")).pack(side="left")
         self.summary = tk.Label(head, text="", bg=BG, fg=FG_DIM, font=font(9))
         self.summary.pack(side="left", padx=(px(10), 0))
         self.date_label = tk.Label(head, text="", bg=BG, fg=FG_DIM, font=font(9))
         self.date_label.pack(side="right")
         self.week_label = tk.Label(head, text="", bg=BG, fg=ACCENT, font=font(9, "bold"))
-        self.week_label.pack(side="right", padx=(0, px(16)))
+        self.week_label.pack(side="right", padx=(0, px(14)))
+
+        tk.Label(
+            self,
+            text="按时间排;到点会在主界面提示,点封面就能开始看",
+            bg=BG,
+            fg=FG_DIM,
+            font=font(8),
+        ).pack(anchor="w", padx=px(22), pady=(0, px(8)))
 
         body = tk.Frame(self, bg=BG)
-        body.pack(fill="x", padx=px(20))
-        self.list_canvas = tk.Canvas(body, bg=BG, highlightthickness=0, height=px(230))
+        body.pack(fill="x", padx=px(22))
+        self.list_canvas = tk.Canvas(body, bg=BG, highlightthickness=0, height=px(220))
         self.list_canvas.pack(side="left", fill="x", expand=True)
         scrollbar = tk.Scrollbar(body, orient="vertical", command=self.list_canvas.yview)
         scrollbar.pack(side="right", fill="y")
@@ -207,20 +248,26 @@ class ScheduleDialog(tk.Toplevel):
             lambda event: self.list_canvas.itemconfigure(self._list_window, width=event.width),
         )
 
+        # 本周记录
         self.week_strip = tk.Frame(self, bg=BG)
-        self.week_strip.pack(fill="x", padx=px(20), pady=(px(6), px(2)))
+        self.week_strip.pack(fill="x", padx=px(22), pady=(px(10), px(2)))
 
-        form = tk.Frame(self, bg=BG)
-        form.pack(fill="x", padx=px(20), pady=(px(8), px(2)))
-        self.form_title = tk.Label(form, text="添加", bg=BG, fg=FG_DIM, font=font(9))
-        self.form_title.pack(side="left")
+        # 添加 / 编辑表单(做成一块独立卡片)
+        form_card = tk.Frame(self, bg=CARD_BG, highlightthickness=1, highlightbackground=BORDER)
+        form_card.pack(fill="x", padx=px(22), pady=(px(8), px(0)))
+        form = tk.Frame(form_card, bg=CARD_BG)
+        form.pack(fill="x", padx=px(12), pady=(px(10), px(4)))
+
+        self.form_title = tk.Label(form, text="添加一条", bg=CARD_BG, fg=FG, font=font(9, "bold"))
+        self.form_title.pack(side="left", padx=(0, px(10)))
+
         self.time_entry = tk.Entry(
-            form, width=6, bg=BG_ALT, fg=FG, insertbackground=FG, relief="flat", font=font(10)
+            form, width=6, bg=BG, fg=FG, insertbackground=FG, relief="flat", font=font(11)
         )
-        self.time_entry.pack(side="left", padx=(px(8), px(6)), ipady=px(4))
+        self.time_entry.pack(side="left", padx=(0, px(8)), ipady=px(4))
         self.time_entry.insert(0, self._suggest_time())
 
-        self._flat_button(form, "选收藏视频", self._open_picker).pack(side="left", padx=(0, px(6)))
+        self._flat_button(form, "选收藏视频", self._open_picker).pack(side="left", padx=(0, px(8)))
 
         self.repeat_box = ttk.Combobox(
             form,
@@ -230,7 +277,7 @@ class ScheduleDialog(tk.Toplevel):
             font=font(9),
         )
         self.repeat_box.current(0)
-        self.repeat_box.pack(side="left", padx=(0, px(6)))
+        self.repeat_box.pack(side="left", padx=(0, px(8)))
         self.repeat_box.bind("<<ComboboxSelected>>", lambda _event: self._sync_repeat())
 
         self.submit_btn = tk.Button(
@@ -242,36 +289,28 @@ class ScheduleDialog(tk.Toplevel):
             relief="flat",
             activebackground="#0A6A8B",
             activeforeground="#ffffff",
-            font=font(9),
-            padx=px(14),
+            font=font(9, "bold"),
+            padx=px(16),
             pady=px(3),
         )
         self.submit_btn.pack(side="left")
         self.cancel_edit_btn = self._flat_button(form, "取消编辑", self._cancel_edit)
 
-        self.detail = tk.Frame(self, bg=BG)
-        self.detail.pack(fill="x", padx=px(20), pady=(px(4), 0))
+        detail = tk.Frame(form_card, bg=CARD_BG)
+        detail.pack(fill="x", padx=px(12), pady=(0, px(8)))
         self.picked_label = tk.Label(
-            self.detail,
+            detail,
             text="还没选视频(也可以只写计划)",
-            bg=BG,
+            bg=CARD_BG,
             fg=FG_DIM,
-            font=font(9),
+            font=font(8),
             anchor="w",
         )
         self.picked_label.pack(side="left")
-        self.weekday_row = tk.Frame(self.detail, bg=BG)
+        self.weekday_row = tk.Frame(detail, bg=CARD_BG)
 
-        self.hint = tk.Label(
-            self,
-            text="选一条收藏视频 + 时间;到点主界面会提示,点日程就能开始看",
-            bg=BG,
-            fg=FG_DIM,
-            font=font(8),
-        )
-        self.hint.pack(pady=(px(4), px(2)))
         self.error = tk.Label(self, text="", bg=BG, fg=ERROR, font=font(9))
-        self.error.pack(pady=(0, px(8)))
+        self.error.pack(pady=(px(6), px(10)))
         self.time_entry.bind("<Return>", lambda _event: self._submit())
 
     def _flat_button(self, parent, text: str, command) -> tk.Button:
@@ -279,13 +318,13 @@ class ScheduleDialog(tk.Toplevel):
             parent,
             text=text,
             command=command,
-            bg=BG_ALT,
+            bg=BG,
             fg=FG,
             relief="flat",
             activebackground=BORDER,
             activeforeground=FG,
             font=font(9),
-            padx=px(10),
+            padx=px(12),
             pady=px(3),
         )
 
@@ -293,6 +332,81 @@ class ScheduleDialog(tk.Toplevel):
         import time as _time
 
         return f"{(_time.localtime().tm_hour + 1) % 24:02d}:00"
+
+    # -- 封面 -------------------------------------------------------------
+    def _video_for(self, item):
+        key = getattr(item, "bvid", "")
+        if not key:
+            return None
+        for video in self.videos:
+            if video.bvid == key:
+                return video
+        return None
+
+    def _prime_covers(self) -> None:
+        self._cover_urls = {}
+        missing: list[str] = []
+        width, height = cover_size()
+        for item in self._items:
+            video = self._video_for(item)
+            if video is None:
+                continue
+            url = video.cover_url(width, height)
+            if not url:
+                continue
+            self._cover_urls[item.id] = url
+            if url in self._photos or url in missing:
+                continue
+            data = self.fetcher.get_cached(url)
+            if data:
+                try:
+                    self._photos[url] = tk.PhotoImage(data=base64.b64encode(data))
+                except tk.TclError:
+                    missing.append(url)
+            else:
+                missing.append(url)
+        if missing and not self._fetching:
+            self._fetching = True
+            threading.Thread(target=self._fetch_worker, args=(missing,), daemon=True).start()
+            self._drain_job = self.after(80, self._drain)
+
+    def _fetch_worker(self, urls: list[str]) -> None:
+        try:
+            for url in urls:
+                try:
+                    data = self.fetcher.fetch(url)
+                except Exception:  # noqa: BLE001 - 网络问题就当没封面
+                    data = None
+                self._queue.put((url, data))
+        finally:
+            self._fetching = False
+
+    def _drain(self) -> None:
+        self._drain_job = None
+        changed = False
+        try:
+            while True:
+                url, data = self._queue.get_nowait()
+                if data is None:
+                    self._failed.add(url)
+                    changed = True
+                elif url not in self._photos:
+                    try:
+                        self._photos[url] = tk.PhotoImage(data=base64.b64encode(data))
+                        changed = True
+                    except tk.TclError:
+                        self._failed.add(url)
+                        changed = True
+        except queue.Empty:
+            pass
+        if changed:
+            self._refresh()
+        if self._fetching or not self._queue.empty():
+            self._drain_job = self.after(100, self._drain)
+
+    def _cover_for(self, item) -> tk.PhotoImage | None:
+        url = self._cover_urls.get(item.id)
+        return self._photos.get(url) if url else None
 
     # -- 表单 -------------------------------------------------------------
     def _open_picker(self) -> None:
@@ -303,7 +417,7 @@ class ScheduleDialog(tk.Toplevel):
 
     def _show_picked(self, video) -> None:
         self._picked_video = video
-        self.picked_label.configure(text=f"已选:{_short(video.title, 30)}", fg=ACCENT)
+        self.picked_label.configure(text=f"已选:{_short(video.title, 34)}", fg=ACCENT)
 
     def _sync_repeat(self) -> None:
         is_weekly = self._repeat_choice() == schedule_mod.REPEAT_WEEKLY
@@ -321,11 +435,11 @@ class ScheduleDialog(tk.Toplevel):
                 self.weekday_row,
                 text=WEEKDAY_SHORT[index],
                 variable=var,
-                bg=BG,
+                bg=CARD_BG,
                 fg=FG_DIM,
-                activebackground=BG,
+                activebackground=CARD_BG,
                 activeforeground=FG,
-                selectcolor=BG_ALT,
+                selectcolor=BG,
                 relief="flat",
                 font=font(9),
                 padx=0,
@@ -373,7 +487,7 @@ class ScheduleDialog(tk.Toplevel):
         self.time_entry.delete(0, tk.END)
         self.time_entry.insert(0, item.time)
         self._picked_video = None
-        self.picked_label.configure(text=f"内容:{_short(item.title, 30)}", fg=FG_DIM)
+        self.picked_label.configure(text=f"内容:{_short(item.title, 34)}", fg=FG_DIM)
         for index, key in enumerate(schedule_mod.REPEAT_CHOICES):
             if key == item.repeat:
                 self.repeat_box.current(index)
@@ -385,7 +499,7 @@ class ScheduleDialog(tk.Toplevel):
     def _cancel_edit(self) -> None:
         self._editing_id = None
         self._picked_video = None
-        self.form_title.configure(text="添加")
+        self.form_title.configure(text="添加一条")
         self.submit_btn.configure(text="添加")
         self.cancel_edit_btn.pack_forget()
         self.time_entry.delete(0, tk.END)
@@ -396,129 +510,231 @@ class ScheduleDialog(tk.Toplevel):
             var.set(False)
         self.picked_label.configure(text="还没选视频(也可以只写计划)", fg=FG_DIM)
 
-    def _resize(self) -> None:
-        """按今天有几条自动定高:两条就别撑出一屏空白。"""
-        try:
-            self.update_idletasks()
-            needed = self.list_inner.winfo_reqheight()
-            list_h = max(px(80), min(px(320), needed + px(6)))
-            self.list_canvas.configure(height=list_h)
-            self.update_idletasks()
-
-            # 窗口尺寸完全按内容需求来(不再强行给一个高度,避免列表下面留白)
-            width = px(self.WIDTH)
-            height = self.winfo_reqheight()
-            parent = self.master
-            parent.update_idletasks()
-            x = parent.winfo_rootx() + (max(parent.winfo_width(), 1) - width) // 2
-            y = parent.winfo_rooty() + (max(parent.winfo_height(), 1) - height) // 3
-            self.geometry(f"{width}x{height}+{max(0, x)}+{max(0, y)}")
-        except tk.TclError:
-            pass
-
     # -- 列表 -------------------------------------------------------------
     def _refresh(self) -> None:
+        scroll = self.list_canvas.yview()[0] if self._items else 0.0
         for child in self.list_inner.winfo_children():
             child.destroy()
-        items = self.service.schedule_today()
+        self._items = self.service.schedule_today()
         day = schedule_mod.today()
         self.date_label.configure(text=day)
-        pending = [item for item in items if not schedule_mod.is_done(item, day)]
-        self.summary.configure(text=f"{len(items)} 项 · 待做 {len(pending)}")
+        pending = [item for item in self._items if not schedule_mod.is_done(item, day)]
+        self.summary.configure(text=f"{len(self._items)} 项 · 待做 {len(pending)}")
         done_week, planned_week = self.service.schedule_week_done()
         self.week_label.configure(text=f"本周 {done_week}/{planned_week}")
 
-        if not items:
+        next_item = self.service.schedule_next()
+        self._next_id = next_item.id if next_item else None
+        self._prime_covers()
+
+        if not self._items:
+            empty = tk.Frame(self.list_inner, bg=BG)
+            empty.pack(fill="x", pady=px(22))
             tk.Label(
-                self.list_inner,
-                text="今天还没有安排。\n\n在上面选一条收藏视频、填个时间,到点主界面会提示你。",
+                empty, text="今天还没有安排", bg=BG, fg=FG, font=font(11, "bold")
+            ).pack(anchor="w")
+            tk.Label(
+                empty,
+                text="在下面选一条收藏视频、填个时间,到点主界面会提示你。",
                 bg=BG,
                 fg=FG_DIM,
-                justify="left",
-                anchor="w",
-                font=font(10),
-            ).pack(anchor="w", pady=px(16))
-        for item in items:
+                font=font(9),
+            ).pack(anchor="w", pady=(px(2), 0))
+        for item in self._items:
             self._build_row(item, day)
 
         self._refresh_week()
         self._resize()
+        try:
+            self.list_canvas.yview_moveto(scroll)
+        except tk.TclError:
+            pass
         if self._on_change is not None:
             self._on_change()
 
     def _build_row(self, item: schedule_mod.ScheduleItem, day: str) -> None:
         done = schedule_mod.is_done(item, day)
+        is_next = item.id == self._next_id
+        video = self._video_for(item)
+
+        border = ACCENT if is_next else BORDER
         row = tk.Frame(
-            self.list_inner, bg=CARD_BG, highlightthickness=1, highlightbackground=BORDER
+            self.list_inner, bg=CARD_BG, highlightthickness=1, highlightbackground=border
         )
-        row.pack(fill="x", pady=px(3))
+        row.pack(fill="x", pady=(px(ROW_PAD_Y), px(2)), padx=px(1))
 
-        check = tk.Label(
-            row,
-            text="✓" if done else "○",
-            bg=CARD_BG,
-            fg=ACCENT if done else FG_DIM,
-            font=font(11),
-            width=3,
-            cursor="hand2",
+        def hover_in(_event, row=row, is_next=is_next):
+            row.configure(highlightbackground=ACCENT if not is_next else ACCENT)
+
+        def hover_out(_event, row=row, border=border):
+            row.configure(highlightbackground=border)
+
+        row.bind("<Enter>", hover_in)
+        row.bind("<Leave>", hover_out)
+
+        # 左:时间轴(时间 + 竖线 + 状态点)
+        rail_height = cover_size()[1] + px(14)
+        rail = tk.Canvas(row, width=px(112), height=rail_height, bg=CARD_BG, highlightthickness=0)
+        rail.pack(side="left", fill="y", padx=(px(8), px(6)))
+        midy = rail_height // 2
+        rail_line_x = px(96)
+        rail.create_line(rail_line_x, 0, rail_line_x, rail_height, fill=BORDER, width=1)
+        time_color = WATCHED_FG if done else ACCENT
+        rail.create_text(
+            rail_line_x - px(12),
+            midy,
+            text=item.time,
+            anchor="e",
+            fill=time_color,
+            font=font(12, "bold"),
         )
-        check.pack(side="left", padx=(px(4), 0), pady=px(6))
-        check.bind("<Button-1>", lambda _event, item_id=item.id: self._toggle(item_id))
+        if done:
+            rail.create_oval(
+                rail_line_x - px(6), midy - px(6), rail_line_x + px(6), midy + px(6),
+                fill=ACCENT, outline=ACCENT,
+            )
+            rail.create_text(
+                rail_line_x, midy, text="✓", fill="#FFFFFF", font=font(7, "bold")
+            )
+        elif is_next:
+            rail.create_oval(
+                rail_line_x - px(7), midy - px(7), rail_line_x + px(7), midy + px(7),
+                fill=CARD_BG, outline=ACCENT, width=2,
+            )
+            rail.create_oval(
+                rail_line_x - px(3), midy - px(3), rail_line_x + px(3), midy + px(3),
+                fill=ACCENT, outline=ACCENT,
+            )
+        else:
+            rail.create_oval(
+                rail_line_x - px(5), midy - px(5), rail_line_x + px(5), midy + px(5),
+                fill=CARD_BG, outline=BORDER, width=2,
+            )
+        rail.configure(cursor="hand2")
+        rail.bind("<Button-1>", lambda _event, item_id=item.id: self._toggle(item_id))
 
-        time_label = tk.Label(
-            row, text=item.time, bg=CARD_BG, fg=ACCENT, font=font(10, "bold")
-        )
-        time_label.pack(side="left", padx=(px(2), px(8)))
-        time_label.bind("<Button-1>", lambda _event, item_id=item.id: self._toggle(item_id))
+        # 封面(或纯计划占位)
+        cover_w, cover_h = cover_size()
+        photo = self._cover_for(item)
+        if photo is not None:
+            cover = tk.Label(row, image=photo, bg=CARD_BG, bd=0, cursor="hand2")
+            cover.image = photo  # 防止被回收
+            cover.pack(side="left", pady=px(7))
+        else:
+            cover = tk.Canvas(
+                row, width=cover_w, height=cover_h, bg=BG_ALT, highlightthickness=0,
+                cursor="hand2" if video is not None else "arrow",
+            )
+            cover.pack(side="left", pady=px(7))
+            cover.create_rectangle(
+                px(1), px(1), cover_w - px(1), cover_h - px(1), outline=BORDER
+            )
+            if video is not None:
+                url = self._cover_urls.get(item.id)
+                loading_text = "暂无封面" if url in self._failed else "封面加载中"
+                cover.create_text(
+                    cover_w // 2, cover_h // 2, text=loading_text, fill=FG_DIM, font=font(8)
+                )
+            else:
+                cover.create_text(
+                    cover_w // 2, cover_h // 2 - px(5), text="计", fill=FG_DIM, font=font(14, "bold")
+                )
+                cover.create_text(
+                    cover_w // 2, cover_h // 2 + px(13), text="纯计划", fill=WATCHED_FG, font=font(7)
+                )
+        if video is not None and self._on_play is not None:
+            cover.bind("<Button-1>", lambda _event, item=item: self._play(item))
 
-        tk.Label(
-            row,
-            text=schedule_mod.repeat_text(item),
-            bg=BG_ALT,
-            fg=FG_DIM,
-            font=font(8),
-            padx=px(6),
-            pady=px(2),
-        ).pack(side="left", padx=(0, px(8)))
+        # 中:标题 + 标签
+        text_block = tk.Frame(row, bg=CARD_BG)
+        text_block.pack(side="left", fill="both", expand=True, padx=(px(12), px(6)), pady=px(8))
 
+        title_row = tk.Frame(text_block, bg=CARD_BG)
+        title_row.pack(fill="x", anchor="w")
         title = tk.Label(
-            row,
-            text=_short(item.title, 28),
+            title_row,
+            text=_short(item.title, 40),
             bg=CARD_BG,
             fg=WATCHED_FG if done else FG,
-            font=font(10),
+            font=font(10, "bold" if not done else "normal"),
             anchor="w",
-            cursor="hand2" if item.bvid and self._on_play else "arrow",
+            cursor="hand2" if video is not None and self._on_play else "arrow",
         )
-        title.pack(side="left", fill="x", expand=True)
-        title.bind("<Double-Button-1>", lambda _event, item=item: self._start_edit(item))
-        if item.bvid and self._on_play:
+        title.pack(side="left")
+        if video is not None and self._on_play:
             title.bind("<Button-1>", lambda _event, item=item: self._play(item))
+        title.bind("<Double-Button-1>", lambda _event, item=item: self._start_edit(item))
 
-        if item.bvid and self._on_play:
-            play = tk.Label(
-                row,
-                text="▶ 开始看",
-                bg=CARD_BG,
-                fg=ACCENT,
-                font=font(8),
-                padx=px(6),
-                cursor="hand2",
+        if video is not None:
+            detail = " · ".join(
+                part for part in (getattr(video, "upper", ""), getattr(video, "duration_text", "")) if part
             )
-            play.pack(side="right", padx=(0, px(2)))
-            play.bind("<Button-1>", lambda _event, item=item: self._play(item))
+            if detail:
+                tk.Label(
+                    text_block, text=detail, bg=CARD_BG, fg=WATCHED_FG, font=font(8), anchor="w"
+                ).pack(fill="x", anchor="w", pady=(px(3), 0))
 
-        delete = tk.Label(
-            row, text="×", bg=CARD_BG, fg=FG_DIM, font=font(11), padx=px(8), cursor="hand2"
+        meta = tk.Frame(text_block, bg=CARD_BG)
+        meta.pack(fill="x", anchor="w", pady=(px(6), 0))
+        self._chip(meta, schedule_mod.repeat_text(item), ACCENT if is_next else FG_DIM).pack(
+            side="left", padx=(0, px(6))
         )
-        delete.pack(side="right")
+        if video is not None:
+            self._chip(meta, self.service.topic_name(video), FG_DIM).pack(
+                side="left", padx=(0, px(6))
+            )
+            progress = self._progress_text(video)
+            if progress:
+                tk.Label(
+                    meta, text=progress, bg=CARD_BG, fg=FG_DIM, font=font(8)
+                ).pack(side="left")
+        if is_next:
+            self._chip(meta, "下一项", ACCENT, solid=True).pack(side="left", padx=(px(4), 0))
+
+        # 右:操作
+        actions = tk.Frame(row, bg=CARD_BG)
+        actions.pack(side="right", padx=(0, px(10)))
+        if video is not None and self._on_play:
+            play = tk.Label(
+                actions, text="▶", bg=CARD_BG, fg=ACCENT, font=font(11), padx=px(6), cursor="hand2"
+            )
+            play.pack(side="left")
+            play.bind("<Button-1>", lambda _event, item=item: self._play(item))
+        edit = tk.Label(
+            actions, text="改", bg=CARD_BG, fg=FG_DIM, font=font(8), padx=px(5), cursor="hand2"
+        )
+        edit.pack(side="left")
+        edit.bind("<Button-1>", lambda _event, item=item: self._start_edit(item))
+        delete = tk.Label(
+            actions, text="×", bg=CARD_BG, fg=FG_DIM, font=font(11), padx=px(6), cursor="hand2"
+        )
+        delete.pack(side="left")
         delete.bind("<Button-1>", lambda _event, item_id=item.id: self._remove(item_id))
 
-        edit = tk.Label(
-            row, text="改", bg=CARD_BG, fg=FG_DIM, font=font(8), padx=px(4), cursor="hand2"
+    def _chip(self, parent, text: str, color: str, *, solid: bool = False) -> tk.Label:
+        return tk.Label(
+            parent,
+            text=text,
+            bg=ACCENT if solid else BG_ALT,
+            fg="#FFFFFF" if solid else color,
+            font=font(7, "bold" if solid else "normal"),
+            padx=px(6),
+            pady=px(1),
         )
-        edit.pack(side="right")
-        edit.bind("<Button-1>", lambda _event, item=item: self._start_edit(item))
+
+    def _progress_text(self, video) -> str:
+        try:
+            record = self.service.store.get_progress(video.key)
+        except Exception:  # noqa: BLE001
+            return ""
+        if not record:
+            return ""
+        if record.get("finished"):
+            return "已看完"
+        position = float(record.get("position") or 0)
+        if position <= 0:
+            return ""
+        return f"看到 {format_seconds(position)}"
 
     def _refresh_week(self) -> None:
         for child in self.week_strip.winfo_children():
@@ -544,13 +760,29 @@ class ScheduleDialog(tk.Toplevel):
                 fg=ACCENT if all_done else (FG_DIM if entry["planned"] else WATCHED_FG),
                 font=font(8),
             ).pack()
-            bar = tk.Canvas(
-                cell, width=px(28), height=px(4), bg=BORDER, highlightthickness=0
-            )
+            bar = tk.Canvas(cell, width=px(34), height=px(5), bg=BORDER, highlightthickness=0)
             bar.pack(pady=(px(2), px(3)))
             if entry["planned"]:
-                width = max(1, int(px(28) * entry["done"] / entry["planned"]))
-                bar.create_rectangle(0, 0, width, px(4), fill=ACCENT, outline="")
+                width = max(1, int(px(34) * entry["done"] / entry["planned"]))
+                bar.create_rectangle(0, 0, width, px(5), fill=ACCENT, outline="")
+
+    def _resize(self) -> None:
+        """按今天有几条自动定高,不留一大块空白。"""
+        try:
+            self.update_idletasks()
+            needed = self.list_inner.winfo_reqheight()
+            height = max(px(96), min(px(430), needed + px(8)))
+            self.list_canvas.configure(height=height)
+            self.update_idletasks()
+            width = px(self.WIDTH)
+            total = self.winfo_reqheight()
+            parent = self.master
+            parent.update_idletasks()
+            x = parent.winfo_rootx() + (max(parent.winfo_width(), 1) - width) // 2
+            y = parent.winfo_rooty() + (max(parent.winfo_height(), 1) - total) // 3
+            self.geometry(f"{width}x{total}+{max(0, x)}+{max(0, y)}")
+        except tk.TclError:
+            pass
 
     # -- 行为 -------------------------------------------------------------
     def _toggle(self, item_id: str) -> None:
@@ -571,6 +803,12 @@ class ScheduleDialog(tk.Toplevel):
             self._on_play(item)
 
     def close(self) -> None:
+        if self._drain_job is not None:
+            try:
+                self.after_cancel(self._drain_job)
+            except tk.TclError:
+                pass
+            self._drain_job = None
         if self._on_change is not None:
             self._on_change()
         self.destroy()

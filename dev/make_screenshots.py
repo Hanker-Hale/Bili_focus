@@ -250,9 +250,14 @@ def visible_root() -> tk.Tk:
 def shot_schedule() -> None:
     service, videos, _folder = demo_data.build_demo()
     service.mark_watched(videos[0].key)
+    # 日程面板的封面是另一种尺寸,单独种一份缓存(否则截图里会显示"封面加载中")
+    from bilifocus.ui_schedule import cover_size
+
+    cover_w, cover_h = cover_size()
+    demo_data.seed_covers(service.store.home, videos, cover_w, cover_h)
     root = visible_root()
     dialog = ScheduleDialog(root, service, videos=videos, on_play=lambda item: None, on_change=None)
-    pump(root, 1.0)
+    pump(root, 1.6)
     save(dialog, "schedule.png")
     dialog.destroy()
     root.destroy()

@@ -30,6 +30,7 @@ from bilifocus.store import StateStore  # noqa: E402
 DEMO_FID = 10001
 DEMO_USERNAME = "示例用户"
 COVERS_DIR = Path(__file__).resolve().parent / "demo-covers"
+COVERS_DIR_SMALL = Path(__file__).resolve().parent / "demo-covers-small"
 
 # (标题, UP 主, 时长秒, 封面序号)
 _TITLES = (
@@ -96,7 +97,11 @@ def seed_covers(
         target = cache_dir / f"{digest}.png"
         if target.exists():
             continue
-        source = COVERS_DIR / f"{video.pic.rsplit('/', 1)[-1]}"
+        name = video.pic.rsplit("/", 1)[-1]
+        # 日程面板用小尺寸封面:有专门的小图目录就用它,避免 Tk 里显示成"大字报"
+        source = COVERS_DIR_SMALL / name if width <= 300 and COVERS_DIR_SMALL.is_dir() else COVERS_DIR / name
+        if not source.is_file():
+            source = COVERS_DIR / name
         if source.exists():
             shutil.copy2(source, target)
             copies += 1
