@@ -82,11 +82,15 @@ check("splash keeps a minimum display time", app.splash.remaining_ms() >= 0)
 # 回归:窗口尺寸变化时启动页不能重复叠画(启动时窗口从小变全屏会触发)
 def splash_counts():
     canvas = app.splash.canvas
-    return len(canvas.find_withtag("logo")), len(canvas.find_withtag("splash-dots"))
+    return len(canvas.find_withtag("logo")), len(canvas.find_withtag("splash-ray"))
 
 
 before_counts = splash_counts()
-check("splash draws one logo and three dots", before_counts == (9, 3), str(before_counts))
+check(
+    "splash draws a bulb plus nine light rays",
+    before_counts[0] >= 6 and before_counts[1] == 9,
+    str(before_counts),
+)
 app.splash._size = (0, 0)          # 强制下一次 Configure 重新布局
 root.geometry("900x620")
 pump(root, rounds=10)
@@ -961,6 +965,10 @@ farewell = next(
     (child for child in root.winfo_children() if isinstance(child, ui.FarewellDialog)), None
 )
 check("farewell dialog appears on close", farewell is not None)
+check(
+    "farewell uses the new app icon",
+    farewell is not None and getattr(farewell, "_icon_photo", None) is not None,
+)
 farewell_texts = collect_texts(farewell) if farewell is not None else []
 check(
     "farewell greeting starts with 亲爱的",

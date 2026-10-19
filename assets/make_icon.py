@@ -29,6 +29,7 @@ HERE = Path(__file__).resolve().parent
 ART_PATH = HERE / "icon-art.jpg"
 ICO_PATH = HERE / "bilifocus-icon.ico"
 PNG_PATH = HERE / "icon-512.png"
+PNG128_PATH = HERE / "icon-128.png"
 PREVIEW_PATH = HERE / "icon-preview.png"
 
 SIZES = (16, 24, 32, 40, 48, 64, 128, 256)
@@ -126,9 +127,11 @@ def build_preview(sizes: tuple[int, ...] = (256, 64, 32, 24, 16)) -> Image.Image
 def main() -> int:
     ICO_PATH.write_bytes(build_ico(SIZES))
     _render(512).save(PNG_PATH, format="PNG", optimize=True)
+    _render(128).save(PNG128_PATH, format="PNG", optimize=True)
     build_preview().save(PREVIEW_PATH, format="PNG")
     print(f"icon : {ICO_PATH.name} ({ICO_PATH.stat().st_size} bytes, {len(SIZES)} sizes)")
     print(f"png  : {PNG_PATH.name} ({PNG_PATH.stat().st_size} bytes)")
+    print(f"png  : {PNG128_PATH.name} ({PNG128_PATH.stat().st_size} bytes)")
     print(f"sheet: {PREVIEW_PATH.name} ({PREVIEW_PATH.stat().st_size} bytes)")
     return 0
 

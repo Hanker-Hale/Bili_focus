@@ -11,10 +11,11 @@ from __future__ import annotations
 import tkinter as tk
 from dataclasses import dataclass, field
 
+from pathlib import Path
+
 from . import theme
 from .models import format_seconds
 from .theme import ACCENT, BG, BORDER, CARD_BG, FG, FG_DIM, WATCHED_FG, font, px
-from .ui_splash import draw_logo_mark
 
 
 @dataclass
@@ -68,14 +69,32 @@ class FarewellDialog(tk.Toplevel):
             self.winfo_reqheight() + px(4),
         )
 
+    # -- 图标 -------------------------------------------------------------
+    def _load_icon(self):
+        """加载新图标(assets/icon-128.png),按当前 DPI 取整数倍缩小。"""
+        icon_path = Path(__file__).resolve().parent.parent / "assets" / "icon-128.png"
+        try:
+            image = tk.PhotoImage(file=str(icon_path))
+        except tk.TclError:
+            return None
+        target = max(1, px(64))
+        if image.width() > target:
+            factor = max(1, round(image.width() / target))
+            image = image.subsample(factor)
+        self._icon_photo = image  # 防止被回收
+        return image
+
     # -- 构建 -------------------------------------------------------------
     def _build(self) -> None:
         body = tk.Frame(self, bg=BG)
         body.pack(padx=px(30), pady=px(24))
 
-        logo = tk.Canvas(body, width=px(64), height=px(64), bg=BG, highlightthickness=0)
-        logo.pack()
-        draw_logo_mark(logo, px(32), px(32), px(56))
+        self._icon_photo = self._load_icon()
+        if self._icon_photo is not None:
+            tk.Label(body, image=self._icon_photo, bg=BG).pack()
+        else:
+            # 图标文件缺失时退回纯文字,不让小结打不开
+            tk.Label(body, text="BiliFocus", bg=BG, fg=ACCENT, font=font(14, "bold")).pack()
 
         tk.Label(
             body,

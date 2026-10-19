@@ -1,4 +1,4 @@
-BiliFocus 2.3.1 —— 文件清单
+BiliFocus 2.3.2 —— 文件清单
 ==============================================
 
 用法:
@@ -18,7 +18,7 @@ BiliFocus 2.3.1 —— 文件清单
             MIT 许可证(含内置二维码库的署名)
      11116 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     34648 B  README.md
+     34696 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -72,11 +72,11 @@ BiliFocus 2.3.1 —— 文件清单
             自动分类:本地关键词打分 + 分组排序
      33650 B  bilifocus/ui_cards.py
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
-      6703 B  bilifocus/ui_farewell.py
+      7521 B  bilifocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
      34375 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-      9254 B  bilifocus/ui_splash.py
+     13465 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
      72996 B  bilifocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
@@ -158,7 +158,7 @@ BiliFocus 2.3.1 —— 文件清单
             卡片样式练习场(改它不影响主程序)
      11129 B  dev/make_manifest.py
             生成本文件
-     13519 B  dev/make_screenshots.py
+     14166 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
       1726 B  dev/probe_network.py
             手动联调脚本:匿名打真实接口验证协议链路
@@ -166,7 +166,7 @@ BiliFocus 2.3.1 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     37998 B  dev/smoke_ui.py
+     38176 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2605 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
@@ -174,13 +174,14 @@ BiliFocus 2.3.1 —— 文件清单
 — 资源 assets/ ----------------------------------
      85735 B  assets/bilifocus-icon.ico
             应用图标(16~256 八个尺寸)
+     17192 B  assets/icon-128.png
     149309 B  assets/icon-512.png
             512 透明圆角图标(官网/favicon 用)
      42770 B  assets/icon-art.jpg
             图标原画(手绘 bilifocus 灯泡小人)
     216088 B  assets/icon-preview.png
             图标各尺寸预览图
-      4801 B  assets/make_icon.py
+      5118 B  assets/make_icon.py
             从手绘原画生成图标(灯泡小人)
 
 — 示例封面 dev/demo-covers/ -----------------------
@@ -225,7 +226,7 @@ BiliFocus 2.3.1 —— 文件清单
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     149309 B  docs/icon.png
-     41500 B  docs/index.html
+     41858 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -239,12 +240,13 @@ BiliFocus 2.3.1 —— 文件清单
       4201 B  docs/promo/录制与发布流程.md
       7147 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
-     16759 B  docs/screenshots/farewell.png
-    187948 B  docs/screenshots/grouped.png
+     33913 B  docs/screenshots/farewell.png
+    190308 B  docs/screenshots/grouped.png
      14522 B  docs/screenshots/qr-login.png
-    236158 B  docs/screenshots/reminder.png
-     64747 B  docs/screenshots/schedule.png
-    236504 B  docs/screenshots/ui.png
-    231786 B  docs/screenshots/update.png
+    240221 B  docs/screenshots/reminder.png
+     64825 B  docs/screenshots/schedule.png
+     80780 B  docs/screenshots/splash.png
+    238836 B  docs/screenshots/ui.png
+    234122 B  docs/screenshots/update.png
 
-共 134 个文件。
+共 136 个文件。

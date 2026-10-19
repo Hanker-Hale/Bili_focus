@@ -3,6 +3,8 @@
 **只看收藏夹,不被推荐流带走。** 一个 Windows 桌面小工具:打开就是你的 B 站收藏夹,
 点开即全屏播放,看完自动记进度,下次接着看。
 
+![启动动画](docs/screenshots/splash.png)
+
 ![主界面](docs/screenshots/ui.png)
 
 | 自动分类 + 收起 | 日程 |

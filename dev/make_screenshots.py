@@ -187,6 +187,27 @@ def pump(window: tk.Misc, seconds: float = 1.2, rounds_each: int = 20) -> None:
 
 
 # ── 各个截图场景 ────────────────────────────────────────────────────────
+def shot_splash() -> None:
+    """启动动画:灯泡 + 光线。"""
+    service, videos, folder = demo_data.build_demo()
+    root = tk.Tk()
+    app = ui_tk.FocusApp(
+        root,
+        fid_override=demo_data.DEMO_FID,
+        mid=0,
+        bootstrap=False,
+        service=service,
+        fullscreen=True,
+    )
+    app.folders = [folder]
+    app.folder_box.configure(values=[f"{folder.title} ({folder.media_count})"])
+    app.folder_box.current(0)
+    app.splash.set_status("正在读取收藏夹…")
+    pump(root, 1.3)  # 让光线动画跑起来
+    save(root, "splash.png")
+    root.destroy()
+
+
 def shot_main(collapsed: set[str], name: str) -> None:
     service, videos, folder = demo_data.build_demo()
     root = tk.Tk()
@@ -396,6 +417,7 @@ def shot_qr() -> None:
 def main() -> int:
     theme.enable_dpi_awareness()
     print("生成脱敏截图 →", OUT_DIR)
+    shot_splash()
     shot_update_banner()
     shot_main(collapsed=set(), name="ui.png")
     shot_main(collapsed={"code", "ai"}, name="grouped.png")
