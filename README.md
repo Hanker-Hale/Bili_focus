@@ -50,6 +50,23 @@
 > 数据始终在本机 `%APPDATA%\bili-focus`,和绿色版 exe 完全通用——两者可以互相替换,
 > 登录态 / 进度 / 日程都接着用。
 
+## 版本号规则
+
+用 `主版本.次版本.修订号`(SemVer):
+
+| 改动类型 | 怎么加 | 例子 |
+|---|---|---|
+| 修 bug | 修订号 +1 | 2.1.0 → **2.1.1** |
+| 加功能 | 次版本 +1,修订号归零 | 2.1.1 → **2.2.0** |
+| 不兼容的大改 | 主版本 +1 | 2.x.x → **3.0.0** |
+
+升版本用脚本(会同时改 `pyproject.toml` 和 `bilifocus/__init__.py`):
+
+```powershell
+python dev/bump_version.py patch   # 修完 bug
+python dev/bump_version.py minor   # 加完功能
+```
+
 ## 版本与更新
 
 | 事情 | 怎么做 |

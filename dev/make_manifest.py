@@ -85,6 +85,7 @@ DESCRIPTIONS: dict[str, str] = {
     "dev/demo_data.py": "示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)",
     "dev/make_screenshots.py": "用示例数据重新生成 docs/screenshots(脱敏)",
     "dev/build_exe.py": "打包单文件 exe(需要 PyInstaller)",
+    "dev/bump_version.py": "按规则升版本号(修 bug / 加功能)",
     "dev/build_installer.py": "打 Windows 安装包(内嵌 exe + 安装向导)",
     "dev/installer_app.py": "安装器界面与安装/卸载流程",
     "dev/demo-covers/01.png": "示例封面(合成图,供截图使用)",

@@ -75,6 +75,15 @@ python dev/build_exe.py
 - `--collect-submodules bilifocus`:播放器/扫码这些懒加载模块也收进来
 - 产物:`dist/BiliFocus.exe`(约 12 MB),`build/` 是中间文件,两者都已在 `.gitignore`
 
+## 升版本号
+
+```powershell
+python dev/bump_version.py patch   # 修 bug:2.1.0 -> 2.1.1
+python dev/bump_version.py minor   # 加功能:2.1.1 -> 2.2.0
+```
+
+会同时改 `pyproject.toml` 和 `bilifocus/__init__.py`,测试里有一致性检查。
+
 ## 打安装包
 
 ```powershell
