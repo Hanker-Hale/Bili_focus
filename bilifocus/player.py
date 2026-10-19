@@ -32,6 +32,7 @@ from .browser_login import (
     find_free_port,
 )
 from .errors import BiliFocusError
+from .winproc import taskkill
 
 # 采样间隔:2 秒足够算准观看时长,又不会把 CDP 打满
 POLL_INTERVAL = 2.0
@@ -196,9 +197,7 @@ class BrowserPlayer:
             raise PlaybackError("这条视频没有可打开的地址")
         self.profile_dir.mkdir(parents=True, exist_ok=True)
         for pid in _stale_instances(self.profile_dir):
-            subprocess.run(
-                ["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, timeout=15
-            )
+            taskkill(pid)
 
         self.port = find_free_port()
         self._process = subprocess.Popen(
@@ -207,7 +206,7 @@ class BrowserPlayer:
         cdp: _Cdp | None = None
         try:
             target_ws = self._wait_target()
-            self._browser_pids = _stale_instances(self.profile_dir)
+            self._browser_pids = []
             cdp = _Cdp(target_ws, timeout=25.0)
             self._prepare(cdp, sessdata)
             cdp.call("Page.navigate", {"url": url})
@@ -358,16 +357,11 @@ class BrowserPlayer:
         except subprocess.TimeoutExpired:
             pass
         if process.poll() is None:
-            subprocess.run(
-                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                capture_output=True,
-                timeout=15,
-            )
+            taskkill(process.pid)
         # 启动器退出后浏览器可能还活着(多进程架构),按 profile 兜底清一遍
-        for pid in _stale_instances(self.profile_dir):
-            subprocess.run(
-                ["taskkill", "/PID", str(pid), "/T", "/F"],
-                capture_output=True,
-                timeout=15,
-            )
+        pids = list(self._browser_pids or [])
+        if not pids:
+            pids = _stale_instances(self.profile_dir)
+        for pid in pids:
+            taskkill(pid)
         self._browser_pids = []

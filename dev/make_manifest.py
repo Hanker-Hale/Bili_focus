@@ -49,6 +49,7 @@ DESCRIPTIONS: dict[str, str] = {
     "bilifocus/ui_schedule.py": "日程面板:自己设定时间 + 内容",
     "bilifocus/ui_farewell.py": "退出小结卡(观看时长 + 已看完比例)",
     "bilifocus/install.py": "安装/卸载逻辑:注册表、快捷方式、覆盖安装",
+    "bilifocus/winproc.py": "静默执行外部命令(不弹控制台窗口)",
     "bilifocus/vendor/__init__.py": "内置第三方代码说明",
     "bilifocus/vendor/qrcodegen.py": "二维码编码器(Project Nayuki,MIT,逐字保留)",
     "bilifocus/secrets.py": "凭证加密:SESSDATA 用 Windows DPAPI 加密存储",

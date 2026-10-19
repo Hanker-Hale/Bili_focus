@@ -26,6 +26,8 @@ import time
 import urllib.request
 from pathlib import Path
 
+from .winproc import run_hidden, taskkill
+
 from .errors import BiliFocusError
 
 LOGIN_URL = "https://www.bilibili.com/"
@@ -247,7 +249,7 @@ def _stale_instances(profile_dir: Path) -> list[int]:
         "| Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress"
     )
     try:
-        completed = subprocess.run(
+        completed = run_hidden(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
             capture_output=True,
             text=True,
@@ -267,7 +269,7 @@ def _stale_instances(profile_dir: Path) -> list[int]:
 
     # 2) 退回 wmic(老系统)
     try:
-        output = subprocess.run(
+        output = run_hidden(
             ["wmic", "process", "where", "name='msedge.exe' or name='chrome.exe'",
              "get", "ProcessId,CommandLine", "/format:csv"],
             capture_output=True, text=True, timeout=15,
@@ -321,8 +323,7 @@ class BrowserLogin:
 
         # 上一次没收干净的实例会占着 profile,导致新实例不开调试端口
         for pid in _stale_instances(self.profile_dir):
-            subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                           capture_output=True, timeout=15)
+            taskkill(pid)
 
         self.port = find_free_port()
         args = [
@@ -368,8 +369,7 @@ class BrowserLogin:
             try:
                 self._process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                subprocess.run(["taskkill", "/PID", str(self._process.pid), "/T", "/F"],
-                               capture_output=True, timeout=15)
+                taskkill(self._process.pid)
             self._process = None
 
     def forget(self) -> None:

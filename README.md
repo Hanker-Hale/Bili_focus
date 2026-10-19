@@ -623,7 +623,7 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 | `bilifocus.cmd` | 界面启动器(双击用) |
 | `启动 BiliFocus.cmd` | 中文名包装,指向 `bilifocus.cmd` |
 | `bilifocus-cli.cmd` | 命令行启动器 |
-| `tests/` | 269 项离线测试 + 3 项联网集成测试(共 272) |
+| \	ests/\ | 331 项离线测试 + 3 项联网集成测试(共 334) |
 | `dev/smoke_ui.py` / `dev/test_startup.py` | 界面冒烟与启动链路测试 |
 | `dev/check_imports.py` | 轻量未使用 import 检查(无第三方 linter 时用) |
 | `dev/probe_network.py` | 手动联调脚本(匿名打真实接口) |
