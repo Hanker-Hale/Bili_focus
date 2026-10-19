@@ -42,6 +42,8 @@ def pump(root: tk.Tk, seconds: float) -> None:
 
 
 def main() -> int:
+    # 高 DPI 下也清晰:必须在 tk.Tk() 之前调用
+    theme.enable_dpi_awareness()
     # 录屏时别弹"发现新版本"横幅,画面干净一点
     os.environ["BILI_FOCUS_NO_UPDATE_CHECK"] = "1"
 
