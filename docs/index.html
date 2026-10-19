@@ -231,6 +231,41 @@
   .release h4 { font-size: 16.5px; }
   .release p { margin-top: 6px; font-size: 14px; color: var(--ink-soft); }
 
+  /* 特别鸣谢 */
+  .thanks { max-width: 860px; }
+  .contributors { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .contributor {
+    display: flex; gap: 18px; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; box-shadow: var(--shadow-sm);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .contributor:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--sky-line); }
+  .avatar {
+    flex: none; width: 54px; height: 54px; border-radius: 18px;
+    display: grid; place-items: center;
+    background: linear-gradient(150deg, #E8F5FF, #BFE4FF);
+    border: 1px solid var(--sky-line);
+    font-family: var(--serif); font-size: 26px; color: var(--sky-deep);
+    transform: rotate(-3deg);
+  }
+  .contributor h3 { font-size: 18px; }
+  .contributor .role {
+    display: inline-block; margin-top: 6px; font-size: 12.5px;
+    color: var(--sky-deep); background: var(--sky-soft);
+    border: 1px solid var(--sky-line); padding: 2px 10px; border-radius: 999px;
+  }
+  .contributor p { margin-top: 10px; font-size: 14px; color: var(--ink-soft); }
+  .thanks-note {
+    margin-top: 22px; padding: 16px 20px;
+    background: rgba(255, 255, 255, .6); border: 1px dashed var(--line);
+    border-radius: 14px; font-size: 14px; color: var(--ink-soft);
+  }
+  .thanks-note b { color: var(--ink); }
+  @media (max-width: 620px) {
+    .contributors { grid-template-columns: 1fr; }
+  }
+
   /* FAQ */
   .faq { display: grid; gap: 14px; max-width: 840px; }
   details {
@@ -299,6 +334,7 @@
       <a href="#features">功能</a>
       <a href="#screens">截图</a>
       <a href="#download">下载</a>
+      <a href="#thanks">鸣谢</a>
       <a href="#faq">常见问题</a>
     </nav>
     <a class="nav-cta" id="nav-download" href="#download">
@@ -540,7 +576,7 @@
           <time>2.3.0</time>
           <div>
             <h4>新图标 · 幼圆字体</h4>
-            <p>换上手绘风新图标(浅蓝底、灯泡与小人);界面字体从楷体改为幼圆,和图标更统一;官网同步换新。</p>
+            <p>换上手绘风新图标(浅蓝底,bili相关元素);界面字体从楷体改为幼圆,和图标更统一;官网同步换新。</p>
           </div>
         </article>
         <article class="release reveal">
@@ -564,6 +600,34 @@
             <p>收藏夹卡片网格、全屏播放与进度续播、自动分类、日程提醒、退出小结、扫码登录、DPAPI 加密、安装包。</p>
           </div>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 特别鸣谢 -->
+  <section id="thanks" class="pain" style="background: linear-gradient(180deg, rgba(228,244,250,.35), rgba(251,247,238,0));">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">特别鸣谢</span>
+        <h2>一起把它做出来的人</h2>
+        <p>BiliFocus 不只有代码,还有这些共创者的手艺。排名不分先后,名单会持续更新。</p>
+      </div>
+      <div class="thanks">
+        <div class="contributors">
+          <article class="contributor reveal">
+            <span class="avatar" aria-hidden="true">L</span>
+            <div>
+              <h3>Lizzy</h3>
+              <span class="role">应用图标</span>
+              <p>BiliFocus 的手绘风图标——浅蓝底、灯泡与 bili 相关元素——出自 Lizzy 之手。</p>
+            </div>
+          </article>
+        </div>
+        <p class="thanks-note reveal">
+          <b>想一起参与?</b> 图标、文案、测试、翻译、找 bug 都欢迎——
+          到 <a href="https://github.com/Hanker-Hale/Bili_focus/issues" target="_blank" rel="noopener">GitHub Issues</a>
+          提一个,或者直接发 PR。
+        </p>
       </div>
     </div>
   </section>
