@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 版本信息
+        run: |
+          python --version
+          python -c "import tkinter; print('tkinter', tkinter.TkVersion)"
+
+      - name: 单元测试(离线,不需要登录)
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: 未使用 import 检查
+        run: python dev/check_imports.py bilifocus tests dev
+
+      - name: 界面冒烟(需要桌面会话;失败不阻断)
+        continue-on-error: true
+        run: python dev/smoke_ui.py
+
+      - name: 生成本地打包元数据(确认可安装)
+        run: python -m pip install --quiet build && python -m build --wheel

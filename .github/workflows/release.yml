@@ -1,0 +1,65 @@
+name: release
+
+# 推一个 v* 标签就自动打包 exe,并挂到 GitHub Release 上。
+# 用法:git tag v2.0.0 && git push origin v2.0.0
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装 PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+
+      - name: 先跑测试
+        run: python -m unittest discover -s tests -t .
+
+      - name: 打包单文件 exe
+        run: python dev/build_exe.py
+
+      - name: 打包 Windows 安装包
+        run: python dev/build_installer.py
+
+      - name: 校验产物
+        shell: pwsh
+        run: |
+          $exe = "dist/BiliFocus.exe"
+          if (-not (Test-Path $exe)) { throw "没找到 $exe" }
+          "exe 大小: {0:N1} MB" -f ((Get-Item $exe).Length / 1MB)
+          $setup = Get-ChildItem "dist/BiliFocus-Setup-*.exe" | Select-Object -First 1
+          if (-not $setup) { throw "没找到安装包" }
+          "安装包: {0} ({1:N1} MB)" -f $setup.Name, ($setup.Length / 1MB)
+
+      - name: 上传到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/BiliFocus.exe
+            dist/BiliFocus-Setup-*.exe
+          body: |
+            BiliFocus ${{ github.ref_name }}
+
+            - **安装包**:下载 `BiliFocus-Setup-*.exe`,双击安装(不需要装 Python)
+            - **绿色版**:下载 `BiliFocus.exe`,双击即用
+            - 覆盖安装会保留本机数据(登录态/进度/日程)
+            - 数据只存本机 `%APPDATA%\bili-focus`
+            - 登录方式:手机扫码 / 独立浏览器 / 粘贴 SESSDATA
+
+      - name: 同时存一份构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: BiliFocus-exe
+          path: dist/BiliFocus.exe

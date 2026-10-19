@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# 打包产物
+*.spec
+*.exe
+
+# 本地数据:登录态、收藏夹缓存、封面、日志都不入库
+state.json
+state.corrupt-*.json
+cache/
+browser-profile/
+player-profile/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# 本机归档:旧版本与开发过程截图,不随仓库发布
+_archive/
+_screenshots/
+build-installer/

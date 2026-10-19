@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+# 启动器是 GBK 编码 + CRLF,按二进制处理,避免换行转换把它弄坏
+*.cmd binary
+*.bat binary
+
+# 图标与图片
+*.ico binary
+*.png binary

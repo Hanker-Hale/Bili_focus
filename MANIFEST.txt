@@ -1,0 +1,212 @@
+BiliFocus 2.0.0 —— 文件清单
+==============================================
+
+用法:
+  桌面       双击桌面上的 BiliFocus 图标
+  登录       登录框点「手机扫码登录」,或用 bilifocus-cli.cmd login --qrcode
+  命令行     bilifocus-cli.cmd list --fid <收藏夹id>
+  跑测试     双击 dev\run-tests.cmd
+  前端练习   双击 dev\edit-lab.cmd 改旋钮,再双击 dev\run-lab.cmd 看效果
+  重做图标   <带 PIL 的 python> assets/make_icon.py
+
+— 根目录 -----------------------------------------
+       183 B  .gitattributes
+            换行策略;.cmd 按二进制保存(GBK 编码)
+       422 B  .gitignore
+            忽略缓存/本地数据/打包产物
+      1385 B  LICENSE
+            MIT 许可证(含内置二维码库的署名)
+      9974 B  MANIFEST.txt
+            本文件清单(由 dev/make_manifest.py 生成)
+     31637 B  README.md
+            项目说明:功能、截图、快速开始、设计说明、测试
+      1743 B  bili_focus.py
+            旧版入口的兼容壳(GUI / --self-test)
+       399 B  bilifocus-cli.cmd
+            命令行启动器
+       413 B  bilifocus.cmd
+            图形界面启动器(GBK 编码,双击用)
+       465 B  pyproject.toml
+            打包元数据(零第三方依赖,入口 bilifocus)
+        95 B  启动 BiliFocus.cmd
+            中文名启动器包装
+
+— 包 bilifocus/ --------------------------------
+      2036 B  bilifocus/__init__.py
+            公开导出
+       170 B  bilifocus/__main__.py
+            python -m bilifocus 入口
+     16734 B  bilifocus/browser_login.py
+            独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端)
+     20105 B  bilifocus/cli.py
+            命令行入口
+      9644 B  bilifocus/client.py
+            B 站只读 API 客户端(签名失败自动刷新重试)
+      4790 B  bilifocus/covers.py
+            封面下载与缓存(要 PNG 后缀,避免依赖 Pillow)
+      4000 B  bilifocus/errors.py
+            错误分层:把 B 站返回码翻译成可判断异常
+      4648 B  bilifocus/http.py
+            传输层:限速、重试、可注入替身
+      7943 B  bilifocus/install.py
+            安装/卸载逻辑:注册表、快捷方式、覆盖安装
+      7989 B  bilifocus/models.py
+            数据模型:Video(含封面地址)/ Folder / Page / LoginState
+     14147 B  bilifocus/player.py
+            播放器:自动全屏播放 + 采样观看进度 + 续播
+     14704 B  bilifocus/qrlogin.py
+            手机扫码登录:生成二维码、轮询状态、取 SESSDATA
+     10144 B  bilifocus/schedule.py
+            日程:时间解析、排序、下一项、跨天重置
+      4334 B  bilifocus/secrets.py
+            凭证加密:SESSDATA 用 Windows DPAPI 加密存储
+     31986 B  bilifocus/service.py
+            服务门面:缓存、进度、统计、日程、导出
+     18827 B  bilifocus/store.py
+            持久化:state.json + cache,原子写、并发安全
+      5132 B  bilifocus/theme.py
+            配色 / 字体 / DPI 适配 / 卡片尺寸
+      6687 B  bilifocus/topics.py
+            自动分类:本地关键词打分 + 分组排序
+     33650 B  bilifocus/ui_cards.py
+            卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
+      6703 B  bilifocus/ui_farewell.py
+            退出小结卡(观看时长 + 已看完比例)
+     22365 B  bilifocus/ui_schedule.py
+            日程面板:自己设定时间 + 内容
+      9203 B  bilifocus/ui_splash.py
+            启动页:Canvas 矢量动画(无图片资源)
+     63961 B  bilifocus/ui_tk.py
+            桌面壳:工具栏、全屏、日程入口、退出小结
+      4239 B  bilifocus/wbi.py
+            WBI 签名(纯函数,官方向量验证)
+
+— 包 bilifocus/vendor/ -------------------------
+       201 B  bilifocus/vendor/__init__.py
+            内置第三方代码说明
+     39349 B  bilifocus/vendor/qrcodegen.py
+            二维码编码器(Project Nayuki,MIT,逐字保留)
+
+— 测试 tests/ -----------------------------------
+       150 B  tests/__init__.py
+            测试包说明
+      5811 B  tests/fakes.py
+            测试替身:假传输、响应构造器、可控时钟
+      4234 B  tests/test_browser_login.py
+            浏览器登录:Cookie 过滤、WebSocket 帧格式
+      7778 B  tests/test_cli.py
+            命令行:排版、子命令、输出
+     11852 B  tests/test_client.py
+            客户端:签名参数、错误归因、重试、翻页
+      4052 B  tests/test_covers.py
+            封面缓存:命中、过期、坏数据、非 PNG 拒绝
+      3154 B  tests/test_install.py
+            安装/卸载辅助逻辑:路径、版本、快捷方式
+      1627 B  tests/test_integration.py
+            真实网络集成测试(默认跳过,需 BILI_FOCUS_INTEGRATION=1)
+      7053 B  tests/test_models.py
+            模型解析、封面地址、cover/pic 字段兼容
+      5897 B  tests/test_player.py
+            播放器:进度采样、启动参数、断连容错
+      8945 B  tests/test_qrlogin.py
+            扫码登录:状态映射、SESSDATA 提取、二维码矩阵
+     13294 B  tests/test_schedule.py
+            日程:时间解析、排序、下一项、跨天重置
+      5087 B  tests/test_secrets.py
+            凭证加密:DPAPI 往返、明文迁移、坏密文容错
+     29222 B  tests/test_service.py
+            服务:缓存、登录回滚、已看、统计、导出、进度
+     14091 B  tests/test_store.py
+            持久化:原子写、损坏恢复、迁移、TTL、并发、进度
+      5600 B  tests/test_topics.py
+            自动分类:关键词命中、分组顺序、边界
+      5536 B  tests/test_wbi.py
+            签名与编码测试(官方向量锚定)
+
+— 开发工具 dev/ -----------------------------------
+      3725 B  dev/README.md
+            开发与测试说明
+      2191 B  dev/build_exe.py
+            打包单文件 exe(需要 PyInstaller)
+      2505 B  dev/build_installer.py
+            打 Windows 安装包(内嵌 exe + 安装向导)
+      2325 B  dev/check_imports.py
+            无第三方 linter 时的未使用 import 检查
+      7796 B  dev/demo_data.py
+            示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)
+       117 B  dev/edit-lab.cmd
+            用记事本打开卡片实验室
+      8698 B  dev/installer_app.py
+            安装器界面与安装/卸载流程
+      9383 B  dev/lab_card.py
+            卡片样式练习场(改它不影响主程序)
+      9910 B  dev/make_manifest.py
+            生成本文件
+     12009 B  dev/make_screenshots.py
+            用示例数据重新生成 docs/screenshots(脱敏)
+      1726 B  dev/probe_network.py
+            手动联调脚本:匿名打真实接口验证协议链路
+       486 B  dev/run-lab.cmd
+            运行卡片实验室(出错时停住显示报错)
+       396 B  dev/run-tests.cmd
+            一键跑离线测试
+     33355 B  dev/smoke_ui.py
+            界面冒烟测试(真实 Tk 窗口,约 1 秒)
+      2608 B  dev/test_startup.py
+            启动链路测试:用无效凭证跑完整 bootstrap
+
+— 资源 assets/ ----------------------------------
+     25300 B  assets/bilifocus-icon.ico
+            应用图标(16~256 七个尺寸)
+     58772 B  assets/icon-preview.png
+            图标各尺寸预览图
+      6467 B  assets/make_icon.py
+            生成图标(米白底 + 取景框 + 播放三角)
+
+— CI .github/workflows/ -----------------------
+      2023 B  .github/workflows/release.yml
+            CI:推 v* 标签自动打 exe 并发布 Release
+      1043 B  .github/workflows/tests.yml
+            CI:push/PR 跑四套 Python 版本的测试
+
+— 其他 ----------------------------------------
+       947 B  build-installer/BiliFocus-Setup-2.0.0.spec
+     28566 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
+  25028772 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
+      5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
+      3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
+   1964795 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
+     12402 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.toc
+   1394319 B  build-installer/BiliFocus-Setup-2.0.0/base_library.zip
+      5054 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod01_archive.pyc
+     32335 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod02_importers.pyc
+      6635 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod03_ctypes.pyc
+      1705 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod04_pywin32.pyc
+       307 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/struct.pyc
+      2059 B  build-installer/BiliFocus-Setup-2.0.0/warn-BiliFocus-Setup-2.0.0.txt
+    299531 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
+      6800 B  dev/demo-covers/01.png
+      6800 B  dev/demo-covers/02.png
+      6800 B  dev/demo-covers/03.png
+      6800 B  dev/demo-covers/04.png
+      6800 B  dev/demo-covers/05.png
+      7603 B  dev/demo-covers/06.png
+      7603 B  dev/demo-covers/07.png
+      7603 B  dev/demo-covers/08.png
+      5160 B  dev/demo-covers/09.png
+      5160 B  dev/demo-covers/10.png
+      5160 B  dev/demo-covers/11.png
+      6244 B  dev/demo-covers/12.png
+      6244 B  dev/demo-covers/13.png
+      8285 B  dev/demo-covers/14.png
+      8285 B  dev/demo-covers/15.png
+      7644 B  dev/demo-covers/16.png
+      7644 B  dev/demo-covers/17.png
+     18342 B  docs/screenshots/farewell.png
+    172992 B  docs/screenshots/grouped.png
+     15893 B  docs/screenshots/qr-login.png
+    217888 B  docs/screenshots/reminder.png
+     48743 B  docs/screenshots/schedule.png
+    217061 B  docs/screenshots/ui.png
+
+共 111 个文件。
