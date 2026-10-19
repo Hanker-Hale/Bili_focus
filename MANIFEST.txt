@@ -137,7 +137,7 @@ BiliFocus 2.3.0 —— 文件清单
             外部命令静默执行(不弹控制台窗口)
 
 — 开发工具 dev/ -----------------------------------
-      4318 B  dev/README.md
+      4519 B  dev/README.md
             开发与测试说明
       2535 B  dev/build_exe.py
             打包单文件 exe(需要 PyInstaller)
@@ -147,6 +147,7 @@ BiliFocus 2.3.0 —— 文件清单
             按规则升版本号(修 bug / 加功能)
       2325 B  dev/check_imports.py
             无第三方 linter 时的未使用 import 检查
+      2781 B  dev/demo_app.py
       8145 B  dev/demo_data.py
             示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)
        117 B  dev/edit-lab.cmd
@@ -224,7 +225,7 @@ BiliFocus 2.3.0 —— 文件清单
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     149309 B  docs/icon.png
-     40872 B  docs/index.html
+     41084 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -235,7 +236,9 @@ BiliFocus 2.3.0 —— 文件清单
 
 — 其他 ----------------------------------------
       4816 B  docs/promo/介绍文案.md
-      6784 B  docs/promo/视频剧本.md
+      4201 B  docs/promo/录制与发布流程.md
+      7147 B  docs/promo/视频剧本.md
+      1088 B  docs/promo/视频字幕-90秒.srt
      16759 B  docs/screenshots/farewell.png
     187948 B  docs/screenshots/grouped.png
      14522 B  docs/screenshots/qr-login.png
@@ -244,4 +247,4 @@ BiliFocus 2.3.0 —— 文件清单
     236504 B  docs/screenshots/ui.png
     231786 B  docs/screenshots/update.png
 
-共 131 个文件。
+共 134 个文件。

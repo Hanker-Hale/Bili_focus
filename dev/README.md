@@ -84,6 +84,14 @@ $env:BILI_FOCUS_REPO='git/git'; python -m bilifocus update   # 指向别的仓�
 
 逻辑在 `bilifocus/update.py`:GitHub API → Atom 订阅兜底 → 按命名规则拼安装包地址。
 
+## 演示模式(录屏/截图)
+
+```powershell
+python dev/demo_app.py
+```
+
+用示例收藏夹启动完整界面,数据在临时目录,退出即丢,适合录视频时避免暴露真实账号。
+
 ## 升版本号
 
 ```powershell
