@@ -20,6 +20,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+# CI 的 Windows 控制台可能是 cp1252,中文 print 会直接抛 UnicodeEncodeError
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 ROOT = Path(__file__).resolve().parent.parent
 ICON = ROOT / "assets" / "bilifocus-icon.ico"
 DIST = ROOT / "dist"
