@@ -9,7 +9,8 @@
 <meta property="og:description" content="一个只看 B 站收藏夹的 Windows 桌面工具:全屏播放、进度续播、自动分类、观看日程。">
 <meta property="og:type" content="website">
 <meta property="og:image" content="screenshots/ui.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237FC6E0'/%3E%3Cpath d='M18 26v-8h8M46 26v-8h-8M18 38v8h8M46 38v8h-8' stroke='%23FFFAF0' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='33' r='5' fill='%23FFFAF0'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <script>document.documentElement.classList.add('js');</script>
 <style>
   :root {
@@ -19,15 +20,16 @@
     --ink: #2E3A40;
     --ink-soft: #5C6B73;
     --ink-faint: #8A979D;
-    --sky: #7FC6E0;
-    --sky-deep: #3F9CBE;
-    --sky-soft: #E4F4FA;
-    --sky-line: #CFE9F2;
+    --sky: #64C0FF;
+    --sky-deep: #2A80BE;
+    --sky-soft: #E8F5FF;
+    --sky-line: #C9E8FC;
     --line: #E9E1D2;
-    --shadow: 0 18px 45px rgba(63, 156, 190, .12);
-    --shadow-sm: 0 8px 24px rgba(63, 156, 190, .10);
-    --serif: "LXGW WenKai", "KaiTi", "STKaiti", "Songti SC", "Noto Serif SC", serif;
-    --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    --shadow: 0 18px 45px rgba(42, 128, 190, .13);
+    --shadow-sm: 0 8px 24px rgba(42, 128, 190, .11);
+    /* 幼圆(Windows 自带)优先;Mac / Linux 依次退回手写体与无衬线 */
+    --serif: "YouYuan", "幼圆", "LXGW WenKai", "KaiTi", "STKaiti", "Songti SC", "Noto Serif SC", serif;
+    --sans: "YouYuan", "幼圆", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
     --mono: "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
     --radius: 20px;
   }
@@ -53,6 +55,7 @@
   img { max-width: 100%; display: block; }
   .wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
   .eyebrow {
+    transform: rotate(-.6deg);
     display: inline-flex; align-items: center; gap: 8px;
     font-size: 13px; letter-spacing: .12em; color: var(--sky-deep);
     background: var(--sky-soft); border: 1px solid var(--sky-line);
@@ -69,7 +72,11 @@
   .nav { display: flex; align-items: center; gap: 28px; height: 72px; }
   .brand { display: flex; align-items: center; gap: 12px; font-family: var(--serif); font-size: 21px; font-weight: 700; color: var(--ink); }
   .brand:hover { text-decoration: none; }
-  .brand svg { width: 34px; height: 34px; }
+  .brand-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: block;
+    box-shadow: 0 4px 10px rgba(42, 128, 190, .20);
+  }
+  .brand:hover .brand-icon { transform: rotate(-4deg); transition: transform .2s ease; }
   .nav-links { display: flex; gap: 26px; margin-left: auto; font-size: 14.5px; color: var(--ink-soft); }
   .nav-links a { color: inherit; }
   .nav-links a:hover { color: var(--sky-deep); text-decoration: none; }
@@ -105,7 +112,11 @@
   }
   .hero-inner { display: grid; grid-template-columns: 1.02fr .98fr; gap: 54px; align-items: center; }
   .hero h1 { font-size: clamp(36px, 4.6vw, 58px); letter-spacing: .01em; }
-  .hero h1 em { font-style: normal; color: var(--sky-deep); }
+  .hero h1 em {
+    font-style: normal; color: var(--sky-deep);
+    text-decoration: underline wavy rgba(100, 192, 255, .55);
+    text-decoration-thickness: 2px; text-underline-offset: 10px;
+  }
   .hero .lead { margin-top: 22px; font-size: 17px; color: var(--ink-soft); max-width: 30em; }
   .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
   .hero-note { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 24px; font-size: 13px; color: var(--ink-faint); }
@@ -123,6 +134,17 @@
   .window-bar i:nth-child(3) { background: #C7DFEA; }
   .window-bar span { margin-left: 10px; font-size: 12px; color: var(--ink-faint); }
   .window img { border-bottom: 1px solid var(--line); }
+  .window { position: relative; }
+  .hero-sticker {
+    position: absolute; z-index: 2; top: -38px; left: -42px;
+    width: 86px; height: 86px; border-radius: 24px;
+    transform: rotate(-9deg);
+    box-shadow: 0 16px 30px rgba(42, 128, 190, .28);
+    border: 4px solid #fff;
+  }
+  @media (max-width: 960px) {
+    .hero-sticker { width: 68px; height: 68px; top: -18px; left: -14px; border-radius: 18px; }
+  }
 
   /* ── 通用区块 ─────────────────────── */
   section { padding: 84px 0; }
@@ -229,6 +251,7 @@
   footer { border-top: 1px solid var(--line); background: rgba(255, 255, 255, .55); padding: 48px 0 40px; margin-top: 20px; }
   .foot { display: flex; flex-wrap: wrap; gap: 28px; justify-content: space-between; align-items: flex-start; }
   .foot .brand { font-size: 19px; }
+  .foot .brand-icon { width: 32px; height: 32px; }
   .foot p { font-size: 13.5px; color: var(--ink-faint); }
   .foot-links { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; }
   .foot-links a { color: var(--ink-soft); }
@@ -268,11 +291,7 @@
 <header>
   <div class="wrap nav">
     <a class="brand" href="#top">
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="15" fill="#7FC6E0"/>
-        <path d="M18 26v-9h9M46 26v-9h-9M18 38v9h9M46 38v9h-9" stroke="#FFFAF0" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <circle cx="32" cy="33" r="5.5" fill="#FFFAF0"/>
-      </svg>
+      <img class="brand-icon" src="icon.png" alt="BiliFocus 图标" width="36" height="36">
       BiliFocus
     </a>
     <nav class="nav-links">
@@ -319,6 +338,7 @@
         </div>
       </div>
       <figure class="window" style="margin:0">
+        <img class="hero-sticker" src="icon.png" alt="" aria-hidden="true">
         <div class="window-bar"><i></i><i></i><i></i><span>BiliFocus — 只看收藏夹</span></div>
         <img src="screenshots/ui.png" alt="BiliFocus 主界面:收藏夹卡片网格" loading="eager">
       </figure>
@@ -428,8 +448,8 @@
     <div class="wrap">
       <div class="section-head reveal">
         <span class="eyebrow">界面预览</span>
-        <h2>米白 + 天蓝,像纸一样安静</h2>
-        <p>下面都是示例数据(不是任何人的真实收藏),只为让你看清界面长什么样。</p>
+        <h2>米白 + 天蓝,配幼圆手写体</h2>
+        <p>界面字体换成了幼圆,更接近手绘图标的感觉。下面都是示例数据(不是任何人的真实收藏),只为让你看清界面长什么样。</p>
       </div>
       <div class="shots">
         <figure class="shot reveal">
@@ -464,7 +484,7 @@
         <article class="dl-card primary reveal">
           <span class="badge">推荐</span>
           <h3>安装包(Setup)</h3>
-          <p class="meta"><span id="setup-version">最新版本</span> · <span id="setup-size">约 24 MB</span> · Windows 10 / 11</p>
+          <p class="meta"><span id="setup-version">v2.3.0</span> · <span id="setup-size">约 24 MB</span> · Windows 10 / 11</p>
           <ul>
             <li>双击 → 点「安装」,自动创建桌面和开始菜单快捷方式</li>
             <li>自带卸载入口(Windows 设置 → 应用)</li>
@@ -516,6 +536,13 @@
         <h2>最近改了什么</h2>
       </div>
       <div class="changelog">
+        <article class="release reveal">
+          <time>2.3.0</time>
+          <div>
+            <h4>新图标 · 幼圆字体</h4>
+            <p>换上手绘风新图标(浅蓝底、灯泡与小人);界面字体从楷体改为幼圆,和图标更统一;官网同步换新。</p>
+          </div>
+        </article>
         <article class="release reveal">
           <time>2.2.0</time>
           <div>
@@ -584,11 +611,7 @@
     <div class="foot">
       <div>
         <a class="brand" href="#top">
-          <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
-            <rect width="64" height="64" rx="15" fill="#7FC6E0"/>
-            <path d="M18 26v-9h9M46 26v-9h-9M18 38v9h9M46 38v9h-9" stroke="#FFFAF0" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <circle cx="32" cy="33" r="5.5" fill="#FFFAF0"/>
-          </svg>
+          <img class="brand-icon" src="icon.png" alt="BiliFocus 图标" width="32" height="32">
           BiliFocus
         </a>
         <p style="margin-top:10px;max-width:24em">只看收藏夹的 B 站桌面工具。<br>免费、开源、数据只存本机。</p>

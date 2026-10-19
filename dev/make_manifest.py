@@ -95,8 +95,10 @@ DESCRIPTIONS: dict[str, str] = {
     "dev/run-lab.cmd": "运行卡片实验室(出错时停住显示报错)",
     "dev/edit-lab.cmd": "用记事本打开卡片实验室",
     # 资源
-    "assets/make_icon.py": "生成图标(米白底 + 取景框 + 播放三角)",
-    "assets/bilifocus-icon.ico": "应用图标(16~256 七个尺寸)",
+    "assets/make_icon.py": "从手绘原画生成图标(灯泡小人)",
+    "assets/bilifocus-icon.ico": "应用图标(16~256 八个尺寸)",
+    "assets/icon-art.jpg": "图标原画(手绘 bilifocus 灯泡小人)",
+    "assets/icon-512.png": "512 透明圆角图标(官网/favicon 用)",
     "assets/icon-preview.png": "图标各尺寸预览图",
     "docs/screenshots/ui.png": "主界面截图",
     "docs/screenshots/grouped.png": "自动分类 + 收起截图",

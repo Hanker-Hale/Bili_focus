@@ -89,12 +89,14 @@ def enable_dpi_awareness() -> bool:
 
 
 # ── 字体 ────────────────────────────────────────────────────────
-FONT_CANDIDATES = ("楷体", "华文楷体", "KaiTi", "STKaiti", "Microsoft YaHei UI")
-FONT_FAMILY = "楷体"
+# 幼圆(YouYuan)是 Windows 中文自带字体,圆润手写感,和手绘图标最搭;
+# 没装幼圆的系统(英文版 Windows 精简安装)依次退回楷体/雅黑。
+FONT_CANDIDATES = ("幼圆", "YouYuan", "You Yuan", "楷体", "华文楷体", "KaiTi", "Microsoft YaHei UI")
+FONT_FAMILY = "幼圆"
 
 
 def init_fonts(root) -> str:
-    """挑一个真实存在的字体族(楷体在 Tk 里叫 `楷体`,不是 "KaiTi")。"""
+    """挑一个真实存在的字体族(幼圆在 Tk 里叫 `幼圆`,不是 "YouYuan")。"""
     global FONT_FAMILY
     try:
         from tkinter import font as tkfont

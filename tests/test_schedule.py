@@ -191,14 +191,15 @@ class WeekTests(unittest.TestCase):
             sc.ScheduleItem("a", "20:00", "每天"),
             sc.ScheduleItem("b", "21:00", "每天"),
         ]
-        sc.mark_done(items[0], sc.today())
-        view = sc.week_view(items, "2026-10-19")
+        day = sc.today()  # 动态取今天,别写死日期(否则过了那天测试就挂)
+        sc.mark_done(items[0], day)
+        view = sc.week_view(items, day)
         self.assertEqual(len(view), 7)
         today_entry = view[-1]
         self.assertTrue(today_entry["is_today"])
         self.assertEqual(today_entry["planned"], 2)
         self.assertEqual(today_entry["done"], 1)
-        self.assertEqual(sc.week_done(items, "2026-10-19"), (1, 14))
+        self.assertEqual(sc.week_done(items, day), (1, 14))
 
     def test_prune_drops_old_once_items(self):
         items = [
@@ -273,8 +274,8 @@ class ServiceScheduleTests(unittest.TestCase):
         self.assertEqual(self.service.finish_schedule_for_video(demo_video()), 0)
 
     def test_due_and_dismiss(self):
-        # 用"几分钟前"的时间,避免测试依赖运行时刻(比如半夜跑)
-        recent = time.strftime("%H:%M", time.localtime(time.time() - 300))
+        # 用"当前这一分钟":无论几点跑都 <= 现在,跨午夜也不会变成"未来时间"
+        recent = time.strftime("%H:%M")
         item = self.service.add_schedule(recent, "看数学")
         due = self.service.schedule_due()
         self.assertIsNotNone(due)

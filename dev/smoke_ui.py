@@ -785,8 +785,8 @@ check(
 dialog.close()
 pump(root)
 
-# 到点提醒:00:00 一定"已经到点"
-recent_time = time.strftime("%H:%M", time.localtime(time.time() - 300))
+# 到点提醒:用当前这一分钟,保证"已经到点"(跨午夜也成立)
+recent_time = time.strftime("%H:%M")
 due_item = service.add_schedule(recent_time, video=plan_video)
 app._check_schedule_reminder(force=True)
 pump(root)

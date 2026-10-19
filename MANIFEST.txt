@@ -1,4 +1,4 @@
-BiliFocus 2.2.0 —— 文件清单
+BiliFocus 2.3.0 —— 文件清单
 ==============================================
 
 用法:
@@ -16,9 +16,9 @@ BiliFocus 2.2.0 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     10574 B  MANIFEST.txt
+     10985 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     34215 B  README.md
+     34364 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -66,7 +66,7 @@ BiliFocus 2.2.0 —— 文件清单
             服务门面:缓存、进度、统计、日程、导出
      18827 B  bilifocus/store.py
             持久化:state.json + cache,原子写、并发安全
-      5132 B  bilifocus/theme.py
+      5468 B  bilifocus/theme.py
             配色 / 字体 / DPI 适配 / 卡片尺寸
       6687 B  bilifocus/topics.py
             自动分类:本地关键词打分 + 分组排序
@@ -118,7 +118,7 @@ BiliFocus 2.2.0 —— 文件清单
             播放器启动失败重试、清理等待、日志
       8945 B  tests/test_qrlogin.py
             扫码登录:状态映射、SESSDATA 提取、二维码矩阵
-     13294 B  tests/test_schedule.py
+     13344 B  tests/test_schedule.py
             日程:时间解析、排序、下一项、跨天重置
       5087 B  tests/test_secrets.py
             凭证加密:DPAPI 往返、明文迁移、坏密文容错
@@ -155,7 +155,7 @@ BiliFocus 2.2.0 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
-     10989 B  dev/make_manifest.py
+     11129 B  dev/make_manifest.py
             生成本文件
      13519 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
@@ -165,18 +165,22 @@ BiliFocus 2.2.0 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     36683 B  dev/smoke_ui.py
+     36684 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2605 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
 
 — 资源 assets/ ----------------------------------
-     25300 B  assets/bilifocus-icon.ico
-            应用图标(16~256 七个尺寸)
-     58772 B  assets/icon-preview.png
+     85735 B  assets/bilifocus-icon.ico
+            应用图标(16~256 八个尺寸)
+    149309 B  assets/icon-512.png
+            512 透明圆角图标(官网/favicon 用)
+     42770 B  assets/icon-art.jpg
+            图标原画(手绘 bilifocus 灯泡小人)
+    216088 B  assets/icon-preview.png
             图标各尺寸预览图
-      6467 B  assets/make_icon.py
-            生成图标(米白底 + 取景框 + 播放三角)
+      4801 B  assets/make_icon.py
+            从手绘原画生成图标(灯泡小人)
 
 — 示例封面 dev/demo-covers/ -----------------------
       6800 B  dev/demo-covers/01.png
@@ -219,9 +223,11 @@ BiliFocus 2.2.0 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-     37351 B  docs/index.html
+    149309 B  docs/icon.png
+     37993 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
+       794 B  .github/workflows/pages.yml
       2077 B  .github/workflows/release.yml
             CI:推 v* 标签自动打 exe 并发布 Release
       1138 B  .github/workflows/tests.yml
@@ -230,12 +236,12 @@ BiliFocus 2.2.0 —— 文件清单
 — 其他 ----------------------------------------
       4816 B  docs/promo/介绍文案.md
       6784 B  docs/promo/视频剧本.md
-     18315 B  docs/screenshots/farewell.png
-    173332 B  docs/screenshots/grouped.png
-     15893 B  docs/screenshots/qr-login.png
-    212342 B  docs/screenshots/reminder.png
-     89106 B  docs/screenshots/schedule.png
-    216996 B  docs/screenshots/ui.png
-    213623 B  docs/screenshots/update.png
+     16759 B  docs/screenshots/farewell.png
+    187948 B  docs/screenshots/grouped.png
+     14522 B  docs/screenshots/qr-login.png
+    236158 B  docs/screenshots/reminder.png
+     64747 B  docs/screenshots/schedule.png
+    236504 B  docs/screenshots/ui.png
+    231786 B  docs/screenshots/update.png
 
-共 127 个文件。
+共 131 个文件。
