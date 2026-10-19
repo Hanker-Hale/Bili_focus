@@ -69,10 +69,10 @@ class StateStoreTests(StoreTestCase):
 
     def test_prefs(self):
         store = StateStore(home=self.home)
-        store.set_pref("fid", 750450031)
+        store.set_pref("fid", 12345678)
         store.set_pref("hide_watched", True)
         reloaded = StateStore(home=self.home)
-        self.assertEqual(reloaded.get_pref("fid"), 750450031)
+        self.assertEqual(reloaded.get_pref("fid"), 12345678)
         self.assertTrue(reloaded.get_pref("hide_watched"))
         self.assertEqual(reloaded.get_pref("missing", "fallback"), "fallback")
 

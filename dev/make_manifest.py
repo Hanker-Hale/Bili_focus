@@ -112,7 +112,7 @@ HEADER = """BiliFocus 2.0.0 —— 文件清单
   登录       登录框点「手机扫码登录」,或用 bilifocus-cli.cmd login --qrcode
   命令行     bilifocus-cli.cmd list --fid <收藏夹id>
   跑测试     双击 dev\\run-tests.cmd
-  前端练习   双击 dev\\edit-lab.cmd 改旋钮,再双击 dev\\run-lab.cmd 看效果
+  样式试验场   双击 dev\\edit-lab.cmd 改颜色/尺寸,再双击 dev\\run-lab.cmd 看效果
   重做图标   <带 PIL 的 python> assets/make_icon.py
 
 """

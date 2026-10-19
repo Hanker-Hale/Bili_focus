@@ -1,6 +1,6 @@
 @echo off
 rem BiliFocus 图形界面启动器(双击用)
-rem 可选参数:--fid 750450031  --mid 479257031
+rem 可选参数:--fid <收藏夹id>  --mid <你的mid>
 setlocal
 cd /d "%~dp0"
 

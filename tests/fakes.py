@@ -58,7 +58,7 @@ def nav_payload(
     *,
     is_login: bool = False,
     uname: str = "测试用户",
-    mid: int = 479257031,
+    mid: int = 87654321,
     img_key: str = IMG_KEY,
     sub_key: str = SUB_KEY,
 ) -> dict:

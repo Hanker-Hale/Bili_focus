@@ -6,7 +6,7 @@ BiliFocus 2.0.0 —— 文件清单
   登录       登录框点「手机扫码登录」,或用 bilifocus-cli.cmd login --qrcode
   命令行     bilifocus-cli.cmd list --fid <收藏夹id>
   跑测试     双击 dev\run-tests.cmd
-  前端练习   双击 dev\edit-lab.cmd 改旋钮,再双击 dev\run-lab.cmd 看效果
+  样式试验场   双击 dev\edit-lab.cmd 改颜色/尺寸,再双击 dev\run-lab.cmd 看效果
   重做图标   <带 PIL 的 python> assets/make_icon.py
 
 — 根目录 -----------------------------------------
@@ -16,15 +16,15 @@ BiliFocus 2.0.0 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     10204 B  MANIFEST.txt
+     10340 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     31742 B  README.md
+     32383 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
-       399 B  bilifocus-cli.cmd
+       400 B  bilifocus-cli.cmd
             命令行启动器
-       413 B  bilifocus.cmd
+       414 B  bilifocus.cmd
             图形界面启动器(GBK 编码,双击用)
        415 B  publish.cmd
       5633 B  publish.ps1
@@ -34,13 +34,13 @@ BiliFocus 2.0.0 —— 文件清单
             中文名启动器包装
 
 — 包 bilifocus/ --------------------------------
-      2036 B  bilifocus/__init__.py
+      2112 B  bilifocus/__init__.py
             公开导出
        170 B  bilifocus/__main__.py
             python -m bilifocus 入口
      16980 B  bilifocus/browser_login.py
             独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端)
-     20105 B  bilifocus/cli.py
+     20311 B  bilifocus/cli.py
             命令行入口
       9644 B  bilifocus/client.py
             B 站只读 API 客户端(签名失败自动刷新重试)
@@ -62,7 +62,7 @@ BiliFocus 2.0.0 —— 文件清单
             日程:时间解析、排序、下一项、跨天重置
       4334 B  bilifocus/secrets.py
             凭证加密:SESSDATA 用 Windows DPAPI 加密存储
-     31986 B  bilifocus/service.py
+     32760 B  bilifocus/service.py
             服务门面:缓存、进度、统计、日程、导出
      18827 B  bilifocus/store.py
             持久化:state.json + cache,原子写、并发安全
@@ -78,7 +78,7 @@ BiliFocus 2.0.0 —— 文件清单
             日程面板:自己设定时间 + 内容
       9203 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     63961 B  bilifocus/ui_tk.py
+     64642 B  bilifocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
       4239 B  bilifocus/wbi.py
             WBI 签名(纯函数,官方向量验证)
@@ -94,21 +94,21 @@ BiliFocus 2.0.0 —— 文件清单
 — 测试 tests/ -----------------------------------
        150 B  tests/__init__.py
             测试包说明
-      5811 B  tests/fakes.py
+      5989 B  tests/fakes.py
             测试替身:假传输、响应构造器、可控时钟
       4234 B  tests/test_browser_login.py
             浏览器登录:Cookie 过滤、WebSocket 帧格式
-      7778 B  tests/test_cli.py
+      8561 B  tests/test_cli.py
             命令行:排版、子命令、输出
-     11852 B  tests/test_client.py
+     12159 B  tests/test_client.py
             客户端:签名参数、错误归因、重试、翻页
       4052 B  tests/test_covers.py
             封面缓存:命中、过期、坏数据、非 PNG 拒绝
       3154 B  tests/test_install.py
             安装/卸载辅助逻辑:路径、版本、快捷方式
-      1627 B  tests/test_integration.py
+      1754 B  tests/test_integration.py
             真实网络集成测试(默认跳过,需 BILI_FOCUS_INTEGRATION=1)
-      7053 B  tests/test_models.py
+      7238 B  tests/test_models.py
             模型解析、封面地址、cover/pic 字段兼容
       5897 B  tests/test_player.py
             播放器:进度采样、启动参数、断连容错
@@ -120,9 +120,9 @@ BiliFocus 2.0.0 —— 文件清单
             日程:时间解析、排序、下一项、跨天重置
       5087 B  tests/test_secrets.py
             凭证加密:DPAPI 往返、明文迁移、坏密文容错
-     29222 B  tests/test_service.py
+     29217 B  tests/test_service.py
             服务:缓存、登录回滚、已看、统计、导出、进度
-     14091 B  tests/test_store.py
+     14089 B  tests/test_store.py
             持久化:原子写、损坏恢复、迁移、TTL、并发、进度
       5600 B  tests/test_topics.py
             自动分类:关键词命中、分组顺序、边界
@@ -148,7 +148,7 @@ BiliFocus 2.0.0 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
-     10161 B  dev/make_manifest.py
+     10171 B  dev/make_manifest.py
             生成本文件
      12009 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
@@ -158,9 +158,9 @@ BiliFocus 2.0.0 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     33355 B  dev/smoke_ui.py
+     33351 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
-      2608 B  dev/test_startup.py
+      2605 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
 
 — 资源 assets/ ----------------------------------
@@ -180,10 +180,10 @@ BiliFocus 2.0.0 —— 文件清单
 — 其他 ----------------------------------------
        947 B  build-installer/BiliFocus-Setup-2.0.0.spec
      28398 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
-  25012920 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
+  25016341 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
       5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
       3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
-   1948126 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
+   1948672 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
      12234 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.toc
    1394319 B  build-installer/BiliFocus-Setup-2.0.0/base_library.zip
       5054 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod01_archive.pyc
@@ -192,7 +192,7 @@ BiliFocus 2.0.0 —— 文件清单
       1705 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod04_pywin32.pyc
        307 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/struct.pyc
       2059 B  build-installer/BiliFocus-Setup-2.0.0/warn-BiliFocus-Setup-2.0.0.txt
-    297982 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
+    298086 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
       6800 B  dev/demo-covers/01.png
       6800 B  dev/demo-covers/02.png
       6800 B  dev/demo-covers/03.png
@@ -210,6 +210,8 @@ BiliFocus 2.0.0 —— 文件清单
       8285 B  dev/demo-covers/15.png
       7644 B  dev/demo-covers/16.png
       7644 B  dev/demo-covers/17.png
+      4816 B  docs/promo/介绍文案.md
+      6784 B  docs/promo/视频剧本.md
      18342 B  docs/screenshots/farewell.png
     172992 B  docs/screenshots/grouped.png
      15893 B  docs/screenshots/qr-login.png
@@ -217,4 +219,4 @@ BiliFocus 2.0.0 —— 文件清单
      48743 B  docs/screenshots/schedule.png
     217061 B  docs/screenshots/ui.png
 
-共 116 个文件。
+共 118 个文件。

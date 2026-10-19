@@ -19,8 +19,8 @@
 
     service = FavoritesService()
     service.login("你的 SESSDATA")
-    view = service.videos(750450031)          # 走缓存
-    view = service.videos(750450031, force=True)  # 强制刷新
+    view = service.videos(12345678)          # 走缓存
+    view = service.videos(12345678, force=True)  # 强制刷新
     for video in view.videos:
         print(video.title, video.url)
 """

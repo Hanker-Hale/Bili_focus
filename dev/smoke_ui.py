@@ -43,7 +43,7 @@ def pump(root, rounds=10, delay=0.005):
 service = FavoritesService(store=StateStore(home=sandbox))
 root = tk.Tk()
 # bootstrap=False:跳过启动流程,避免无头环境卡在模态登录框的 wait_window
-app = ui.FocusApp(root, fid_override=750450031, mid=479257031, bootstrap=False, service=service, fullscreen=False)
+app = ui.FocusApp(root, fid_override=12345678, mid=87654321, bootstrap=False, service=service, fullscreen=False)
 pump(root)
 
 
@@ -63,7 +63,7 @@ check("folder combobox exists", isinstance(app.folder_box, ui.ttk.Combobox))
 check("card grid exists", isinstance(app.grid_view, ui.CardGrid))
 check("search entry exists", isinstance(app.search_entry, tk.Entry))
 check("watched toggle present", isinstance(app.hide_var, tk.BooleanVar))
-check("fid override applied", service.default_fid == 750450031, str(service.default_fid))
+check("fid override applied", service.default_fid == 12345678, str(service.default_fid))
 check("status label has text", bool(app.status.cget("text")))
 check("initial placeholder shown", app.grid_view.count == 0)
 
@@ -619,7 +619,7 @@ app.busy = False
 app._auto_busy = False
 app._auto_sync_tick()
 pump(root, rounds=20)
-check("auto sync tick calls service", auto_calls == [(750450031, False)], str(auto_calls))
+check("auto sync tick calls service", auto_calls == [(12345678, False)], str(auto_calls))
 check("auto sync reschedules itself", app._auto_job is not None)
 
 auto_calls.clear()

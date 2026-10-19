@@ -1,6 +1,6 @@
 @echo off
 rem BiliFocus 命令行启动器
-rem 用法:bilifocus-cli.cmd list --fid 750450031
+rem 用法:bilifocus-cli.cmd list --fid <收藏夹id>
 setlocal
 cd /d "%~dp0"
 

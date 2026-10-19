@@ -400,14 +400,14 @@ class FocusApp:
         self,
         root: tk.Tk,
         fid_override: int | None = None,
-        mid: int = 479257031,
+        mid: int = 0,
         bootstrap: bool = True,
         service: FavoritesService | None = None,
         fullscreen: bool = True,
     ):
         self.root = root
         self.service = service or FavoritesService(store=StateStore())
-        self.mid = mid or 479257031
+        self.mid = int(mid or 0) or (self.service.default_mid or 0)
         if fid_override:
             self.service.set_default_fid(fid_override)
         # 自动增量的节奏由这一个设置决定;服务层的节流也用同一个值,
@@ -785,7 +785,7 @@ class FocusApp:
             self._set_status("扫码登录已取消。", WARN)
             self._show_placeholder("登录已取消。\n\n点右下角「换登录」→「手机扫码登录」重试。")
             return
-        self._remember_user(dialog.result.uname)
+        self._remember_user(dialog.result.uname, getattr(dialog.result, "mid", None))
         self._set_status(f"已登录:{dialog.result.uname or ''}")
         self._load_folders()
 
@@ -815,8 +815,8 @@ class FocusApp:
                     "或者手动粘贴 SESSDATA。"
                 )
                 return
-            self._remember_user(state.uname)
-            self._remember_user(state.uname)
+            self._remember_user(state.uname, state.mid)
+            self._remember_user(state.uname, state.mid)
             self._set_status(f"已登录:{state.uname or ''}")
             self._load_folders()
 
@@ -841,14 +841,18 @@ class FocusApp:
                     "登录态已失效。\n\n点右下角「换登录」→「手机扫码登录」重新扫码即可。"
                 )
                 return
-            self._remember_user(state.uname)
-            self._remember_user(state.uname)
+            self._remember_user(state.uname, state.mid)
+            self._remember_user(state.uname, state.mid)
             self._set_status(f"已登录:{state.uname or ''}")
             self._load_folders()
 
         self._run_async(work, done)
 
     def _load_folders(self) -> None:
+        if not self.mid:
+            self._set_status("不知道账号 mid:请用 --mid 指定,或点「换登录」重新登录。", WARN)
+            self._show_placeholder("不知道账号 mid。\n\n点右下角「换登录」重新登录即可自动记住。")
+            return
         self._splash_status("正在读取收藏夹…")
         self._set_busy(True)
         self._set_status("正在读取收藏夹列表…")
@@ -1495,8 +1499,14 @@ class FocusApp:
         self._prompt_login()
 
     # -- 收尾 -------------------------------------------------------------
-    def _remember_user(self, uname: str | None) -> None:
-        """记住用户名,退出小结要靠它打招呼(离线也能显示)。"""
+    def _remember_user(self, uname: str | None, mid: int | None = None) -> None:
+        """记住用户名与 mid:退出小结要靠名字打招呼,mid 用来读取收藏夹。"""
+        if mid:
+            self.mid = int(mid)
+            try:
+                self.service.set_default_mid(mid)
+            except Exception:  # noqa: BLE001 - 记不住也不该影响登录
+                pass
         name = (uname or "").strip()
         if not name:
             return
@@ -1566,7 +1576,7 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(prog="bilifocus.ui_tk", description="BiliFocus 桌面界面")
     parser.add_argument("--fid", type=int, help="直接打开这个收藏夹")
-    parser.add_argument("--mid", type=int, default=479257031, help="收藏夹所属用户 mid")
+    parser.add_argument("--mid", type=int, default=0, help="收藏夹所属用户 mid(默认用本机登录时记住的)")
     args = parser.parse_args(argv)
 
     # 必须在建 Tk 之前声明 DPI 感知,否则 Windows 会把窗口位图放大,字会发虚

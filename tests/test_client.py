@@ -72,17 +72,17 @@ class SignedRequestTests(unittest.TestCase):
         client, transport = make_client(
             {NAV: json_response(nav_payload()), FAV: json_response(fav_payload([]))}
         )
-        client.fav_page(750450031)
+        client.fav_page(12345678)
         url = transport.calls_matching(FAV)[0]
         self.assertIn("w_rid=", url)
         self.assertIn("wts=", url)
-        self.assertIn("media_id=750450031", url)
+        self.assertIn("media_id=12345678", url)
 
     def test_parameters_are_sorted(self):
         client, transport = make_client(
             {NAV: json_response(nav_payload()), FAV: json_response(fav_payload([]))}
         )
-        client.fav_page(750450031)
+        client.fav_page(12345678)
         url = transport.calls_matching(FAV)[0]
         self.assertLess(url.index("pn="), url.index("ps="))
         self.assertLess(url.index("media_id="), url.index("order="))
@@ -110,7 +110,7 @@ class ErrorMappingTests(unittest.TestCase):
             {NAV: json_response(nav_payload()), FAV: json_response(api_error(-403, "访问权限不足"))}
         )
         with self.assertRaises(PermissionDeniedError) as ctx:
-            client.fav_page(750450031)
+            client.fav_page(12345678)
         self.assertEqual(ctx.exception.code, -403)
 
     def test_risk_control(self):
@@ -234,7 +234,7 @@ class FoldersTests(unittest.TestCase):
                 ],
             }
         )
-        folders = client.folders(479257031)
+        folders = client.folders(87654321)
         self.assertEqual([folder.fid for folder in folders], [1, 2, 3])
         self.assertEqual(len(transport.calls_matching(FOLDERS)), 2)
 
@@ -242,7 +242,7 @@ class FoldersTests(unittest.TestCase):
         client, _ = make_client(
             {NAV: json_response(nav_payload()), FOLDERS: json_response(folders_payload([]))}
         )
-        self.assertEqual(client.folders(479257031), ())
+        self.assertEqual(client.folders(87654321), ())
 
 
 class AllFavoritesTests(unittest.TestCase):

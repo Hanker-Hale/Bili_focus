@@ -198,7 +198,11 @@ def cmd_logout(service: FavoritesService, args) -> int:
 
 
 def cmd_folders(service: FavoritesService, args) -> int:
-    folders = service.folders(args.mid)
+    mid = args.mid or service.default_mid
+    if not mid:
+        print("不知道该读哪个账号的收藏夹:请加 --mid <你的mid>,或先 login 一次。")
+        return 2
+    folders = service.folders(mid)
     if args.json:
         print(json.dumps([folder.to_dict() for folder in folders], ensure_ascii=False, indent=2))
         return 0
@@ -466,7 +470,7 @@ def build_parser() -> argparse.ArgumentParser:
     logout.set_defaults(func=cmd_logout)
 
     folders = subparsers.add_parser("folders", help="列出账号下的收藏夹")
-    folders.add_argument("--mid", type=int, default=479257031, help="收藏夹所属用户 mid")
+    folders.add_argument("--mid", type=int, default=0, help="收藏夹所属用户 mid(默认用本机登录时记住的)")
     folders.add_argument("--json", action="store_true")
     folders.set_defaults(func=cmd_folders)
 

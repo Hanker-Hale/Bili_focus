@@ -91,7 +91,7 @@ class CommandTests(unittest.TestCase):
 
     def standard_routes(self):
         return {
-            NAV: json_response(nav_payload(is_login=True, uname="甲", mid=479257031)),
+            NAV: json_response(nav_payload(is_login=True, uname="甲", mid=87654321)),
             FAV: json_response(
                 fav_payload(
                     [
@@ -100,7 +100,7 @@ class CommandTests(unittest.TestCase):
                     ]
                 )
             ),
-            FOLDERS: json_response(folders_payload([folder_item(750450031, "默认收藏夹", 2)])),
+            FOLDERS: json_response(folders_payload([folder_item(12345678, "默认收藏夹", 2)])),
         }
 
     def test_status_json_offline(self):
@@ -113,31 +113,44 @@ class CommandTests(unittest.TestCase):
 
     def test_folders(self):
         harness = self.harness(self.standard_routes())
+        code, output = self.run_cmd(harness.service, ["folders", "--mid", "87654321"])
+        self.assertEqual(code, 0)
+        self.assertIn("默认收藏夹", output)
+        self.assertIn("12345678", output)
+
+    def test_folders_without_mid_explains(self):
+        harness = self.harness(self.standard_routes())
+        code, output = self.run_cmd(harness.service, ["folders"])
+        self.assertEqual(code, 2)
+        self.assertIn("--mid", output)
+
+    def test_folders_uses_remembered_mid(self):
+        harness = self.harness(self.standard_routes())
+        harness.service.set_default_mid(87654321)
         code, output = self.run_cmd(harness.service, ["folders"])
         self.assertEqual(code, 0)
         self.assertIn("默认收藏夹", output)
-        self.assertIn("750450031", output)
 
     def test_list_renders_rows(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         code, output = self.run_cmd(harness.service, ["list"])
         self.assertEqual(code, 0)
         self.assertIn("第一个视频", output)
         self.assertIn("1:05", output)
         self.assertIn("1:02:05", output)
-        self.assertIn("收藏夹 750450031", output)
+        self.assertIn("收藏夹 12345678", output)
 
     def test_list_search_filters(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         _code, output = self.run_cmd(harness.service, ["list", "--search", "第二"])
         self.assertIn("第二个视频", output)
         self.assertNotIn("第一个视频", output)
 
     def test_list_json(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         _code, output = self.run_cmd(harness.service, ["list", "--json"])
         payload = json.loads(output)
         self.assertEqual(payload["count"], 2)
@@ -160,7 +173,7 @@ class CommandTests(unittest.TestCase):
 
     def test_watched_lists_only_marked(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         harness.service.mark_watched("BV2")
         _code, output = self.run_cmd(harness.service, ["watched"])
         self.assertIn("第二个视频", output)
@@ -168,7 +181,7 @@ class CommandTests(unittest.TestCase):
 
     def test_random_prints_a_video(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         code, output = self.run_cmd(harness.service, ["random"])
         self.assertEqual(code, 0)
         self.assertTrue(
@@ -178,7 +191,7 @@ class CommandTests(unittest.TestCase):
 
     def test_export_csv_via_cli(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         target = self.home / "export" / "fav.csv"
         code, output = self.run_cmd(harness.service, ["export", "--out", str(target)])
         self.assertEqual(code, 0)
@@ -187,7 +200,7 @@ class CommandTests(unittest.TestCase):
 
     def test_export_json_via_cli(self):
         harness = self.harness(self.standard_routes())
-        harness.service.videos(750450031)
+        harness.service.videos(12345678)
         target = self.home / "export" / "fav.json"
         self.run_cmd(harness.service, ["export", "--out", str(target)])
         payload = json.loads(target.read_text(encoding="utf-8"))

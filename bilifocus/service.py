@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import time
 from pathlib import Path
 from typing import Callable, Iterable
@@ -103,6 +104,22 @@ class FavoritesService:
         except (TypeError, ValueError):
             return None
 
+    @property
+    def default_mid(self) -> int | None:
+        """收藏夹所属用户 mid:优先环境变量,其次本机记住的(登录时写入)。"""
+        candidates = (os.environ.get("BILI_FOCUS_MID"), self.store.get_pref("mid"))
+        for candidate in candidates:
+            try:
+                value = int(candidate) if candidate else 0
+            except (TypeError, ValueError):
+                value = 0
+            if value:
+                return value
+        return None
+
+    def set_default_mid(self, mid: int | None) -> None:
+        self.store.set_pref("mid", int(mid) if mid else None)
+
     def set_default_fid(self, fid: int | None) -> None:
         self.store.set_pref("fid", int(fid) if fid else None)
 
@@ -122,6 +139,8 @@ class FavoritesService:
             from .errors import AuthRequiredError
 
             raise AuthRequiredError("SESSDATA 无效或已过期,请重新从浏览器复制")
+        # 记住这个账号的 mid:下次启动不用再猜,也不用把 mid 写进源码
+        self.set_default_mid(state.mid)
         return state
 
     def logout(self) -> None:

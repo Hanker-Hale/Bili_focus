@@ -120,9 +120,9 @@ class CoverUrlTests(unittest.TestCase):
 
 class FolderTests(unittest.TestCase):
     def test_parses(self):
-        folder = Folder.from_api({"id": 750450031, "title": "默认收藏夹", "media_count": 23, "attr": 0})
+        folder = Folder.from_api({"id": 12345678, "title": "默认收藏夹", "media_count": 23, "attr": 0})
         assert folder is not None
-        self.assertEqual(folder.fid, 750450031)
+        self.assertEqual(folder.fid, 12345678)
         self.assertTrue(folder.is_public)
 
     def test_private_flag(self):

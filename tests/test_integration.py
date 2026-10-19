@@ -20,7 +20,7 @@ RUN_INTEGRATION = os.environ.get("BILI_FOCUS_INTEGRATION") == "1"
 # 一个公开的、长期存在的视频,用来验证 WBI 签名被接受。
 KNOWN_BVID = "BV1GJ411x7h7"
 # 一个需要登录才能读的收藏夹。
-PRIVATE_FID = 750450031
+PRIVATE_FID = int(os.environ.get("BILI_FOCUS_TEST_FID") or 0)  # 自己的私密收藏夹,自测时用
 
 
 @unittest.skipUnless(RUN_INTEGRATION, "设置 BILI_FOCUS_INTEGRATION=1 才跑真实网络测试")

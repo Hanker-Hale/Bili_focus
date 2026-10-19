@@ -76,24 +76,35 @@ python dev/build_exe.py
 
 ## 代码结构
 
-一个"只看收藏夹"的 B 站工具。**底层已完成并测试过,界面是一个可替换的薄壳,等你来调。**
+分层是单向的:界面层(`ui_*.py`)只调用服务层(`service.py`)的公开方法,底层不依赖界面。
 
 ```
 bilifocus/
-  wbi.py        签名算法(纯函数,官方向量验证)
-  http.py       传输层(限速 + 重试,可注入替身)
-  models.py     数据模型(脏数据兜底)
-  client.py     B 站 API 客户端(只读)
-  store.py      本机持久化(凭证 / 已看 / 缓存)
-  service.py    编排:缓存、已看去重、统计、导出
-  cli.py        命令行入口
-  ui_tk.py      ← 可替换的桌面壳
+  wbi.py            WBI 签名(纯函数,官方向量验证)
+  http.py           传输层(限速 + 重试,可注入替身)
+  models.py         数据模型(脏数据兜底)
+  client.py         B 站 API 客户端(只读)
+  covers.py         封面下载与缓存
+  store.py          本机持久化(state.json + 缓存)
+  service.py        服务门面:缓存、进度、统计、日程
+  topics.py         自动分类:关键词打分
+  schedule.py       日程规则(重复规则、按日完成)
+  qrlogin.py        手机扫码登录
+  browser_login.py  独立浏览器登录 + CDP 取 Cookie
+  player.py         播放器:CDP 采样观看进度
+  winproc.py        静默执行外部命令(不弹控制台窗口)
+  install.py        安装/卸载(注册表、快捷方式)
+  theme.py          配色、字体、DPI 适配
+  ui_splash.py      启动动画
+  ui_cards.py       卡片网格(单画布绘制 + 虚拟化)
+  ui_schedule.py    日程面板
+  ui_farewell.py    退出小结
+  ui_tk.py          桌面壳:工具栏、全屏、播放、日程入口
+  cli.py            命令行入口
+  vendor/           内置二维码编码器(Project Nayuki,MIT)
 ```
 
-依赖方向是单向的:上层可以 import 下层,下层不知道上层存在。`ui_tk` 只调用
-`FavoritesService` 的公开方法,所以你重写界面时不需要动任何底层代码。
-
----
+界面是可替换的一层:重写 `ui_*.py` 即可换皮,`service.py` 及以下都不用动。
 
 ## 快速开始
 
@@ -561,7 +572,7 @@ $env:BILI_FOCUS_INTEGRATION='1'
 python -m unittest discover -s tests -t .
 ```
 
-当前:**338 项离线测试 + 3 项真实网络集成测试全部通过(共 341)**。
+当前:**340 项离线测试 + 3 项真实网络集成测试全部通过(共 343)**。
 
 两个界面测试(会真的建一个 Tk 窗口,约 1 秒):
 
@@ -702,8 +713,8 @@ README 顶部(把 `<用户名>` 换成你的):
 **为什么编码不用 `urlencode`。** 它把空格编成 `+`,而 B 站要求 `%20`。含空格的
 参数会因此签名不匹配——这是文档专门警告过的坑。
 
-**为什么底层不 import 界面。** 你说了界面晚点自己调。所以界面能整个删掉,底层
-和测试照样跑。
+**为什么底层不 import 界面。** 界面是整层可替换的:删掉 `ui_*.py`,底层和测试
+照样跑。
 
 ---
 

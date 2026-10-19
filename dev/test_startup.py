@@ -41,14 +41,14 @@ with open(os.path.join(sandbox, "state.json"), "w", encoding="utf-8") as handle:
             "schema": 2,
             "cookies": {"SESSDATA": "deadbeef%2C0000000000%2Cinvalid%2A1"},
             "watched": {},
-            "ui": {"fid": 750450031},
+            "ui": {"fid": 12345678},
         },
         handle,
     )
 
 service = FavoritesService(store=StateStore(home=sandbox))
 root = tk.Tk()
-app = ui.FocusApp(root, fid_override=750450031, mid=479257031, bootstrap=True, service=service)
+app = ui.FocusApp(root, fid_override=12345678, mid=87654321, bootstrap=True, service=service)
 
 statuses = []
 deadline = time.time() + 25

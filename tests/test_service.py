@@ -139,11 +139,11 @@ class CacheTests(ServiceTestCase):
         harness = self.harness(
             {NAV: json_response(nav_payload()), FAV: videos_payload(media_item(1, "BV1", "一"))}
         )
-        first = harness.service.videos(750450031)
+        first = harness.service.videos(12345678)
         self.assertFalse(first.from_cache)
         self.assertEqual(len(harness.transport.calls_matching(FAV)), 1)
 
-        second = harness.service.videos(750450031)
+        second = harness.service.videos(12345678)
         self.assertTrue(second.from_cache)
         self.assertEqual(len(harness.transport.calls_matching(FAV)), 1, "第二次不该联网")
         self.assertEqual(first.videos, second.videos)
@@ -413,11 +413,11 @@ class DefaultFidTests(ServiceTestCase):
         harness = self.harness(
             {NAV: json_response(nav_payload()), FAV: videos_payload(media_item(1, "BV1", "一"))}
         )
-        harness.service.videos(750450031)
-        self.assertEqual(harness.service.default_fid, 750450031)
+        harness.service.videos(12345678)
+        self.assertEqual(harness.service.default_fid, 12345678)
         # 换一个实例也要记得
         fresh = FavoritesService(store=harness.service.store)
-        self.assertEqual(fresh.default_fid, 750450031)
+        self.assertEqual(fresh.default_fid, 12345678)
 
     def test_set_default_fid_with_none(self):
         harness = self.harness({NAV: json_response(nav_payload()), FAV: videos_payload()})
