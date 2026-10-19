@@ -718,6 +718,40 @@ check(
     f"待做 {len(pending)}" in dialog.summary.cget("text"),
     dialog.summary.cget("text"),
 )
+# 日程面板的设计元素:封面容器 + 长标题截断
+row_widgets = dialog.list_inner.winfo_children()
+has_cover = any(
+    isinstance(child, tk.Canvas) or (isinstance(child, tk.Label) and getattr(child, "image", None))
+    for row in row_widgets
+    for child in row.winfo_children()
+)
+check("schedule row renders a cover area", has_cover)
+long_item = service.add_schedule(
+    "23:30", "这是一个非常非常长的视频标题,用来测试日程面板的截断效果会不会把按钮挤出去"
+)
+dialog._refresh()
+pump(root, rounds=20)
+
+
+def collect_label_texts(widget):
+    texts = []
+    for child in widget.winfo_children():
+        if isinstance(child, tk.Label):
+            try:
+                texts.append(str(child.cget("text")))
+            except tk.TclError:
+                pass
+        texts.extend(collect_label_texts(child))
+    return texts
+
+
+trimmed = collect_label_texts(dialog.list_inner)
+check(
+    "schedule trims long titles",
+    any(text.endswith("…") and len(text) <= 30 for text in trimmed),
+    str([text for text in trimmed if text.endswith("…")][:3]),
+)
+
 check(
     "schedule dialog shows week record",
     "本周" in dialog.week_label.cget("text"),

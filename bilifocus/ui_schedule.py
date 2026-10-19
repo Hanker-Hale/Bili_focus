@@ -191,6 +191,8 @@ class ScheduleDialog(tk.Toplevel):
         self._queue: "queue.Queue[tuple[str, bytes | None]]" = queue.Queue()
         self._fetching = False
         self._drain_job = None
+        self._tooltip = None
+        self._tooltip_job = None
 
         self.title("日程")
         self.configure(bg=BG)
@@ -651,9 +653,10 @@ class ScheduleDialog(tk.Toplevel):
 
         title_row = tk.Frame(text_block, bg=CARD_BG)
         title_row.pack(fill="x", anchor="w")
+        title_text = _short(item.title, 28)
         title = tk.Label(
             title_row,
-            text=_short(item.title, 40),
+            text=title_text,
             bg=CARD_BG,
             fg=WATCHED_FG if done else FG,
             font=font(10, "bold" if not done else "normal"),
@@ -661,6 +664,8 @@ class ScheduleDialog(tk.Toplevel):
             cursor="hand2" if video is not None and self._on_play else "arrow",
         )
         title.pack(side="left")
+        if len(item.title) > 28:
+            self._bind_tooltip(title, item.title)
         if video is not None and self._on_play:
             title.bind("<Button-1>", lambda _event, item=item: self._play(item))
         title.bind("<Double-Button-1>", lambda _event, item=item: self._start_edit(item))
@@ -710,6 +715,62 @@ class ScheduleDialog(tk.Toplevel):
         )
         delete.pack(side="left")
         delete.bind("<Button-1>", lambda _event, item_id=item.id: self._remove(item_id))
+
+    # -- 悬停提示 ---------------------------------------------------------
+    def _bind_tooltip(self, widget, text: str) -> None:
+        def schedule(_event):
+            self._cancel_tooltip()
+            self._tooltip_job = self.after(450, lambda: self._show_tooltip(widget, text))
+
+        def hide(_event):
+            self._cancel_tooltip()
+            self._hide_tooltip()
+
+        widget.bind("<Enter>", schedule, add="+")
+        widget.bind("<Leave>", hide, add="+")
+
+    def _show_tooltip(self, widget, text: str) -> None:
+        self._tooltip_job = None
+        if not widget.winfo_exists():
+            return
+        self._hide_tooltip()
+        tip = tk.Toplevel(self)
+        tip.overrideredirect(True)
+        tip.configure(bg=BORDER)
+        label = tk.Label(
+            tip,
+            text=text,
+            bg=CARD_BG,
+            fg=FG,
+            font=font(9),
+            justify="left",
+            wraplength=px(420),
+            padx=px(8),
+            pady=px(5),
+        )
+        label.pack(padx=1, pady=1)
+        x = widget.winfo_pointerx() + px(10)
+        y = widget.winfo_pointery() + px(14)
+        tip.geometry(f"+{x}+{y}")
+        self._tooltip = tip
+
+    def _hide_tooltip(self) -> None:
+        tip = getattr(self, "_tooltip", None)
+        self._tooltip = None
+        if tip is not None:
+            try:
+                tip.destroy()
+            except tk.TclError:
+                pass
+
+    def _cancel_tooltip(self) -> None:
+        job = getattr(self, "_tooltip_job", None)
+        self._tooltip_job = None
+        if job is not None:
+            try:
+                self.after_cancel(job)
+            except tk.TclError:
+                pass
 
     def _chip(self, parent, text: str, color: str, *, solid: bool = False) -> tk.Label:
         return tk.Label(
@@ -803,6 +864,8 @@ class ScheduleDialog(tk.Toplevel):
             self._on_play(item)
 
     def close(self) -> None:
+        self._cancel_tooltip()
+        self._hide_tooltip()
         if self._drain_job is not None:
             try:
                 self.after_cancel(self._drain_job)

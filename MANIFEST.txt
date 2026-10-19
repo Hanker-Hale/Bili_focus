@@ -74,7 +74,7 @@ BiliFocus 2.0.0 —— 文件清单
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
       6703 B  bilifocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
-     32374 B  bilifocus/ui_schedule.py
+     34375 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
       9203 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
@@ -158,7 +158,7 @@ BiliFocus 2.0.0 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     33351 B  dev/smoke_ui.py
+     34487 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2605 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
@@ -219,7 +219,7 @@ BiliFocus 2.0.0 —— 文件清单
 — 其他 ----------------------------------------
        947 B  build-installer/BiliFocus-Setup-2.0.0.spec
      28398 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
-  25017805 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
+  25022709 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
       5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
       3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
    1949186 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
@@ -234,11 +234,11 @@ BiliFocus 2.0.0 —— 文件清单
     298182 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
       4816 B  docs/promo/介绍文案.md
       6784 B  docs/promo/视频剧本.md
-     18315 B  docs/screenshots/farewell.png
+     18293 B  docs/screenshots/farewell.png
     172704 B  docs/screenshots/grouped.png
-     15890 B  docs/screenshots/qr-login.png
+     15865 B  docs/screenshots/qr-login.png
     218275 B  docs/screenshots/reminder.png
-     89003 B  docs/screenshots/schedule.png
+     88980 B  docs/screenshots/schedule.png
     222920 B  docs/screenshots/ui.png
 
 共 135 个文件。
