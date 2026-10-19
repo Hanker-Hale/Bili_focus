@@ -56,7 +56,7 @@
 |---|---|
 | 改版本号 | 改 `pyproject.toml` 的 `version` 和 `bilifocus/__init__.py` 的 `__version__`(两处保持一致) |
 | 发新版 | `git tag v2.0.1` → `git push origin v2.0.1`,CI 自动打 `BiliFocus.exe` + `BiliFocus-Setup-2.0.1.exe` 并挂到 Release |
-| 老用户更新 | 下载新安装包**覆盖安装**即可:程序文件替换,`%APPDATA%\bili-focus` 的数据完全保留 |
+| 老用户更新 | 下载新安装包**覆盖安装**即可:若旧版本正在运行,安装器会自动关掉它;程序文件替换,`%APPDATA%\bili-focus` 的数据完全保留 |
 | 为什么不做静默自动更新 | 覆盖安装已经是"下载→双击→安装";后台静默替换程序会引入安全和排查成本,不值得 |
 
 安装后在 Windows「设置 → 应用」里能看到版本号;想回旧版本,下载那版安装包覆盖安装即可。
@@ -691,8 +691,8 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 发布新版本只要:
 
 ```powershell
-git tag v2.0.0
-git push origin v2.0.0
+git tag v2.1.0
+git push origin v2.1.0
 ```
 
 跑完就能在 Releases 页面下载 `BiliFocus.exe`。仓库地址确定后,可以把这个徽章加在

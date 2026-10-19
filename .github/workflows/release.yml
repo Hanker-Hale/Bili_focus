@@ -1,7 +1,7 @@
 name: release
 
 # 推一个 v* 标签就自动打包 exe,并挂到 GitHub Release 上。
-# 用法:git tag v2.0.0 && git push origin v2.0.0
+# 用法:git tag v2.1.0 && git push origin v2.1.0
 
 on:
   push:

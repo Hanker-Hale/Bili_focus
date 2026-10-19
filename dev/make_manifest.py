@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -104,7 +105,19 @@ DESCRIPTIONS: dict[str, str] = {
     "docs/screenshots/qr-login.png": "扫码登录截图",
 }
 
-HEADER = """BiliFocus 2.0.0 —— 文件清单
+def _read_version() -> str:
+    """从 pyproject.toml 读版本号,避免清单里写死。"""
+    try:
+        text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        match = re.search(r'version = "([^"]+)"', text)
+        return match.group(1) if match else "0.0.0"
+    except OSError:
+        return "0.0.0"
+
+
+version = _read_version()
+
+HEADER = f"""BiliFocus {version} —— 文件清单
 ==============================================
 
 用法:
@@ -133,6 +146,7 @@ SECTIONS: tuple[tuple[str, str], ...] = (
 EXCLUDE_DIRS = {
     "__pycache__", ".git", "build", "dist", ".venv", "venv",
     "_archive", "_screenshots",  # 本机归档,不列入清单
+    "build-installer",  # 安装包中间产物
 }
 
 

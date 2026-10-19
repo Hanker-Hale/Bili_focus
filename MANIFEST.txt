@@ -1,4 +1,4 @@
-BiliFocus 2.0.0 —— 文件清单
+BiliFocus 2.1.0 —— 文件清单
 ==============================================
 
 用法:
@@ -18,7 +18,7 @@ BiliFocus 2.0.0 —— 文件清单
             MIT 许可证(含内置二维码库的署名)
      11357 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     32605 B  README.md
+     32658 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -28,7 +28,7 @@ BiliFocus 2.0.0 —— 文件清单
             图形界面启动器(GBK 编码,双击用)
        415 B  publish.cmd
       5633 B  publish.ps1
-       465 B  pyproject.toml
+       486 B  pyproject.toml
             打包元数据(零第三方依赖,入口 bilifocus)
         95 B  启动 BiliFocus.cmd
             中文名启动器包装
@@ -50,7 +50,7 @@ BiliFocus 2.0.0 —— 文件清单
             错误分层:把 B 站返回码翻译成可判断异常
       4648 B  bilifocus/http.py
             传输层:限速、重试、可注入替身
-      7943 B  bilifocus/install.py
+     10408 B  bilifocus/install.py
             安装/卸载逻辑:注册表、快捷方式、覆盖安装
       7989 B  bilifocus/models.py
             数据模型:Video(含封面地址)/ Folder / Page / LoginState
@@ -76,7 +76,7 @@ BiliFocus 2.0.0 —— 文件清单
             退出小结卡(观看时长 + 已看完比例)
      34375 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-      9203 B  bilifocus/ui_splash.py
+      9212 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
      64642 B  bilifocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
@@ -148,7 +148,7 @@ BiliFocus 2.0.0 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
-     10318 B  dev/make_manifest.py
+     10748 B  dev/make_manifest.py
             生成本文件
      12283 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
@@ -217,21 +217,6 @@ BiliFocus 2.0.0 —— 文件清单
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-       947 B  build-installer/BiliFocus-Setup-2.0.0.spec
-     28398 B  build-installer/BiliFocus-Setup-2.0.0/Analysis-00.toc
-  25022709 B  build-installer/BiliFocus-Setup-2.0.0/BiliFocus-Setup-2.0.0.pkg
-      5371 B  build-installer/BiliFocus-Setup-2.0.0/EXE-00.toc
-      3741 B  build-installer/BiliFocus-Setup-2.0.0/PKG-00.toc
-   1949186 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.pyz
-     12234 B  build-installer/BiliFocus-Setup-2.0.0/PYZ-00.toc
-   1394319 B  build-installer/BiliFocus-Setup-2.0.0/base_library.zip
-      5054 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod01_archive.pyc
-     32335 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod02_importers.pyc
-      6635 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod03_ctypes.pyc
-      1705 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/pyimod04_pywin32.pyc
-       307 B  build-installer/BiliFocus-Setup-2.0.0/localpycs/struct.pyc
-      2059 B  build-installer/BiliFocus-Setup-2.0.0/warn-BiliFocus-Setup-2.0.0.txt
-    298182 B  build-installer/BiliFocus-Setup-2.0.0/xref-BiliFocus-Setup-2.0.0.html
       4816 B  docs/promo/介绍文案.md
       6784 B  docs/promo/视频剧本.md
      18293 B  docs/screenshots/farewell.png
@@ -241,4 +226,4 @@ BiliFocus 2.0.0 —— 文件清单
      88980 B  docs/screenshots/schedule.png
     222920 B  docs/screenshots/ui.png
 
-共 135 个文件。
+共 120 个文件。

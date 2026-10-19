@@ -19,6 +19,8 @@ import time
 import winreg
 from pathlib import Path
 
+from . import winproc
+
 APP_NAME = "BiliFocus"
 EXE_NAME = "BiliFocus.exe"
 PUBLISHER = "BiliFocus"
@@ -134,6 +136,71 @@ def _remove_registry() -> None:
         pass
 
 
+# -- 正在运行的旧版本 ------------------------------------------------------
+def _decode_console(data: bytes | str | None) -> str:
+    """控制台输出可能是 GBK(中文 Windows),统一转成字符串。"""
+    if data is None:
+        return ""
+    if isinstance(data, str):
+        return data
+    for encoding in ("mbcs", "utf-8", "gbk"):
+        try:
+            return data.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return data.decode("utf-8", "ignore")
+
+
+def running_app_pids() -> list[int]:
+    """列出正在运行的 BiliFocus.exe(不含安装器自己)。"""
+    try:
+        completed = winproc.run_hidden(
+            ["tasklist", "/FI", f"IMAGENAME eq {EXE_NAME}", "/FO", "CSV", "/NH"],
+            capture_output=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    output = _decode_console(completed.stdout)
+    pids: list[int] = []
+    current = os.getpid()
+    for line in (output or "").splitlines():
+        line = line.strip()
+        if not line or not line.startswith('"'):
+            continue
+        parts = [part.strip('"') for part in line.split('","')]
+        if len(parts) < 2:
+            continue
+        try:
+            pid = int(parts[1])
+        except ValueError:
+            continue
+        if pid != current:
+            pids.append(pid)
+    return pids
+
+
+def close_running_app(*, force: bool = False, wait: float = 3.0) -> bool:
+    """关掉正在运行的本体;force=False 时只发关闭请求。"""
+    pids = running_app_pids()
+    if not pids:
+        return True
+    for pid in pids:
+        if force:
+            winproc.taskkill(pid)
+        else:
+            try:
+                winproc.run_hidden(
+                    ["taskkill", "/PID", str(pid), "/T"], capture_output=True, timeout=10
+                )
+            except (OSError, subprocess.SubprocessError):
+                pass
+    for pid in pids:
+        if not winproc.wait_pid_gone(pid, timeout=wait):
+            return False
+    return True
+
+
 # -- 对外:安装 / 卸载 ------------------------------------------------------
 def install(
     payload: Path,
@@ -146,6 +213,13 @@ def install(
     target_dir = install_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / EXE_NAME
+
+    running = running_app_pids()
+    if running:
+        if progress:
+            progress(f"检测到 {APP_NAME} 正在运行,先关闭它…")
+        if not close_running_app(force=True):
+            raise OSError(f"无法关闭正在运行的 {APP_NAME},请手动退出后重试")
 
     if progress:
         progress("正在复制程序…")

@@ -150,7 +150,7 @@ class SplashOverlay(tk.Frame):
 
         self.canvas.coords(self._status_id, center_x, dot_y + theme.px(34))
         self.canvas.coords(self._footer_id, center_x, height - theme.px(28))
-        self.canvas.itemconfigure(self._footer_id, text="v2.0.0 · 只看不发,打开即走")
+        self.canvas.itemconfigure(self._footer_id, text=f"v{APP_VERSION} · 只看不发,打开即走")
 
         self._paint(0.0)
 
