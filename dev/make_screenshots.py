@@ -247,6 +247,45 @@ def visible_root() -> tk.Tk:
     return root
 
 
+def shot_update_banner() -> None:
+    """发现新版本横幅(版本号用示例值)。"""
+    from bilifocus import update as update_mod
+
+    service, videos, folder = demo_data.build_demo()
+    service.mark_watched(videos[0].key)
+    root = tk.Tk()
+    app = ui_tk.FocusApp(
+        root,
+        fid_override=demo_data.DEMO_FID,
+        mid=0,
+        bootstrap=False,
+        service=service,
+        fullscreen=True,
+    )
+    app.folders = [folder]
+    app.folder_box.configure(values=[f"{folder.title} ({folder.media_count})"])
+    app.folder_box.current(0)
+    pump(root, 1.4)
+    grid = app.grid_view
+    demo_data.seed_covers(service.store.home, videos, grid._cover_w, grid._cover_h)
+    app.videos = videos
+    app._render()
+    app._hide_splash()
+    pump(root, 1.4)
+    info = update_mod.ReleaseInfo(
+        version="2.3.0",
+        tag="v2.3.0",
+        installer_url="https://example.invalid/setup.exe",
+        portable_url="https://example.invalid/app.exe",
+        page_url="https://example.invalid/releases",
+    )
+    app._update_checked = True
+    app._show_update_banner(info)
+    pump(root, 0.8)
+    save(root, "update.png")
+    root.destroy()
+
+
 def shot_schedule() -> None:
     service, videos, _folder = demo_data.build_demo()
     service.mark_watched(videos[0].key)
@@ -357,6 +396,7 @@ def shot_qr() -> None:
 def main() -> int:
     theme.enable_dpi_awareness()
     print("生成脱敏截图 →", OUT_DIR)
+    shot_update_banner()
     shot_main(collapsed=set(), name="ui.png")
     shot_main(collapsed={"code", "ai"}, name="grouped.png")
     shot_schedule()

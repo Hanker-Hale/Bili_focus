@@ -1,4 +1,4 @@
-BiliFocus 2.1.0 —— 文件清单
+BiliFocus 2.2.0 —— 文件清单
 ==============================================
 
 用法:
@@ -16,9 +16,9 @@ BiliFocus 2.1.0 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     10245 B  MANIFEST.txt
+     10574 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     33167 B  README.md
+     34167 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -40,7 +40,7 @@ BiliFocus 2.1.0 —— 文件清单
             python -m bilifocus 入口
      16980 B  bilifocus/browser_login.py
             独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端)
-     20311 B  bilifocus/cli.py
+     21064 B  bilifocus/cli.py
             命令行入口
       9644 B  bilifocus/client.py
             B 站只读 API 客户端(签名失败自动刷新重试)
@@ -76,10 +76,12 @@ BiliFocus 2.1.0 —— 文件清单
             退出小结卡(观看时长 + 已看完比例)
      34375 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-      9212 B  bilifocus/ui_splash.py
+      9254 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     64642 B  bilifocus/ui_tk.py
+     71605 B  bilifocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
+      9772 B  bilifocus/update.py
+            检查更新、下载安装包、一键更新
       4239 B  bilifocus/wbi.py
             WBI 签名(纯函数,官方向量验证)
       2639 B  bilifocus/winproc.py
@@ -126,6 +128,8 @@ BiliFocus 2.1.0 —— 文件清单
             持久化:原子写、损坏恢复、迁移、TTL、并发、进度
       5600 B  tests/test_topics.py
             自动分类:关键词命中、分组顺序、边界
+      6965 B  tests/test_update.py
+            更新检查:版本比较、Release 解析、下载校验
       1699 B  tests/test_version.py
       5536 B  tests/test_wbi.py
             签名与编码测试(官方向量锚定)
@@ -133,7 +137,7 @@ BiliFocus 2.1.0 —— 文件清单
             外部命令静默执行(不弹控制台窗口)
 
 — 开发工具 dev/ -----------------------------------
-      3982 B  dev/README.md
+      4318 B  dev/README.md
             开发与测试说明
       2191 B  dev/build_exe.py
             打包单文件 exe(需要 PyInstaller)
@@ -151,7 +155,7 @@ BiliFocus 2.1.0 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
-     10822 B  dev/make_manifest.py
+     10989 B  dev/make_manifest.py
             生成本文件
      12283 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
@@ -161,7 +165,7 @@ BiliFocus 2.1.0 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     34487 B  dev/smoke_ui.py
+     36683 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2605 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
@@ -229,4 +233,4 @@ BiliFocus 2.1.0 —— 文件清单
      88980 B  docs/screenshots/schedule.png
     222920 B  docs/screenshots/ui.png
 
-共 122 个文件。
+共 124 个文件。

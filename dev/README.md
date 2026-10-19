@@ -75,6 +75,15 @@ python dev/build_exe.py
 - `--collect-submodules bilifocus`:播放器/扫码这些懒加载模块也收进来
 - 产物:`dist/BiliFocus.exe`(约 12 MB),`build/` 是中间文件,两者都已在 `.gitignore`
 
+## 检查更新(调试)
+
+```powershell
+python -m bilifocus update                     # 查本仓库最新 Release
+$env:BILI_FOCUS_REPO='git/git'; python -m bilifocus update   # 指向别的仓库验证网络链路
+```
+
+逻辑在 `bilifocus/update.py`:GitHub API → Atom 订阅兜底 → 按命名规则拼安装包地址。
+
 ## 升版本号
 
 ```powershell

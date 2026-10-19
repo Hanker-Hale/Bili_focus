@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import os
 import queue
 import threading
 import sys
@@ -19,6 +20,7 @@ import webbrowser
 from pathlib import Path
 from tkinter import messagebox, ttk
 
+from . import __version__ as APP_VERSION
 from . import theme
 from .covers import CoverFetcher
 from .errors import AuthRequiredError, BiliFocusError
@@ -26,6 +28,7 @@ from .models import Video, format_seconds
 from .player import BrowserPlayer
 from . import schedule as schedule_mod
 from . import topics
+from . import update as update_mod
 from .qrlogin import STATUS_SCANNED, STATUS_WAITING, QrLoginSession
 from .service import FavoritesService, search
 from .store import StateStore
@@ -35,6 +38,7 @@ from .theme import (
     BG,
     BG_ALT,
     BORDER,
+    CARD_BG,
     ERROR,
     FG,
     FG_DIM,
@@ -435,6 +439,10 @@ class FocusApp:
         self.playing_key: str | None = None
         self._reminder_item = None
         self._reminder_checked_at = 0.0
+        self._update_info = None
+        self._update_installer = None
+        self._update_state = "idle"
+        self._update_checked = False
         self.session_watch_seconds: float = 0.0
         self.session_plays: int = 0
 
@@ -450,6 +458,7 @@ class FocusApp:
         # 启动画面已经盖在内容区上了,不需要再往网格里写占位文字
         self._update_schedule_hint()
         self._poll_job = self.root.after(POLL_INTERVAL_MS, self._poll_results)
+        self.root.after(2500, self._maybe_check_updates)
         if bootstrap:
             self.root.after(120, self._bootstrap)
         self._schedule_auto_sync()
@@ -561,6 +570,30 @@ class FocusApp:
             font=font(10),
         )
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(px(6), px(10)), ipady=px(4))
+
+        # 新版本横幅:发现新版本时出现在顶部,可关闭
+        self.update_bar = tk.Frame(
+            self.root, bg=CARD_BG, highlightthickness=1, highlightbackground=ACCENT
+        )
+        tk.Frame(self.update_bar, bg=ACCENT, width=px(3)).pack(side="left", fill="y")
+        self.update_text = tk.Label(
+            self.update_bar, text="", bg=CARD_BG, fg=FG, font=font(10), anchor="w"
+        )
+        self.update_text.pack(side="left", padx=(px(10), px(8)), pady=px(7))
+        self.update_primary = self._button(
+            self.update_bar, "立即更新", self._on_update_primary, primary=True
+        )
+        self.update_primary.pack(side="left", padx=(0, px(6)), pady=px(5))
+        self.update_later = self._button(
+            self.update_bar, "稍后", lambda: self._dismiss_update(remember=False)
+        )
+        self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+        self.update_close = tk.Label(
+            self.update_bar, text="×", bg=CARD_BG, fg=FG_DIM, font=font(12),
+            padx=px(8), cursor="hand2",
+        )
+        self.update_close.pack(side="right", padx=(0, px(4)))
+        self.update_close.bind("<Button-1>", lambda _event: self._dismiss_update(remember=True))
 
         # 到点提醒条:只在"该看视频了"的时候出现,平时不占地方
         self.reminder = tk.Frame(self.root, bg=BG_ALT, highlightthickness=1,
@@ -1389,6 +1422,140 @@ class FocusApp:
             return
         title = nxt.title if len(nxt.title) <= 12 else nxt.title[:11] + "…"
         label.configure(text=f"下一项 {nxt.time} · {title}", fg=FG_DIM)
+
+    # -- 检查更新 ---------------------------------------------------------
+    UPDATE_CHECK_INTERVAL = 12 * 3600  # 12 小时内最多自动查一次
+
+    def _maybe_check_updates(self, force: bool = False) -> None:
+        """启动后查一次有没有新版本;失败就算了,不打扰用户。"""
+        if self._closing or self._update_checked:
+            return
+        if os.environ.get("BILI_FOCUS_NO_UPDATE_CHECK"):
+            return
+        if not force:
+            try:
+                last = float(self.service.store.get_pref("update_checked_at", 0) or 0)
+            except (TypeError, ValueError):
+                last = 0.0
+            if time.time() - last < self.UPDATE_CHECK_INTERVAL:
+                return
+        self._update_checked = True
+
+        def work():
+            return update_mod.check_for_update(APP_VERSION)
+
+        def done(result, error):
+            if error is not None or not result:
+                return
+            info, newer = result
+            try:
+                self.service.store.set_pref("update_checked_at", time.time())
+            except Exception:  # noqa: BLE001 - 记不住时间不影响使用
+                pass
+            if not newer:
+                return
+            try:
+                skipped = str(self.service.store.get_pref("update_skipped_version", "") or "")
+            except Exception:  # noqa: BLE001
+                skipped = ""
+            if skipped == info.version:
+                return
+            self._show_update_banner(info)
+
+        self._run_async(work, done)
+
+    def _show_update_banner(self, info) -> None:
+        self._update_info = info
+        self._update_state = "available"
+        self.update_text.configure(
+            text=f"发现新版本 {info.version}(当前 {APP_VERSION})"
+        )
+        self.update_primary.configure(text="立即更新", state="normal")
+        self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+        self.update_bar.pack(fill="x", padx=px(14), pady=(0, px(6)), before=self.content)
+
+    def _dismiss_update(self, *, remember: bool) -> None:
+        if remember and self._update_info is not None:
+            try:
+                self.service.store.set_pref("update_skipped_version", self._update_info.version)
+            except Exception:  # noqa: BLE001 - 记不住也不影响
+                pass
+        self._hide_update_banner()
+
+    def _hide_update_banner(self) -> None:
+        try:
+            self.update_bar.pack_forget()
+        except tk.TclError:
+            pass
+        self._update_state = "idle"
+
+    def _on_update_primary(self) -> None:
+        info = self._update_info
+        if info is None:
+            return
+        if self._update_state == "downloaded":
+            self._install_update()
+            return
+        if not update_mod.can_one_click():
+            # 绿色版用户:直接把发布页打开,让他自己下
+            webbrowser.open(info.page_url)
+            self._dismiss_update(remember=False)
+            return
+        self._start_update_download()
+
+    def _start_update_download(self) -> None:
+        info = self._update_info
+        if info is None or self._update_state == "downloading":
+            return
+        self._update_state = "downloading"
+        self.update_primary.configure(state="disabled", text="下载中…")
+        self.update_later.pack_forget()
+        self.update_text.configure(
+            text=f"正在下载 {info.version} · 0%(共约 24 MB)"
+        )
+
+        def work():
+            def progress(percent: int) -> None:
+                self._progress_text = f"正在下载新版本 {info.version}… {percent}%"
+
+            return update_mod.download_installer(info, progress=progress)
+
+        def done(path, error):
+            if error is not None or path is None:
+                self._set_status(f"下载更新失败:{error}", ERROR)
+                self._update_state = "available"
+                self.update_primary.configure(state="normal", text="重试")
+                self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+                return
+            self._update_installer = path
+            self._update_state = "downloaded"
+            self.update_text.configure(
+                text=f"{info.version} 已下载完成 · 安装会关闭并重新打开应用"
+            )
+            self.update_primary.configure(state="normal", text="安装并重启")
+            self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+
+        self._run_async(work, done)
+
+    def _install_update(self) -> None:
+        path = self._update_installer
+        if path is None:
+            return
+        if not update_mod.launch_installer(path):
+            self._set_status("启动安装程序失败,请到 Releases 手动下载。", ERROR)
+            return
+        self._quit_for_update()
+
+    def _quit_for_update(self) -> None:
+        """更新时直接退出:安装器会在退出后覆盖安装并重新打开。"""
+        self._closing = True
+        try:
+            if self._poll_job is not None:
+                self.root.after_cancel(self._poll_job)
+                self._poll_job = None
+        except tk.TclError:
+            pass
+        self.root.destroy()
 
     # -- 到点提醒(只在应用内,不弹系统窗口) ------------------------------
     def _check_schedule_reminder(self, force: bool = False) -> None:

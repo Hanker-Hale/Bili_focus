@@ -197,6 +197,23 @@ def cmd_logout(service: FavoritesService, args) -> int:
     return 0
 
 
+def cmd_update(service: FavoritesService, args) -> int:
+    """检查 GitHub 上有没有新版本(不自动安装)。"""
+    from . import update
+
+    info = update.latest_release()
+    if info is None:
+        print("查不到最新版本(网络不通,或仓库还没有发布 Release)。")
+        return 1
+    if update.is_newer(info.version, __version__):
+        print(f"有新版本:{__version__} → {info.version}")
+        print(f"  安装包:{info.installer_url}")
+        print(f"  发布页:{info.page_url}")
+        return 0
+    print(f"已是最新版本({__version__})。")
+    return 0
+
+
 def cmd_folders(service: FavoritesService, args) -> int:
     mid = args.mid or service.default_mid
     if not mid:
@@ -471,6 +488,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     folders = subparsers.add_parser("folders", help="列出账号下的收藏夹")
     folders.add_argument("--mid", type=int, default=0, help="收藏夹所属用户 mid(默认用本机登录时记住的)")
+
+    update_cmd = subparsers.add_parser("update", help="检查有没有新版本")
+    update_cmd.set_defaults(func=cmd_update)
     folders.add_argument("--json", action="store_true")
     folders.set_defaults(func=cmd_folders)
 

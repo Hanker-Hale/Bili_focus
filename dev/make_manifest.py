@@ -50,6 +50,7 @@ DESCRIPTIONS: dict[str, str] = {
     "bilifocus/ui_schedule.py": "日程面板:自己设定时间 + 内容",
     "bilifocus/ui_farewell.py": "退出小结卡(观看时长 + 已看完比例)",
     "bilifocus/install.py": "安装/卸载逻辑:注册表、快捷方式、覆盖安装",
+    "bilifocus/update.py": "检查更新、下载安装包、一键更新",
     "bilifocus/winproc.py": "静默执行外部命令(不弹控制台窗口)",
     "bilifocus/vendor/__init__.py": "内置第三方代码说明",
     "bilifocus/vendor/qrcodegen.py": "二维码编码器(Project Nayuki,MIT,逐字保留)",
@@ -72,6 +73,7 @@ DESCRIPTIONS: dict[str, str] = {
     "tests/test_install.py": "安装/卸载辅助逻辑:路径、版本、快捷方式",
     "tests/test_winproc.py": "外部命令静默执行(不弹控制台窗口)",
     "tests/test_player_retry.py": "播放器启动失败重试、清理等待、日志",
+    "tests/test_update.py": "更新检查:版本比较、Release 解析、下载校验",
     "tests/test_cli.py": "命令行:排版、子命令、输出",
     "tests/test_integration.py": "真实网络集成测试(默认跳过,需 BILI_FOCUS_INTEGRATION=1)",
     # 开发工具

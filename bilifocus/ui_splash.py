@@ -19,6 +19,7 @@ import math
 import time
 import tkinter as tk
 
+from . import __version__ as APP_VERSION
 from . import theme
 from .theme import ACCENT, BG, BORDER, FG, FG_DIM, font
 

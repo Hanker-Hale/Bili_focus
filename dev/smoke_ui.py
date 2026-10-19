@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 import tkinter as tk
+from pathlib import Path
 
 sandbox = tempfile.mkdtemp(prefix="bili-focus-smoke-")
 os.environ["BILI_FOCUS_HOME"] = sandbox
@@ -839,6 +840,61 @@ check(
     captured.get("video") is not None and captured["video"].key == plan_video.key,
     str(captured),
 )
+
+# ── 检查更新:横幅出现 / 可关闭 / 一键更新流程 ─────────────────────
+import tempfile  # noqa: E402
+
+from bilifocus import update as update_mod  # noqa: E402
+
+fake_info = update_mod.ReleaseInfo(
+    version="9.9.9",
+    tag="v9.9.9",
+    installer_url="https://example.com/setup.exe",
+    portable_url="https://example.com/app.exe",
+    page_url="https://example.com/releases",
+)
+ui.update_mod.check_for_update = lambda current, timeout=8: (fake_info, True)
+app._update_checked = False
+app._maybe_check_updates(force=True)
+pump(root, rounds=60)
+check("update banner appears when newer version exists", bool(app.update_bar.winfo_ismapped()))
+check(
+    "update banner shows the new version",
+    "9.9.9" in app.update_text.cget("text"),
+    app.update_text.cget("text"),
+)
+
+fake_installer = Path(tempfile.mktemp(suffix=".exe"))
+fake_installer.write_bytes(b"MZ" + b"0" * 32)
+ui.update_mod.can_one_click = lambda: True
+ui.update_mod.download_installer = lambda info, progress=None, dest_dir=None: (
+    progress and progress(100),
+    fake_installer,
+)[1]
+app._on_update_primary()
+check("update download reaches downloaded state", wait_until(lambda: app._update_state == "downloaded"))
+check(
+    "banner offers install after download",
+    "安装" in app.update_primary.cget("text"),
+    app.update_primary.cget("text"),
+)
+
+launched = {}
+ui.update_mod.launch_installer = lambda path, relaunch=True: launched.setdefault("path", path) or True
+app._quit_for_update = lambda: launched.setdefault("quit", True)
+app._on_update_primary()
+check("one-click update launches the installer", launched.get("path") == fake_installer, str(launched))
+check("one-click update quits the app", launched.get("quit") is True)
+
+app._dismiss_update(remember=True)
+pump(root, rounds=10)
+check("update banner can be closed", not app.update_bar.winfo_ismapped())
+check(
+    "closed version is remembered",
+    app.service.store.get_pref("update_skipped_version") == "9.9.9",
+    str(app.service.store.get_pref("update_skipped_version")),
+)
+fake_installer.unlink(missing_ok=True)
 
 # ── 退出小结:亲爱的{用户名} + 观看时间 + 已看完比例 ──────────────────
 def collect_texts(widget):
