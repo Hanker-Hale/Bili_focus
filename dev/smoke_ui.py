@@ -853,6 +853,39 @@ fake_info = update_mod.ReleaseInfo(
     portable_url="https://example.com/app.exe",
     page_url="https://example.com/releases",
 )
+# 触发策略:自动检查有 10 分钟节流;手动检查(点版本号)忽略节流和"不再提示"
+check_calls = {"n": 0}
+
+
+def fake_check(current, timeout=8):
+    check_calls["n"] += 1
+    return fake_info, True
+
+
+ui.update_mod.check_for_update = fake_check
+app.service.store.set_pref("update_checked_at", time.time())
+app.service.store.set_pref("update_skipped_version", "9.9.9")
+app._update_checked = False
+app._maybe_check_updates()  # 自动:刚查过,应该跳过
+pump(root, rounds=10)
+check("auto update check respects the 10-minute throttle", check_calls["n"] == 0, str(check_calls))
+check("throttled auto check shows no banner", not app.update_bar.winfo_ismapped())
+
+check(
+    "version label shows current version",
+    f"v{ui.APP_VERSION}" in app.version_label.cget("text"),
+    app.version_label.cget("text"),
+)
+app._check_updates_now()  # 手动:强制查,且即使这个版本被"不再提示"过也要弹
+pump(root, rounds=80)
+check("manual update check bypasses the throttle", check_calls["n"] == 1, str(check_calls))
+check(
+    "manual update check shows banner even if the version was skipped",
+    bool(app.update_bar.winfo_ismapped()),
+)
+app._hide_update_banner()
+app.service.store.set_pref("update_skipped_version", "")  # 复原,别影响后面的检查
+
 ui.update_mod.check_for_update = lambda current, timeout=8: (fake_info, True)
 app._update_checked = False
 app._maybe_check_updates(force=True)

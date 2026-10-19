@@ -645,14 +645,26 @@ class FocusApp:
             self.root, text="启动中…", bg=BG, fg=FG_DIM, anchor="w", font=font(9)
         )
         self.status.pack(fill="x", padx=px(14), pady=(px(0), px(4)))
+        hint_row = tk.Frame(self.root, bg=BG)
+        hint_row.pack(fill="x", padx=px(14), pady=(px(0), px(10)))
         tk.Label(
-            self.root,
+            hint_row,
             text="双击或回车播放 · 空格标记已看 · 右键改分类 · Ctrl+F 筛选 · Ctrl+R 刷新 · Esc 清空筛选",
             bg=BG,
             fg="#5c5e64",
             anchor="w",
             font=font(8),
-        ).pack(fill="x", padx=px(14), pady=(px(0), px(10)))
+        ).pack(side="left")
+        self.version_label = tk.Label(
+            hint_row,
+            text=f"v{APP_VERSION} · 检查更新",
+            bg=BG,
+            fg=FG_DIM,
+            font=font(8),
+            cursor="hand2",
+        )
+        self.version_label.pack(side="right")
+        self.version_label.bind("<Button-1>", lambda _event: self._check_updates_now())
 
     def _apply_window_icon(self) -> None:
         """把窗口/任务栏图标换成 assets/bilifocus-icon.ico(失败就保持默认)。"""
@@ -1424,15 +1436,21 @@ class FocusApp:
         label.configure(text=f"下一项 {nxt.time} · {title}", fg=FG_DIM)
 
     # -- 检查更新 ---------------------------------------------------------
-    UPDATE_CHECK_INTERVAL = 12 * 3600  # 12 小时内最多自动查一次
+    UPDATE_CHECK_INTERVAL = 10 * 60  # 启动时检查;10 分钟内重复启动不重复查
 
-    def _maybe_check_updates(self, force: bool = False) -> None:
-        """启动后查一次有没有新版本;失败就算了,不打扰用户。"""
-        if self._closing or self._update_checked:
+    def _maybe_check_updates(self, force: bool = False, manual: bool = False) -> None:
+        """查有没有新版本。
+
+        - 启动时自动查:10 分钟内查过就跳过,不打扰用户;
+        - 手动查(点右下角版本号):总是真的去查,并反馈结果。
+        """
+        if self._closing:
             return
         if os.environ.get("BILI_FOCUS_NO_UPDATE_CHECK"):
             return
-        if not force:
+        if not manual and self._update_checked:
+            return
+        if not force and not manual:
             try:
                 last = float(self.service.store.get_pref("update_checked_at", 0) or 0)
             except (TypeError, ValueError):
@@ -1440,29 +1458,44 @@ class FocusApp:
             if time.time() - last < self.UPDATE_CHECK_INTERVAL:
                 return
         self._update_checked = True
+        if manual:
+            self._set_status("正在检查更新…")
 
         def work():
             return update_mod.check_for_update(APP_VERSION)
 
         def done(result, error):
-            if error is not None or not result:
-                return
-            info, newer = result
             try:
                 self.service.store.set_pref("update_checked_at", time.time())
             except Exception:  # noqa: BLE001 - 记不住时间不影响使用
                 pass
+            if error is not None or not result:
+                if manual:
+                    self._set_status("检查更新失败,请检查网络后重试", WARN)
+                return
+            info, newer = result
             if not newer:
+                if manual:
+                    self._set_status(f"已是最新版本(v{APP_VERSION})")
                 return
-            try:
-                skipped = str(self.service.store.get_pref("update_skipped_version", "") or "")
-            except Exception:  # noqa: BLE001
-                skipped = ""
-            if skipped == info.version:
-                return
+            if not manual:
+                try:
+                    skipped = str(self.service.store.get_pref("update_skipped_version", "") or "")
+                except Exception:  # noqa: BLE001
+                    skipped = ""
+                if skipped == info.version:
+                    return
             self._show_update_banner(info)
+            if manual:
+                self._set_status(f"发现新版本 v{info.version},点上方横幅更新")
 
         self._run_async(work, done)
+
+    def _check_updates_now(self) -> None:
+        """点右下角版本号手动检查(下载过程中不重复触发)。"""
+        if self._update_state == "downloading":
+            return
+        self._maybe_check_updates(force=True, manual=True)
 
     def _show_update_banner(self, info) -> None:
         self._update_info = info
