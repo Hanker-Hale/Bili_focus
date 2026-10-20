@@ -16,7 +16,7 @@ BiliFocus 2.3.2 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     11116 B  MANIFEST.txt
+     11194 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
      34696 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
@@ -148,7 +148,7 @@ BiliFocus 2.3.2 —— 文件清单
       2325 B  dev/check_imports.py
             无第三方 linter 时的未使用 import 检查
       2970 B  dev/demo_app.py
-      8145 B  dev/demo_data.py
+      7924 B  dev/demo_data.py
             示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)
        117 B  dev/edit-lab.cmd
             用记事本打开卡片实验室
@@ -156,6 +156,7 @@ BiliFocus 2.3.2 —— 文件清单
             安装器界面与安装/卸载流程
       9383 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
+      5142 B  dev/make_demo_covers.py
      11129 B  dev/make_manifest.py
             生成本文件
      14166 B  dev/make_screenshots.py
@@ -185,48 +186,48 @@ BiliFocus 2.3.2 —— 文件清单
             从手绘原画生成图标(灯泡小人)
 
 — 示例封面 dev/demo-covers/ -----------------------
-      6800 B  dev/demo-covers/01.png
+      8088 B  dev/demo-covers/01.png
             示例封面(合成图,供截图使用)
-      6800 B  dev/demo-covers/02.png
-      6800 B  dev/demo-covers/03.png
-      6800 B  dev/demo-covers/04.png
-      6800 B  dev/demo-covers/05.png
-      7603 B  dev/demo-covers/06.png
-      7603 B  dev/demo-covers/07.png
-      7603 B  dev/demo-covers/08.png
-      5160 B  dev/demo-covers/09.png
-      5160 B  dev/demo-covers/10.png
-      5160 B  dev/demo-covers/11.png
-      6244 B  dev/demo-covers/12.png
-      6244 B  dev/demo-covers/13.png
-      8285 B  dev/demo-covers/14.png
-      8285 B  dev/demo-covers/15.png
-      7644 B  dev/demo-covers/16.png
-      7644 B  dev/demo-covers/17.png
+      8088 B  dev/demo-covers/02.png
+      8088 B  dev/demo-covers/03.png
+      8088 B  dev/demo-covers/04.png
+      8088 B  dev/demo-covers/05.png
+      9191 B  dev/demo-covers/06.png
+      9191 B  dev/demo-covers/07.png
+      9191 B  dev/demo-covers/08.png
+      8066 B  dev/demo-covers/09.png
+      8066 B  dev/demo-covers/10.png
+      8066 B  dev/demo-covers/11.png
+     10231 B  dev/demo-covers/12.png
+     10231 B  dev/demo-covers/13.png
+     10169 B  dev/demo-covers/14.png
+     10169 B  dev/demo-covers/15.png
+     10578 B  dev/demo-covers/16.png
+     10578 B  dev/demo-covers/17.png
 
 — 示例封面(日程小尺寸) dev/demo-covers-small/ ----------
-      7119 B  dev/demo-covers-small/01.png
-      7119 B  dev/demo-covers-small/02.png
-      7119 B  dev/demo-covers-small/03.png
-      7119 B  dev/demo-covers-small/04.png
-      7119 B  dev/demo-covers-small/05.png
-      7063 B  dev/demo-covers-small/06.png
-      7063 B  dev/demo-covers-small/07.png
-      7063 B  dev/demo-covers-small/08.png
-      5528 B  dev/demo-covers-small/09.png
-      5528 B  dev/demo-covers-small/10.png
-      5528 B  dev/demo-covers-small/11.png
-      6789 B  dev/demo-covers-small/12.png
-      6789 B  dev/demo-covers-small/13.png
-      7801 B  dev/demo-covers-small/14.png
-      7801 B  dev/demo-covers-small/15.png
-      7620 B  dev/demo-covers-small/16.png
-      7620 B  dev/demo-covers-small/17.png
+      7553 B  dev/demo-covers-small/01.png
+      7553 B  dev/demo-covers-small/02.png
+      7553 B  dev/demo-covers-small/03.png
+      7553 B  dev/demo-covers-small/04.png
+      7553 B  dev/demo-covers-small/05.png
+      8235 B  dev/demo-covers-small/06.png
+      8235 B  dev/demo-covers-small/07.png
+      8235 B  dev/demo-covers-small/08.png
+      8234 B  dev/demo-covers-small/09.png
+      8234 B  dev/demo-covers-small/10.png
+      8234 B  dev/demo-covers-small/11.png
+      8780 B  dev/demo-covers-small/12.png
+      8780 B  dev/demo-covers-small/13.png
+      9000 B  dev/demo-covers-small/14.png
+      9000 B  dev/demo-covers-small/15.png
+      9041 B  dev/demo-covers-small/16.png
+      9041 B  dev/demo-covers-small/17.png
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     149309 B  docs/icon.png
-     41858 B  docs/index.html
+     41829 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -240,13 +241,13 @@ BiliFocus 2.3.2 —— 文件清单
       4201 B  docs/promo/录制与发布流程.md
       7147 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
-     33913 B  docs/screenshots/farewell.png
-    190308 B  docs/screenshots/grouped.png
-     14522 B  docs/screenshots/qr-login.png
-    240221 B  docs/screenshots/reminder.png
-     64825 B  docs/screenshots/schedule.png
-     80780 B  docs/screenshots/splash.png
-    238836 B  docs/screenshots/ui.png
-    234122 B  docs/screenshots/update.png
+     33931 B  docs/screenshots/farewell.png
+    232181 B  docs/screenshots/grouped.png
+     14523 B  docs/screenshots/qr-login.png
+    262902 B  docs/screenshots/reminder.png
+     67370 B  docs/screenshots/schedule.png
+     80543 B  docs/screenshots/splash.png
+    268237 B  docs/screenshots/ui.png
+    263366 B  docs/screenshots/update.png
 
-共 136 个文件。
+共 137 个文件。
