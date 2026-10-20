@@ -16,7 +16,7 @@ FavFocus 2.2.0 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     11188 B  MANIFEST.txt
+     11037 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
      35571 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
@@ -157,7 +157,7 @@ FavFocus 2.2.0 —— 文件清单
       9377 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
       5142 B  dev/make_demo_covers.py
-     11080 B  dev/make_manifest.py
+     11151 B  dev/make_manifest.py
             生成本文件
      14336 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
@@ -226,8 +226,9 @@ FavFocus 2.2.0 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
+     42784 B  docs/details.html
     111985 B  docs/icon.png
-     40960 B  docs/index.html
+     12910 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -237,17 +238,13 @@ FavFocus 2.2.0 —— 文件清单
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-      4936 B  docs/promo/介绍文案.md
-      4201 B  docs/promo/录制与发布流程.md
-      7146 B  docs/promo/视频剧本.md
-      1088 B  docs/promo/视频字幕-90秒.srt
      29739 B  docs/screenshots/farewell.png
     221563 B  docs/screenshots/grouped.png
      14523 B  docs/screenshots/qr-login.png
-    248343 B  docs/screenshots/reminder.png
+    252896 B  docs/screenshots/reminder.png
      68721 B  docs/screenshots/schedule.png
      75107 B  docs/screenshots/splash.png
     253155 B  docs/screenshots/ui.png
      59434 B  docs/screenshots/update.png
 
-共 137 个文件。
+共 134 个文件。

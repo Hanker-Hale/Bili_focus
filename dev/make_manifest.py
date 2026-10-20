@@ -152,6 +152,7 @@ EXCLUDE_DIRS = {
     "__pycache__", ".git", "build", "dist", ".venv", "venv",
     "_archive", "_screenshots",  # 本机归档,不列入清单
     "build-installer",  # 安装包中间产物
+    "promo",  # 本地宣传素材(视频/字幕/脚本),不进仓库
 }
 
 
