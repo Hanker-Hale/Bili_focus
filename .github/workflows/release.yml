@@ -57,12 +57,12 @@ jobs:
             echo "## ${GITHUB_REF_NAME}"
             echo
             if [ -n "$prev" ]; then
-              git log "$prev..$GITHUB_REF_NAME" --pretty=format:"- %s"
+              git log "$prev..$GITHUB_REF_NAME" --pretty=format:"- %s" | sed 's/^\xEF\xBB\xBF//'
             fi
             echo
             echo
-            echo "**安装包**:下载 `BiliFocus-Setup-*.exe` 双击安装(不需要装 Python)"
-            echo "**绿色版**:下载 `BiliFocus.exe` 双击即用"
+            echo "**安装包**:下载 \`BiliFocus-Setup-*.exe\` 双击安装(不需要装 Python)"
+            echo "**绿色版**:下载 \`BiliFocus.exe\` 双击即用"
             echo "覆盖安装会保留本机数据(登录态/进度/日程)"
           } > release-notes.md
 

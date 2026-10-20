@@ -231,7 +231,7 @@ BiliFocus 2.4.1 —— 文件清单
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
-      2451 B  .github/workflows/release.yml
+      2481 B  .github/workflows/release.yml
             CI:推 v* 标签自动打 exe 并发布 Release
       1138 B  .github/workflows/tests.yml
             CI:push/PR 跑四套 Python 版本的测试
