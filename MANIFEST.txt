@@ -1,4 +1,4 @@
-FavFocus 2.5.0 —— 文件清单
+FavFocus 2.5.1 —— 文件清单
 ==============================================
 
 用法:
@@ -18,7 +18,7 @@ FavFocus 2.5.0 —— 文件清单
             MIT 许可证(含内置二维码库的署名)
      11188 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     35405 B  README.md
+     35479 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
        397 B  favfocus-cli.cmd
             命令行启动器
@@ -80,7 +80,7 @@ FavFocus 2.5.0 —— 文件清单
             启动页:Canvas 矢量动画(无图片资源)
      78490 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
-      9822 B  favfocus/update.py
+      9820 B  favfocus/update.py
             检查更新、下载安装包、一键更新
       4239 B  favfocus/wbi.py
             WBI 签名(纯函数,官方向量验证)
@@ -227,7 +227,7 @@ FavFocus 2.5.0 —— 文件清单
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     171140 B  docs/icon.png
-     42961 B  docs/index.html
+     43258 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -237,9 +237,9 @@ FavFocus 2.5.0 —— 文件清单
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-      4940 B  docs/promo/介绍文案.md
+      4936 B  docs/promo/介绍文案.md
       4201 B  docs/promo/录制与发布流程.md
-      7148 B  docs/promo/视频剧本.md
+      7146 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
      36156 B  docs/screenshots/farewell.png
     221565 B  docs/screenshots/grouped.png

@@ -27,7 +27,7 @@ from . import install, winproc
 REPO = (
     os.environ.get("FAVFOCUS_REPO")
     or os.environ.get("BILI_FOCUS_REPO")
-    or "Hanker-Hale/Bili_focus"
+    or "Hanker-Hale/FavFocus"
 )
 API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 ATOM_FEED = f"https://github.com/{REPO}/releases.atom"

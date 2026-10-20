@@ -24,7 +24,7 @@
 
 > **改名说明**:项目原名 BiliFocus,2026-10 起改名为 **FavFocus**。
 > 旧版数据目录 `%APPDATA%\bili-focus` 会在首次运行时自动复制到 `%APPDATA%\favfocus`;
-> 新安装器会自动关掉并清理旧版 BiliFocus(旧数据保留)。
+> 新安装器会自动关掉并清理旧版 BiliFocus(旧数据保留)。GitHub 仓库也已改名为 `FavFocus`(旧地址会跳转到新仓库)。
 
 ## 功能一览
 
