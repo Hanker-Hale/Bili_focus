@@ -268,7 +268,7 @@ def visible_root() -> tk.Tk:
     return root
 
 
-def shot_update_banner() -> None:
+def shot_update_prompt() -> None:
     """发现新版本横幅(版本号用示例值)。"""
     from bilifocus import update as update_mod
 
@@ -294,14 +294,15 @@ def shot_update_banner() -> None:
     app._hide_splash()
     pump(root, 1.4)
     info = update_mod.ReleaseInfo(
-        version="2.3.0",
-        tag="v2.3.0",
+        version="2.5.0",
+        tag="v2.5.0",
         installer_url="https://example.invalid/setup.exe",
         portable_url="https://example.invalid/app.exe",
         page_url="https://example.invalid/releases",
+        notes="- 更新提示改成全屏,可以直接看到更新内容\n- 修复了新版本提醒不及时的问题\n- 启动动画换成灯泡与光线\n- 一些细节改进",
     )
     app._update_checked = True
-    app._show_update_banner(info)
+    app._show_update_prompt(info)
     pump(root, 0.8)
     save(root, "update.png")
     root.destroy()
@@ -418,7 +419,7 @@ def main() -> int:
     theme.enable_dpi_awareness()
     print("生成脱敏截图 →", OUT_DIR)
     shot_splash()
-    shot_update_banner()
+    shot_update_prompt()
     shot_main(collapsed=set(), name="ui.png")
     shot_main(collapsed={"code", "ai"}, name="grouped.png")
     shot_schedule()

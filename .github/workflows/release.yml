@@ -20,6 +20,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 需要历史 tag 来生成更新说明
 
       - uses: actions/setup-python@v5
         with:
@@ -47,20 +49,30 @@ jobs:
           if (-not $setup) { throw "没找到安装包" }
           "安装包: {0} ({1:N1} MB)" -f $setup.Name, ($setup.Length / 1MB)
 
+      - name: 生成更新说明
+        shell: bash
+        run: |
+          prev=$(git tag --sort=-creatordate | grep -v "^${GITHUB_REF_NAME}$" | head -n1 || true)
+          {
+            echo "## ${GITHUB_REF_NAME}"
+            echo
+            if [ -n "$prev" ]; then
+              git log "$prev..$GITHUB_REF_NAME" --pretty=format:"- %s"
+            fi
+            echo
+            echo
+            echo "**安装包**:下载 `BiliFocus-Setup-*.exe` 双击安装(不需要装 Python)"
+            echo "**绿色版**:下载 `BiliFocus.exe` 双击即用"
+            echo "覆盖安装会保留本机数据(登录态/进度/日程)"
+          } > release-notes.md
+
       - name: 上传到 Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/BiliFocus.exe
             dist/BiliFocus-Setup-*.exe
-          body: |
-            BiliFocus ${{ github.ref_name }}
-
-            - **安装包**:下载 `BiliFocus-Setup-*.exe`,双击安装(不需要装 Python)
-            - **绿色版**:下载 `BiliFocus.exe`,双击即用
-            - 覆盖安装会保留本机数据(登录态/进度/日程)
-            - 数据只存本机 `%APPDATA%\bili-focus`
-            - 登录方式:手机扫码 / 独立浏览器 / 粘贴 SESSDATA
+          body_path: release-notes.md
 
       - name: 同时存一份构建产物
         uses: actions/upload-artifact@v4

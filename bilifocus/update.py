@@ -120,7 +120,7 @@ def _from_api(payload: bytes | None) -> ReleaseInfo | None:
         installer_url=installer_url or installer_url_for(version),
         portable_url=portable_url or portable_url_for(version),
         page_url=str(data.get("html_url") or PAGE_LATEST),
-        notes=str(data.get("body") or "")[:400],
+        notes=str(data.get("body") or "")[:1500],
     )
 
 

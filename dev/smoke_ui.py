@@ -845,7 +845,7 @@ check(
     str(captured),
 )
 
-# ── 检查更新:横幅出现 / 可关闭 / 一键更新流程 ─────────────────────
+# ── 检查更新:全屏更新提示 / 触发策略 / 一键更新流程 ───────────────
 import tempfile  # noqa: E402
 
 from bilifocus import update as update_mod  # noqa: E402
@@ -856,7 +856,15 @@ fake_info = update_mod.ReleaseInfo(
     installer_url="https://example.com/setup.exe",
     portable_url="https://example.com/app.exe",
     page_url="https://example.com/releases",
+    notes="- 修复了更新提示不明显的问题\n- 启动动画换成灯泡与光线\n- 合并了一些小改进",
 )
+
+
+def prompt_visible() -> bool:
+    overlay = app._update_overlay
+    return overlay is not None and bool(overlay.winfo_ismapped())
+
+
 # 触发策略:自动检查有 10 分钟节流;手动检查(点版本号)忽略节流和"不再提示"
 check_calls = {"n": 0}
 
@@ -873,7 +881,7 @@ app._update_checked = False
 app._maybe_check_updates()  # 自动:刚查过,应该跳过
 pump(root, rounds=10)
 check("auto update check respects the 10-minute throttle", check_calls["n"] == 0, str(check_calls))
-check("throttled auto check shows no banner", not app.update_bar.winfo_ismapped())
+check("throttled auto check shows no update prompt", not prompt_visible())
 
 check(
     "version label shows current version",
@@ -884,22 +892,37 @@ app._check_updates_now()  # 手动:强制查,且即使这个版本被"不再提�
 pump(root, rounds=80)
 check("manual update check bypasses the throttle", check_calls["n"] == 1, str(check_calls))
 check(
-    "manual update check shows banner even if the version was skipped",
-    bool(app.update_bar.winfo_ismapped()),
+    "manual update check shows prompt even if the version was skipped",
+    prompt_visible(),
 )
-app._hide_update_banner()
-app.service.store.set_pref("update_skipped_version", "")  # 复原,别影响后面的检查
+check(
+    "full-screen prompt shows version comparison",
+    "9.9.9" in app._update_version_label.cget("text"),
+    app._update_version_label.cget("text"),
+)
+notes_text = app._update_notes.get("1.0", "end")
+check("update prompt lists release notes", "修复了更新提示" in notes_text, notes_text[:80])
+check("update prompt has auto-install checkbox", app._auto_install_var is not None)
 
+# 自动安装勾选写进本机设置
+app._auto_install_var.set(True)
+app._save_auto_install_pref()
+check(
+    "auto-install preference is saved",
+    app.service.store.get_pref("update_auto_install") is True,
+    str(app.service.store.get_pref("update_auto_install")),
+)
+app._auto_install_var.set(False)
+app._save_auto_install_pref()
+
+# 重新触发一次,测试更新流程
+app._hide_update_prompt()
+app.service.store.set_pref("update_skipped_version", "")
 ui.update_mod.check_for_update = lambda current, timeout=8: (fake_info, True)
 app._update_checked = False
 app._maybe_check_updates(force=True)
 pump(root, rounds=60)
-check("update banner appears when newer version exists", bool(app.update_bar.winfo_ismapped()))
-check(
-    "update banner shows the new version",
-    "9.9.9" in app.update_text.cget("text"),
-    app.update_text.cget("text"),
-)
+check("update prompt appears when newer version exists", prompt_visible())
 
 fake_installer = Path(tempfile.mktemp(suffix=".exe"))
 fake_installer.write_bytes(b"MZ" + b"0" * 32)
@@ -911,9 +934,9 @@ ui.update_mod.download_installer = lambda info, progress=None, dest_dir=None: (
 app._on_update_primary()
 check("update download reaches downloaded state", wait_until(lambda: app._update_state == "downloaded"))
 check(
-    "banner offers install after download",
-    "安装" in app.update_primary.cget("text"),
-    app.update_primary.cget("text"),
+    "prompt offers install after download",
+    "安装" in app._update_primary.cget("text"),
+    app._update_primary.cget("text"),
 )
 
 launched = {}
@@ -925,7 +948,7 @@ check("one-click update quits the app", launched.get("quit") is True)
 
 app._dismiss_update(remember=True)
 pump(root, rounds=10)
-check("update banner can be closed", not app.update_bar.winfo_ismapped())
+check("update prompt can be closed", not prompt_visible())
 check(
     "closed version is remembered",
     app.service.store.get_pref("update_skipped_version") == "9.9.9",

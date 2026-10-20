@@ -443,6 +443,10 @@ class FocusApp:
         self._update_installer = None
         self._update_state = "idle"
         self._update_checked = False
+        self._update_overlay = None
+        self._update_progress = None
+        self._update_progress_text = ""
+        self._auto_install_var = None
         self.session_watch_seconds: float = 0.0
         self.session_plays: int = 0
 
@@ -570,30 +574,6 @@ class FocusApp:
             font=font(10),
         )
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(px(6), px(10)), ipady=px(4))
-
-        # 新版本横幅:发现新版本时出现在顶部,可关闭
-        self.update_bar = tk.Frame(
-            self.root, bg=CARD_BG, highlightthickness=1, highlightbackground=ACCENT
-        )
-        tk.Frame(self.update_bar, bg=ACCENT, width=px(3)).pack(side="left", fill="y")
-        self.update_text = tk.Label(
-            self.update_bar, text="", bg=CARD_BG, fg=FG, font=font(10), anchor="w"
-        )
-        self.update_text.pack(side="left", padx=(px(10), px(8)), pady=px(7))
-        self.update_primary = self._button(
-            self.update_bar, "立即更新", self._on_update_primary, primary=True
-        )
-        self.update_primary.pack(side="left", padx=(0, px(6)), pady=px(5))
-        self.update_later = self._button(
-            self.update_bar, "稍后", lambda: self._dismiss_update(remember=False)
-        )
-        self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
-        self.update_close = tk.Label(
-            self.update_bar, text="×", bg=CARD_BG, fg=FG_DIM, font=font(12),
-            padx=px(8), cursor="hand2",
-        )
-        self.update_close.pack(side="right", padx=(0, px(4)))
-        self.update_close.bind("<Button-1>", lambda _event: self._dismiss_update(remember=True))
 
         # 到点提醒条:只在"该看视频了"的时候出现,平时不占地方
         self.reminder = tk.Frame(self.root, bg=BG_ALT, highlightthickness=1,
@@ -772,6 +752,13 @@ class FocusApp:
         if self._progress_text:
             self._set_status(self._progress_text)
             self._progress_text = ""
+        if self._update_progress_text:
+            if self._update_progress is not None:
+                try:
+                    self._update_progress.configure(text=self._update_progress_text)
+                except tk.TclError:
+                    self._update_progress = None
+            self._update_progress_text = ""
         for ticket in list(self._results.keys()):
             entry = self._results.pop(ticket, None)
             if entry is None:
@@ -1485,7 +1472,7 @@ class FocusApp:
                     skipped = ""
                 if skipped == info.version:
                     return
-            self._show_update_banner(info)
+            self._show_update_prompt(info)
             if manual:
                 self._set_status(f"发现新版本 v{info.version},点上方横幅更新")
 
@@ -1497,30 +1484,188 @@ class FocusApp:
             return
         self._maybe_check_updates(force=True, manual=True)
 
-    def _show_update_banner(self, info) -> None:
+    # -- 更新提示(全屏) ---------------------------------------------------
+    def _show_update_prompt(self, info) -> None:
+        """整窗覆盖的更新提示:图标 / 版本 / 更新内容 / 自动安装 / 两个按钮。"""
+        self._hide_update_prompt()
         self._update_info = info
         self._update_state = "available"
-        self.update_text.configure(
-            text=f"发现新版本 {info.version}(当前 {APP_VERSION})"
+        self._update_progress_text = ""
+
+        overlay = tk.Frame(self.root, bg=BG)
+        overlay.place(x=0, y=0, relwidth=1, relheight=1)
+        overlay.lift()
+        self._update_overlay = overlay
+        overlay.bind("<Escape>", lambda _event: self._dismiss_update(remember=False))
+
+        content = tk.Frame(overlay, bg=BG)
+        content.place(relx=0.5, rely=0.5, anchor="center")
+
+        icon = self._load_update_icon()
+        if icon is not None:
+            self._update_icon = icon
+            tk.Label(content, image=icon, bg=BG).pack(pady=(0, px(12)))
+
+        tk.Label(content, text="BiliFocus 有新版本", bg=BG, fg=FG, font=font(18, "bold")).pack()
+        self._update_version_label = tk.Label(
+            content,
+            text=f"当前 v{APP_VERSION}  ·  最新 v{info.version}",
+            bg=BG,
+            fg=FG_DIM,
+            font=font(10),
         )
-        self.update_primary.configure(text="立即更新", state="normal")
-        self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
-        self.update_bar.pack(fill="x", padx=px(14), pady=(0, px(6)), before=self.content)
+        self._update_version_label.pack(pady=(px(6), px(14)))
+
+        tk.Frame(content, bg=BORDER, height=1).pack(fill="x")
+        tk.Label(
+            content, text="更新内容", bg=BG, fg=FG, font=font(10, "bold"), anchor="w"
+        ).pack(fill="x", pady=(px(12), px(6)))
+
+        notes_box = tk.Frame(content, bg=CARD_BG, highlightthickness=1, highlightbackground=BORDER)
+        notes_box.pack(fill="both", expand=True)
+        self._update_notes = tk.Text(
+            notes_box,
+            height=7,
+            width=52,
+            bg=CARD_BG,
+            fg=FG,
+            relief="flat",
+            font=font(9),
+            wrap="word",
+            cursor="arrow",
+            padx=px(10),
+            pady=px(8),
+        )
+        self._update_notes.insert("1.0", self._format_release_notes(info))
+        self._update_notes.configure(state="disabled")
+        scrollbar = tk.Scrollbar(notes_box, orient="vertical", command=self._update_notes.yview)
+        self._update_notes.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        self._update_notes.pack(side="left", fill="both", expand=True)
+
+        self._auto_install_var = tk.BooleanVar(
+            value=bool(self.service.store.get_pref("update_auto_install", False))
+        )
+        tk.Checkbutton(
+            content,
+            text="启动 BiliFocus 时自动下载并安装更新",
+            variable=self._auto_install_var,
+            command=self._save_auto_install_pref,
+            bg=BG,
+            fg=FG_DIM,
+            activebackground=BG,
+            activeforeground=FG,
+            selectcolor=CARD_BG,
+            font=font(9),
+            bd=0,
+            highlightthickness=0,
+        ).pack(anchor="w", pady=(px(12), px(2)))
+
+        self._update_progress = tk.Label(content, text="", bg=BG, fg=ACCENT, font=font(9))
+        self._update_progress.pack(pady=(px(4), 0))
+
+        buttons = tk.Frame(content, bg=BG)
+        buttons.pack(pady=(px(12), 0))
+        self._update_secondary = tk.Button(
+            buttons,
+            text="稍后提醒我",
+            command=lambda: self._dismiss_update(remember=False),
+            bg=BG_ALT,
+            fg=FG,
+            relief="flat",
+            activebackground=BORDER,
+            activeforeground=FG,
+            font=font(10),
+            padx=px(22),
+            pady=px(6),
+        )
+        self._update_secondary.pack(side="left", padx=px(6))
+        self._update_primary = tk.Button(
+            buttons,
+            text="立即更新",
+            command=self._on_update_primary,
+            bg=ACCENT,
+            fg="#ffffff",
+            relief="flat",
+            activebackground=ACCENT_DARK,
+            activeforeground="#ffffff",
+            font=font(10),
+            padx=px(28),
+            pady=px(6),
+        )
+        self._update_primary.pack(side="left", padx=px(6))
+
+        self._update_skip_link = tk.Label(
+            content, text="不再提示这个版本", bg=BG, fg=FG_DIM, font=font(8), cursor="hand2"
+        )
+        self._update_skip_link.pack(pady=(px(10), 0))
+        self._update_skip_link.bind("<Button-1>", lambda _event: self._dismiss_update(remember=True))
+
+        # 勾了"自动安装"就自动开始下载(用户自己选的)
+        if self._auto_install_var.get() and update_mod.can_one_click():
+            self.root.after(800, self._auto_start_update_download)
+
+    def _format_release_notes(self, info) -> str:
+        """把 GitHub Release 正文整理成短列表。"""
+        raw = (getattr(info, "notes", "") or "").strip()
+        lines: list[str] = []
+        for line in raw.splitlines():
+            clean = line.strip().lstrip("-*·• ").replace("**", "").strip()
+            if not clean or clean.lower().startswith("bilifocus v"):
+                continue
+            if clean.startswith(("安装包", "绿色版", "覆盖安装", "数据只存", "登录方式")):
+                continue
+            lines.append(f"· {clean}")
+        if not lines:
+            lines = ["· 包含功能改进与问题修复,建议更新到最新版本。"]
+        return "\n".join(lines[:8])
+
+    def _load_update_icon(self):
+        icon_path = Path(__file__).resolve().parent.parent / "assets" / "icon-128.png"
+        try:
+            image = tk.PhotoImage(file=str(icon_path))
+        except tk.TclError:
+            return None
+        target = max(1, px(72))
+        if image.width() > target:
+            image = image.subsample(max(1, round(image.width() / target)))
+        return image
+
+    def _save_auto_install_pref(self) -> None:
+        try:
+            self.service.store.set_pref(
+                "update_auto_install", bool(self._auto_install_var.get())
+            )
+        except Exception:  # noqa: BLE001 - 记不住也不影响本次更新
+            pass
+
+    def _auto_start_update_download(self) -> None:
+        if self._update_state != "available" or self._update_info is None:
+            return
+        self._start_update_download()
 
     def _dismiss_update(self, *, remember: bool) -> None:
         if remember and self._update_info is not None:
             try:
                 self.service.store.set_pref("update_skipped_version", self._update_info.version)
-            except Exception:  # noqa: BLE001 - 记不住也不影响
+            except Exception:  # noqa: BLE001 - 记不住也不影响使用
                 pass
-        self._hide_update_banner()
+        self._hide_update_prompt()
 
-    def _hide_update_banner(self) -> None:
-        try:
-            self.update_bar.pack_forget()
-        except tk.TclError:
-            pass
+    def _hide_update_prompt(self) -> None:
+        overlay = getattr(self, "_update_overlay", None)
+        self._update_overlay = None
+        self._update_progress = None
+        if overlay is not None:
+            try:
+                overlay.destroy()
+            except tk.TclError:
+                pass
         self._update_state = "idle"
+
+    # 兼容旧名字(内部/冒烟脚本可能还在用)
+    def _hide_update_banner(self) -> None:
+        self._hide_update_prompt()
 
     def _on_update_primary(self) -> None:
         info = self._update_info
@@ -1541,32 +1686,30 @@ class FocusApp:
         if info is None or self._update_state == "downloading":
             return
         self._update_state = "downloading"
-        self.update_primary.configure(state="disabled", text="下载中…")
-        self.update_later.pack_forget()
-        self.update_text.configure(
-            text=f"正在下载 {info.version} · 0%(共约 24 MB)"
-        )
+        self._update_primary.configure(state="disabled", text="下载中…")
+        if self._update_progress is not None:
+            self._update_progress.configure(text="正在下载更新 · 0%")
 
         def work():
             def progress(percent: int) -> None:
-                self._progress_text = f"正在下载新版本 {info.version}… {percent}%"
+                self._update_progress_text = f"正在下载更新 · {percent}%"
 
             return update_mod.download_installer(info, progress=progress)
 
         def done(path, error):
             if error is not None or path is None:
-                self._set_status(f"下载更新失败:{error}", ERROR)
                 self._update_state = "available"
-                self.update_primary.configure(state="normal", text="重试")
-                self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+                if self._update_progress is not None:
+                    self._update_progress.configure(text=f"下载失败:{error}")
+                if self._update_primary is not None:
+                    self._update_primary.configure(state="normal", text="重试")
                 return
             self._update_installer = path
             self._update_state = "downloaded"
-            self.update_text.configure(
-                text=f"{info.version} 已下载完成 · 安装会关闭并重新打开应用"
-            )
-            self.update_primary.configure(state="normal", text="安装并重启")
-            self.update_later.pack(side="left", padx=(0, px(6)), pady=px(5))
+            if self._update_progress is not None:
+                self._update_progress.configure(text="下载完成 · 安装会关闭并重新打开应用")
+            if self._update_primary is not None:
+                self._update_primary.configure(state="normal", text="安装并重启")
 
         self._run_async(work, done)
 
