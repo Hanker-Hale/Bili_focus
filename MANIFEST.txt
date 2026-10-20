@@ -1,4 +1,4 @@
-FavFocus 2.5.1 —— 文件清单
+FavFocus 2.2.0 —— 文件清单
 ==============================================
 
 用法:
@@ -18,7 +18,7 @@ FavFocus 2.5.1 —— 文件清单
             MIT 许可证(含内置二维码库的署名)
      11188 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     35479 B  README.md
+     35571 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
        397 B  favfocus-cli.cmd
             命令行启动器
@@ -173,16 +173,16 @@ FavFocus 2.5.1 —— 文件清单
             启动链路测试:用无效凭证跑完整 bootstrap
 
 — 资源 assets/ ----------------------------------
-     94343 B  assets/favfocus-icon.ico
+     63548 B  assets/favfocus-icon.ico
             应用图标(16~256 八个尺寸)
-     18710 B  assets/icon-128.png
-    171140 B  assets/icon-512.png
+     12593 B  assets/icon-128.png
+    111985 B  assets/icon-512.png
             512 透明圆角图标(官网/favicon 用)
-     42770 B  assets/icon-art.jpg
+     34102 B  assets/icon-art.jpg
             图标原画(手绘 favfocus 灯泡小人)
-    234028 B  assets/icon-preview.png
+    162538 B  assets/icon-preview.png
             图标各尺寸预览图
-      5255 B  assets/make_icon.py
+      4892 B  assets/make_icon.py
             从手绘原画生成图标(灯泡小人)
 
 — 示例封面 dev/demo-covers/ -----------------------
@@ -226,8 +226,8 @@ FavFocus 2.5.1 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-    171140 B  docs/icon.png
-     43258 B  docs/index.html
+    111985 B  docs/icon.png
+     40780 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -241,13 +241,13 @@ FavFocus 2.5.1 —— 文件清单
       4201 B  docs/promo/录制与发布流程.md
       7146 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
-     36156 B  docs/screenshots/farewell.png
-    221565 B  docs/screenshots/grouped.png
-     14550 B  docs/screenshots/qr-login.png
-    248350 B  docs/screenshots/reminder.png
-     68745 B  docs/screenshots/schedule.png
-     75167 B  docs/screenshots/splash.png
-    253159 B  docs/screenshots/ui.png
-     62913 B  docs/screenshots/update.png
+     29739 B  docs/screenshots/farewell.png
+    221563 B  docs/screenshots/grouped.png
+     14523 B  docs/screenshots/qr-login.png
+    248343 B  docs/screenshots/reminder.png
+     68721 B  docs/screenshots/schedule.png
+     75107 B  docs/screenshots/splash.png
+    253155 B  docs/screenshots/ui.png
+     59434 B  docs/screenshots/update.png
 
 共 137 个文件。

@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """从手绘原画生成 FavFocus 的应用图标。
 
-原画:`assets/icon-art.jpg`(1080x1080,浅蓝底 + 手写 favfocus + 灯泡小人)。
+原画:`assets/icon-art.jpg`(1080x1080,浅蓝底 + 手写 favfocus + 放大镜)。
 
-小尺寸(16/24/32/40)单独裁"灯泡 + 小人"区域:原画上的文字在 16px 下会糊成一片,
-只保留图形主体,任务栏/开始菜单里才认得出来。ICO 里每个尺寸放各自渲染的 PNG,
-所以这里手写 ICO 容器,而不是让 PIL 用一张图缩放出所有尺寸。
+所有尺寸都用整张原画(不再裁剪):新图标本身就是 wordmark,缩小时仍能保持蓝色底
++ 手写笔画的辨识度。ICO 里每个尺寸放各自渲染的 PNG,所以这里手写 ICO 容器,
+而不是让 PIL 用一张图缩放出所有尺寸。
 
 产物:
   assets/favfocus-icon.ico   应用图标(16~256 七个尺寸,exe/安装器/窗口都用它)
@@ -33,12 +33,12 @@ PNG128_PATH = HERE / "icon-128.png"
 PREVIEW_PATH = HERE / "icon-preview.png"
 
 SIZES = (16, 24, 32, 40, 48, 64, 128, 256)
-SMALL_CUTOFF = 40          # 保留常量供文档说明;改名后所有尺寸都用灯泡特写(原画上的旧名字不能再用)
+SMALL_CUTOFF = 40          # 保留常量供兼容;现在所有尺寸都用整张原画
 CORNER_RADIUS = 0.18       # 圆角比例(0 = 方角)
 SUPERSAMPLE = 4
 
-# 灯泡特写区域(相对原画比例):避开顶部文字,保留灯泡和小人
-CROP_BOX = (0.18, 0.28, 0.86, 0.96)
+# 原画构图已经居中(手写 favfocus + 放大镜),不需要裁剪
+
 
 
 def _rounded(image: Image.Image, radius_ratio: float = CORNER_RADIUS) -> Image.Image:
@@ -61,13 +61,8 @@ def _art() -> Image.Image:
 
 
 def _render(size: int) -> Image.Image:
-    """所有尺寸都裁"灯泡 + 小人"特写:原画上的手写词是旧名字,不能再当新图标用。"""
+    """整张原画缩放到目标尺寸,加透明圆角。"""
     art = _art()
-    width, height = art.size
-    left, top, right, bottom = CROP_BOX
-    art = art.crop(
-        (int(width * left), int(height * top), int(width * right), int(height * bottom))
-    )
     return _rounded(art.resize((size, size), Image.LANCZOS))
 
 
