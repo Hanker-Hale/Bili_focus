@@ -143,6 +143,8 @@
   .window-bar span { margin-left: 10px; font-size: 12px; color: var(--ink-faint); }
   .window img { border-bottom: 1px solid var(--line); }
   .window { position: relative; }
+  /* 贴纸放在窗口外面一层,避免被 .window 的 overflow:hidden 裁掉 */
+  .hero-visual { position: relative; }
   .hero-sticker {
     position: absolute; z-index: 2; top: -38px; left: -42px;
     width: 86px; height: 86px; border-radius: 24px;
@@ -380,10 +382,12 @@
           <span><i class="dot"></i>支持 Win 10 / 11</span>
         </div>
       </div>
-      <figure class="window" style="margin:0">
+      <figure class="hero-visual" style="margin:0">
         <img class="hero-sticker" src="icon.png" alt="" aria-hidden="true">
-        <div class="window-bar"><i></i><i></i><i></i><span>FavFocus — 只看收藏夹</span></div>
-        <img src="screenshots/ui.png" alt="FavFocus 主界面:收藏夹卡片网格" loading="eager">
+        <div class="window">
+          <div class="window-bar"><i></i><i></i><i></i><span>FavFocus — 只看收藏夹</span></div>
+          <img src="screenshots/ui.png" alt="FavFocus 主界面:收藏夹卡片网格" loading="eager">
+        </div>
       </figure>
     </div>
   </div>

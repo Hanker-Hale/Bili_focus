@@ -227,7 +227,7 @@ FavFocus 2.2.0 —— 文件清单
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     111985 B  docs/icon.png
-     40780 B  docs/index.html
+     40960 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
