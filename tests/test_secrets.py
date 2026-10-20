@@ -8,8 +8,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bilifocus import secrets
-from bilifocus.store import StateStore
+from favfocus import secrets
+from favfocus.store import StateStore
 
 SAMPLE = "abc%2C123%2Csuper-secret"
 

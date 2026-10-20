@@ -2,10 +2,10 @@
 
 设计:
 
-- 装到当前用户的 `%LOCALAPPDATA%\\Programs\\BiliFocus`,**不需要管理员权限**;
+- 装到当前用户的 `%LOCALAPPDATA%\\Programs\\FavFocus`,**不需要管理员权限**;
 - 只写 HKCU 的卸载注册表项(控制面板/设置里能看到、能卸载);
 - 桌面 + 开始菜单快捷方式;
-- 数据一直在 `%APPDATA%\\bili-focus`,**覆盖安装不动数据**,卸载默认也不删。
+- 数据一直在 `%APPDATA%\\favfocus`,**覆盖安装不动数据**,卸载默认也不删。
 """
 
 from __future__ import annotations
@@ -21,9 +21,12 @@ from pathlib import Path
 
 from . import winproc
 
-APP_NAME = "BiliFocus"
-EXE_NAME = "BiliFocus.exe"
-PUBLISHER = "BiliFocus"
+APP_NAME = "FavFocus"
+EXE_NAME = "FavFocus.exe"
+PUBLISHER = "FavFocus"
+# 改名前的名字:用来关掉旧进程、清理旧安装
+LEGACY_APP_NAME = "BiliFocus"
+LEGACY_EXE_NAME = "BiliFocus.exe"
 UNINSTALL_KEY = rf"Software\Microsoft\Windows\CurrentVersion\Uninstall\{APP_NAME}"
 
 CREATE_NO_WINDOW = 0x08000000
@@ -47,7 +50,7 @@ def install_dir() -> Path:
 def data_dir() -> Path:
     """程序运行数据(登录态、缓存、日程),覆盖安装/卸载都不该删。"""
     base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-    return Path(base) / "bili-focus"
+    return Path(base) / "favfocus"
 
 
 def installed_exe() -> Path:
@@ -151,11 +154,46 @@ def _decode_console(data: bytes | str | None) -> str:
     return data.decode("utf-8", "ignore")
 
 
-def running_app_pids() -> list[int]:
-    """列出正在运行的 BiliFocus.exe(不含安装器自己)。"""
+def legacy_install_dir() -> Path:
+    base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
+    return Path(base) / "Programs" / LEGACY_APP_NAME
+
+
+def legacy_desktop_shortcut() -> Path:
+    desktop = Path(os.environ.get("USERPROFILE") or str(Path.home())) / "Desktop"
+    return desktop / f"{LEGACY_APP_NAME}.lnk"
+
+
+def legacy_start_menu_shortcut() -> Path:
+    base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+    return (
+        Path(base) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / f"{LEGACY_APP_NAME}.lnk"
+    )
+
+
+def cleanup_legacy_install() -> None:
+    """改名迁移:关掉旧进程,删掉旧程序目录/快捷方式/卸载项(旧数据保留)。"""
+    pids = _running_pids_for(LEGACY_EXE_NAME)
+    for pid in pids:
+        winproc.taskkill(pid)
+    for pid in pids:
+        winproc.wait_pid_gone(pid, timeout=2.0)
+    remove_path(legacy_install_dir())
+    remove_path(legacy_desktop_shortcut())
+    remove_path(legacy_start_menu_shortcut())
+    try:
+        winreg.DeleteKey(
+            winreg.HKEY_CURRENT_USER,
+            rf"Software\Microsoft\Windows\CurrentVersion\Uninstall\{LEGACY_APP_NAME}",
+        )
+    except OSError:
+        pass
+
+
+def _running_pids_for(image_name: str) -> list[int]:
     try:
         completed = winproc.run_hidden(
-            ["tasklist", "/FI", f"IMAGENAME eq {EXE_NAME}", "/FO", "CSV", "/NH"],
+            ["tasklist", "/FI", f"IMAGENAME eq {image_name}", "/FO", "CSV", "/NH"],
             capture_output=True,
             timeout=15,
         )
@@ -178,6 +216,11 @@ def running_app_pids() -> list[int]:
         if pid != current:
             pids.append(pid)
     return pids
+
+
+def running_app_pids() -> list[int]:
+    """列出正在运行的本体(新名字 + 改名前的旧名字)。"""
+    return sorted(set(_running_pids_for(EXE_NAME)) | set(_running_pids_for(LEGACY_EXE_NAME)))
 
 
 def close_running_app(*, force: bool = False, wait: float = 3.0) -> bool:
@@ -209,7 +252,7 @@ def install(
     launch: bool = False,
     progress=None,
 ) -> Path:
-    """把 payload(打包好的 BiliFocus.exe)装到本机,返回安装目录。"""
+    """把 payload(打包好的 FavFocus.exe)装到本机,返回安装目录。"""
     target_dir = install_dir()
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / EXE_NAME
@@ -217,9 +260,10 @@ def install(
     running = running_app_pids()
     if running:
         if progress:
-            progress(f"检测到 {APP_NAME} 正在运行,先关闭它…")
+            progress(f"检测到旧版正在运行,先关闭它…")
         if not close_running_app(force=True):
             raise OSError(f"无法关闭正在运行的 {APP_NAME},请手动退出后重试")
+    cleanup_legacy_install()
 
     if progress:
         progress("正在复制程序…")
@@ -303,11 +347,25 @@ def uninstall(*, remove_data: bool = False, progress=None) -> None:
 
 
 def silent_install(payload: Path) -> int:
-    """给 CI/测试用的静默安装。"""
+    """给 CI/测试用的静默安装。
+
+    如果是"升级安装"(本机已有新版或改名前的旧版),装完自动打开新程序——
+    旧版的一键更新逻辑在安装完成后会去启动旧路径,改名后那个路径已经不存在,
+    由安装器负责把新程序拉起来,用户不会觉得程序"更新完就没了"。
+    """
+    upgrading = is_installed() or legacy_install_dir().is_dir()
     try:
         directory = install(payload, desktop=True, launch=False)
     except OSError as error:
         print(f"安装失败:{error}")
         return 1
     print(f"已安装到 {directory}(版本 {version()})")
+    if upgrading:
+        try:
+            subprocess.Popen(
+                [str(installed_exe())],
+                creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
+            )
+        except OSError:
+            pass
     return 0

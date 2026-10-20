@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import threading
 import time
 from dataclasses import dataclass
@@ -36,13 +37,32 @@ _TMP_COUNTER = count()
 
 
 def default_home() -> Path:
-    """默认数据目录。可用 `BILI_FOCUS_HOME` 覆盖(测试和便携使用)。"""
-    override = os.environ.get("BILI_FOCUS_HOME")
+    """默认数据目录。可用 `FAVFOCUS_HOME` 覆盖(测试和便携使用)。"""
+    override = os.environ.get("FAVFOCUS_HOME") or os.environ.get("BILI_FOCUS_HOME")
     if override:
         return Path(override).expanduser()
     base = os.environ.get("APPDATA") or os.environ.get("XDG_CONFIG_HOME")
     root = Path(base) if base else Path.home() / ".config"
-    return root / "bili-focus"
+    home = root / "favfocus"
+    _migrate_legacy_home(root, home)
+    return home
+
+
+def _migrate_legacy_home(root: Path, home: Path) -> None:
+    """从改名前的 `bili-focus` 目录复制一次数据(旧目录保留,不删)。"""
+    legacy = root / "bili-focus"
+    if home.exists() or not legacy.is_dir():
+        return
+    # cache / 浏览器配置都可再生(几百 MB),只迁移 state.json 等小文件
+    ignore = shutil.ignore_patterns("cache", "browser-profile", "player-profile")
+    try:
+        shutil.copytree(legacy, home, ignore=ignore)
+    except OSError:
+        # 复制失败也要保证目录存在,让程序至少能起来
+        try:
+            home.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
 
 
 def _read_json(path: Path) -> Any:

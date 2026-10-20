@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
-from bilifocus.models import Video
-from bilifocus.store import (
+from favfocus.models import Video
+from favfocus.store import (
     SCHEMA_VERSION,
     CacheStore,
     CachedFavorites,
@@ -22,6 +24,33 @@ class StoreTestCase(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.home = Path(self._tmp.name)
         self.addCleanup(self._tmp.cleanup)
+
+
+class LegacyHomeMigrationTests(unittest.TestCase):
+    """改名迁移:旧 bili-focus 只搬状态,不搬缓存。"""
+
+    def test_migrates_state_but_skips_regenerable_dirs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            legacy = root / "bili-focus"
+            (legacy / "cache").mkdir(parents=True)
+            (legacy / "player-profile").mkdir()
+            (legacy / "state.json").write_text('{"schema": 4}', encoding="utf-8")
+            (legacy / "cache" / "fav.json").write_text("{}", encoding="utf-8")
+
+            env = {
+                key: value
+                for key, value in os.environ.items()
+                if key not in ("FAVFOCUS_HOME", "BILI_FOCUS_HOME")
+            }
+            env["APPDATA"] = tmp
+            with mock.patch.dict(os.environ, env, clear=True):
+                home = default_home()
+
+            self.assertEqual(home, root / "favfocus")
+            self.assertTrue((home / "state.json").is_file())
+            self.assertFalse((home / "cache").exists())
+            self.assertFalse((home / "player-profile").exists())
 
 
 class StateStoreTests(StoreTestCase):
@@ -335,15 +364,15 @@ class HomeTests(unittest.TestCase):
         import os
 
         with tempfile.TemporaryDirectory() as tmp:
-            old = os.environ.get("BILI_FOCUS_HOME")
-            os.environ["BILI_FOCUS_HOME"] = tmp
+            old = os.environ.get("FAVFOCUS_HOME")
+            os.environ["FAVFOCUS_HOME"] = tmp
             try:
                 self.assertEqual(str(default_home()), tmp)
             finally:
                 if old is None:
-                    os.environ.pop("BILI_FOCUS_HOME", None)
+                    os.environ.pop("FAVFOCUS_HOME", None)
                 else:
-                    os.environ["BILI_FOCUS_HOME"] = old
+                    os.environ["FAVFOCUS_HOME"] = old
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""命令行入口:`python -m bilifocus ...`
+"""命令行入口:`python -m favfocus ...`
 
 界面还没定的时候,命令行就是最低成本的验证方式,也是脚本化的入口。
 所有子命令都只依赖 `FavoritesService`,和将来的前端走同一条路径。
@@ -18,7 +18,7 @@ import webbrowser
 from pathlib import Path
 
 from . import __version__
-from .errors import BiliFocusError
+from .errors import FavFocusError
 from .models import FavoritesView, Video
 from .service import FavoritesService, search
 from .store import StateStore
@@ -72,7 +72,7 @@ def print_table(rows: list[list[str]], headers: list[str] | None = None) -> None
 # --------------------------------------------------------------------------
 def cmd_status(service: FavoritesService, args) -> int:
     info = service.store.describe()
-    info["home_override"] = bool(os.environ.get("BILI_FOCUS_HOME"))
+    info["home_override"] = bool(os.environ.get("FAVFOCUS_HOME"))
     info["cache_dir"] = str(service.cache.root)
     info["default_fid"] = service.default_fid
     info["sync_interval_seconds"] = service.sync_interval
@@ -95,7 +95,7 @@ def cmd_status(service: FavoritesService, args) -> int:
                 if state.is_login
                 else "未登录"
             )
-        except BiliFocusError as error:
+        except FavFocusError as error:
             info["login"] = f"检查失败:{error}"
 
     if args.json:
@@ -156,7 +156,7 @@ def _qr_login_cli(service: FavoritesService) -> int:
     session = QrLoginSession()
     try:
         ticket = session.start()
-    except BiliFocusError as error:
+    except FavFocusError as error:
         print(f"生成二维码失败:{error}", file=sys.stderr)
         return 1
 
@@ -167,7 +167,7 @@ def _qr_login_cli(service: FavoritesService) -> int:
     while True:
         try:
             result = session.poll(ticket)
-        except BiliFocusError as error:
+        except FavFocusError as error:
             print(f"检查状态失败:{error}")
             time.sleep(2)
             continue
@@ -177,13 +177,13 @@ def _qr_login_cli(service: FavoritesService) -> int:
         if result.done:
             try:
                 state = service.login(result.sessdata or "")
-            except BiliFocusError as error:
+            except FavFocusError as error:
                 print(f"扫码成功但校验失败:{error}", file=sys.stderr)
                 return 1
             print(f"登录成功:{state.uname or '(未知用户)'}  mid={state.mid}")
             return 0
         if result.expired:
-            print("二维码已失效,请重新运行:bilifocus login --qrcode", file=sys.stderr)
+            print("二维码已失效,请重新运行:favfocus login --qrcode", file=sys.stderr)
             return 1
         time.sleep(2)
 
@@ -355,21 +355,21 @@ def cmd_doctor(service: FavoritesService, args) -> int:
         try:
             keys = service.client.wbi_keys()
             report("nav 可访问且取到密钥", len(keys[0]) + len(keys[1]) >= 64, f"{keys[0][:8]}…")
-        except BiliFocusError as error:
+        except FavFocusError as error:
             report("nav 可访问", False, str(error))
 
         if service.is_logged_in:
             try:
                 state = service.login_state()
                 report("登录态有效", state.is_login, state.uname or "")
-            except BiliFocusError as error:
+            except FavFocusError as error:
                 report("登录态有效", False, str(error))
             fid = service.default_fid
             if fid:
                 try:
                     page = service.page(fid, 1)
                     report("收藏夹可读", True, f"第 1 页 {len(page.videos)} 条")
-                except BiliFocusError as error:
+                except FavFocusError as error:
                     report("收藏夹可读", False, str(error))
         else:
             print("[--] 未登录,跳过登录态与收藏夹检查")
@@ -454,12 +454,12 @@ def _prompt_secret(prompt: str) -> str:
 # --------------------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="bilifocus",
-        description="BiliFocus 底层:只看收藏夹的 B 站工具",
-        epilog="界面版入口:python -m bilifocus.ui_tk",
+        prog="favfocus",
+        description="FavFocus 底层:只看收藏夹的 B 站工具",
+        epilog="界面版入口:python -m favfocus.ui_tk",
     )
-    parser.add_argument("--version", action="version", version=f"bilifocus {__version__}")
-    parser.add_argument("--home", help="覆盖数据目录(默认 %%APPDATA%%\\bili-focus)")
+    parser.add_argument("--version", action="version", version=f"favfocus {__version__}")
+    parser.add_argument("--home", help="覆盖数据目录(默认 %%APPDATA%%\\favfocus)")
     subparsers = parser.add_subparsers(dest="command")
 
     status = subparsers.add_parser("status", help="显示配置、登录态与数据目录")
@@ -544,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         service = FavoritesService(store=StateStore(args.home))
         return int(args.func(service, args) or 0)
-    except BiliFocusError as error:
+    except FavFocusError as error:
         print(f"\n出错了:{error}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:

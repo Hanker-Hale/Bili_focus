@@ -19,7 +19,7 @@
     python dev/bump_version.py minor    # 加功能后
     python dev/bump_version.py --show   # 只打印当前版本
 
-会同时改 `pyproject.toml` 和 `bilifocus/__init__.py` 两处,并提示下一步。
+会同时改 `pyproject.toml` 和 `favfocus/__init__.py` 两处,并提示下一步。
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PYPROJECT = ROOT / "pyproject.toml"
-PACKAGE_INIT = ROOT / "bilifocus" / "__init__.py"
+PACKAGE_INIT = ROOT / "favfocus" / "__init__.py"
 KINDS = ("patch", "minor", "major")
 
 

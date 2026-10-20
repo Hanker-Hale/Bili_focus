@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""BiliFocus Windows 安装器(自带向导,不依赖 Inno Setup / NSIS)。
+"""FavFocus Windows 安装器(自带向导,不依赖 Inno Setup / NSIS)。
 
 用法(开发时直接跑):
 
@@ -21,8 +21,8 @@ from tkinter import messagebox
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from bilifocus import install, theme  # noqa: E402
-from bilifocus.theme import ACCENT, BG, BG_ALT, BORDER, CARD_BG, FG, FG_DIM, font, px  # noqa: E402
+from favfocus import install, theme  # noqa: E402
+from favfocus.theme import ACCENT, BG, BG_ALT, BORDER, CARD_BG, FG, FG_DIM, font, px  # noqa: E402
 
 
 def payload_path() -> Path:
@@ -55,9 +55,9 @@ class InstallerWindow:
 
     def _center_icon(self) -> None:
         base = Path(getattr(sys, "_MEIPASS", ROOT))
-        icon = base / "assets" / "bilifocus-icon.ico"
+        icon = base / "assets" / "favfocus-icon.ico"
         if not icon.is_file():
-            icon = ROOT / "assets" / "bilifocus-icon.ico"
+            icon = ROOT / "assets" / "favfocus-icon.ico"
         if icon.is_file():
             try:
                 self.root.iconbitmap(default=str(icon))
@@ -90,7 +90,7 @@ class InstallerWindow:
         self.target_label.pack(fill="x", padx=px(14), pady=(px(12), px(2)))
         tk.Label(
             card,
-            text="安装到当前用户,不需要管理员权限;数据保存在 %APPDATA%\\bili-focus,升级不会丢。",
+            text="安装到当前用户,不需要管理员权限;数据保存在 %APPDATA%\\favfocus,升级不会丢。",
             bg=CARD_BG,
             fg=FG_DIM,
             font=font(8),

@@ -2,7 +2,7 @@
 
 跑法::
 
-    BILI_FOCUS_INTEGRATION=1 python -m unittest discover -s tests -t .
+    FAVFOCUS_INTEGRATION=1 python -m unittest discover -s tests -t .
 
 这里验的是**协议正确性**,单测覆盖不到:签名是否被 B 站接受、错误归因是否符合
 真实响应。匿名即可,不需要 SESSDATA。
@@ -13,17 +13,17 @@ from __future__ import annotations
 import os
 import unittest
 
-from bilifocus.client import BiliClient
-from bilifocus.errors import AuthRequiredError, PermissionDeniedError
+from favfocus.client import BiliClient
+from favfocus.errors import AuthRequiredError, PermissionDeniedError
 
-RUN_INTEGRATION = os.environ.get("BILI_FOCUS_INTEGRATION") == "1"
+RUN_INTEGRATION = os.environ.get("FAVFOCUS_INTEGRATION") == "1"
 # 一个公开的、长期存在的视频,用来验证 WBI 签名被接受。
 KNOWN_BVID = "BV1GJ411x7h7"
 # 一个需要登录才能读的收藏夹。
-PRIVATE_FID = int(os.environ.get("BILI_FOCUS_TEST_FID") or 0)  # 自己的私密收藏夹,自测时用
+PRIVATE_FID = int(os.environ.get("FAVFOCUS_TEST_FID") or 0)  # 自己的私密收藏夹,自测时用
 
 
-@unittest.skipUnless(RUN_INTEGRATION, "设置 BILI_FOCUS_INTEGRATION=1 才跑真实网络测试")
+@unittest.skipUnless(RUN_INTEGRATION, "设置 FAVFOCUS_INTEGRATION=1 才跑真实网络测试")
 class LiveProtocolTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

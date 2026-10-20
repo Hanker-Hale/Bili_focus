@@ -12,8 +12,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from bilifocus import BiliClient
-from bilifocus.errors import BiliFocusError
+from favfocus import BiliClient
+from favfocus.errors import FavFocusError
 
 import argparse
 
@@ -28,7 +28,7 @@ FID = args.fid
 def show(label, fn):
     try:
         print(f"[ok]   {label}: {fn()}")
-    except BiliFocusError as error:
+    except FavFocusError as error:
         print(f"[code={error.code}] {label}: {error}")
     except Exception as error:  # noqa: BLE001
         print(f"[ERR]  {label}: {type(error).__name__}: {error}")
@@ -54,4 +54,4 @@ show("fav_page", lambda: client.fav_page(FID, 1))
 
 print()
 print("说明:匿名读私密收藏夹会被拒;真正可用需要 SESSDATA:")
-print("  python -m bilifocus login")
+print("  python -m favfocus login")

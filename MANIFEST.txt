@@ -1,10 +1,10 @@
-BiliFocus 2.4.1 —— 文件清单
+FavFocus 2.5.0 —— 文件清单
 ==============================================
 
 用法:
-  桌面       双击桌面上的 BiliFocus 图标
-  登录       登录框点「手机扫码登录」,或用 bilifocus-cli.cmd login --qrcode
-  命令行     bilifocus-cli.cmd list --fid <收藏夹id>
+  桌面       双击桌面上的 FavFocus 图标
+  登录       登录框点「手机扫码登录」,或用 favfocus-cli.cmd login --qrcode
+  命令行     favfocus-cli.cmd list --fid <收藏夹id>
   跑测试     双击 dev\run-tests.cmd
   样式试验场   双击 dev\edit-lab.cmd 改颜色/尺寸,再双击 dev\run-lab.cmd 看效果
   重做图标   <带 PIL 的 python> assets/make_icon.py
@@ -16,173 +16,173 @@ BiliFocus 2.4.1 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     11233 B  MANIFEST.txt
+     11188 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     35217 B  README.md
+     35405 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
-      1743 B  bili_focus.py
-            旧版入口的兼容壳(GUI / --self-test)
-       400 B  bilifocus-cli.cmd
+       397 B  favfocus-cli.cmd
             命令行启动器
-       414 B  bilifocus.cmd
+       412 B  favfocus.cmd
             图形界面启动器(GBK 编码,双击用)
+      1790 B  favfocus.py
+            单文件入口(转发到 favfocus.ui_tk)
        415 B  publish.cmd
       5633 B  publish.ps1
-       486 B  pyproject.toml
-            打包元数据(零第三方依赖,入口 bilifocus)
-        95 B  启动 BiliFocus.cmd
+       482 B  pyproject.toml
+            打包元数据(零第三方依赖,入口 favfocus)
+        95 B  启动 FavFocus.cmd
             中文名启动器包装
 
-— 包 bilifocus/ --------------------------------
-      2112 B  bilifocus/__init__.py
+— 包 favfocus/ ---------------------------------
+      2105 B  favfocus/__init__.py
             公开导出
-       170 B  bilifocus/__main__.py
-            python -m bilifocus 入口
-     16980 B  bilifocus/browser_login.py
+       169 B  favfocus/__main__.py
+            python -m favfocus 入口
+     16978 B  favfocus/browser_login.py
             独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端)
-     21064 B  bilifocus/cli.py
+     21045 B  favfocus/cli.py
             命令行入口
-      9644 B  bilifocus/client.py
+      9644 B  favfocus/client.py
             B 站只读 API 客户端(签名失败自动刷新重试)
-      4790 B  bilifocus/covers.py
+      4790 B  favfocus/covers.py
             封面下载与缓存(要 PNG 后缀,避免依赖 Pillow)
-      4000 B  bilifocus/errors.py
+      3996 B  favfocus/errors.py
             错误分层:把 B 站返回码翻译成可判断异常
-      4648 B  bilifocus/http.py
+      4647 B  favfocus/http.py
             传输层:限速、重试、可注入替身
-     10408 B  bilifocus/install.py
+     12583 B  favfocus/install.py
             安装/卸载逻辑:注册表、快捷方式、覆盖安装
-      7989 B  bilifocus/models.py
+      7989 B  favfocus/models.py
             数据模型:Video(含封面地址)/ Folder / Page / LoginState
-     16417 B  bilifocus/player.py
+     16415 B  favfocus/player.py
             播放器:自动全屏播放 + 采样观看进度 + 续播
-     14704 B  bilifocus/qrlogin.py
+     14697 B  favfocus/qrlogin.py
             手机扫码登录:生成二维码、轮询状态、取 SESSDATA
-     10144 B  bilifocus/schedule.py
+     10144 B  favfocus/schedule.py
             日程:时间解析、排序、下一项、跨天重置
-      4334 B  bilifocus/secrets.py
+      4332 B  favfocus/secrets.py
             凭证加密:SESSDATA 用 Windows DPAPI 加密存储
-     32760 B  bilifocus/service.py
+     32843 B  favfocus/service.py
             服务门面:缓存、进度、统计、日程、导出
-     18827 B  bilifocus/store.py
+     19618 B  favfocus/store.py
             持久化:state.json + cache,原子写、并发安全
-      5518 B  bilifocus/theme.py
+      5518 B  favfocus/theme.py
             配色 / 字体 / DPI 适配 / 卡片尺寸
-      6687 B  bilifocus/topics.py
+      6687 B  favfocus/topics.py
             自动分类:本地关键词打分 + 分组排序
-     33650 B  bilifocus/ui_cards.py
+     33650 B  favfocus/ui_cards.py
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
-      7521 B  bilifocus/ui_farewell.py
+      7519 B  favfocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
-     34395 B  bilifocus/ui_schedule.py
+     34395 B  favfocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-     13465 B  bilifocus/ui_splash.py
+     13464 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     78455 B  bilifocus/ui_tk.py
+     78490 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
-      9773 B  bilifocus/update.py
+      9822 B  favfocus/update.py
             检查更新、下载安装包、一键更新
-      4239 B  bilifocus/wbi.py
+      4239 B  favfocus/wbi.py
             WBI 签名(纯函数,官方向量验证)
-      2639 B  bilifocus/winproc.py
+      2639 B  favfocus/winproc.py
             静默执行外部命令(不弹控制台窗口)
 
-— 包 bilifocus/vendor/ -------------------------
-       201 B  bilifocus/vendor/__init__.py
+— 包 favfocus/vendor/ --------------------------
+       201 B  favfocus/vendor/__init__.py
             内置第三方代码说明
-     39349 B  bilifocus/vendor/qrcodegen.py
+     39349 B  favfocus/vendor/qrcodegen.py
             二维码编码器(Project Nayuki,MIT,逐字保留)
 
 — 测试 tests/ -----------------------------------
        150 B  tests/__init__.py
             测试包说明
-      5989 B  tests/fakes.py
+      5985 B  tests/fakes.py
             测试替身:假传输、响应构造器、可控时钟
-      4234 B  tests/test_browser_login.py
+      4229 B  tests/test_browser_login.py
             浏览器登录:Cookie 过滤、WebSocket 帧格式
-      8561 B  tests/test_cli.py
+      8559 B  tests/test_cli.py
             命令行:排版、子命令、输出
-     12159 B  tests/test_client.py
+     12156 B  tests/test_client.py
             客户端:签名参数、错误归因、重试、翻页
-      4052 B  tests/test_covers.py
+      4051 B  tests/test_covers.py
             封面缓存:命中、过期、坏数据、非 PNG 拒绝
-      3154 B  tests/test_install.py
+      3147 B  tests/test_install.py
             安装/卸载辅助逻辑:路径、版本、快捷方式
-      1754 B  tests/test_integration.py
-            真实网络集成测试(默认跳过,需 BILI_FOCUS_INTEGRATION=1)
-      7238 B  tests/test_models.py
+      1744 B  tests/test_integration.py
+            真实网络集成测试(默认跳过,需 FAVFOCUS_INTEGRATION=1)
+      7237 B  tests/test_models.py
             模型解析、封面地址、cover/pic 字段兼容
-      5897 B  tests/test_player.py
+      5896 B  tests/test_player.py
             播放器:进度采样、启动参数、断连容错
-      4200 B  tests/test_player_retry.py
+      4197 B  tests/test_player_retry.py
             播放器启动失败重试、清理等待、日志
-      8945 B  tests/test_qrlogin.py
+      8944 B  tests/test_qrlogin.py
             扫码登录:状态映射、SESSDATA 提取、二维码矩阵
-     13344 B  tests/test_schedule.py
+     13340 B  tests/test_schedule.py
             日程:时间解析、排序、下一项、跨天重置
-      5087 B  tests/test_secrets.py
+      5085 B  tests/test_secrets.py
             凭证加密:DPAPI 往返、明文迁移、坏密文容错
-     29217 B  tests/test_service.py
+     29211 B  tests/test_service.py
             服务:缓存、登录回滚、已看、统计、导出、进度
-     14089 B  tests/test_store.py
+     15261 B  tests/test_store.py
             持久化:原子写、损坏恢复、迁移、TTL、并发、进度
-      5600 B  tests/test_topics.py
+      5598 B  tests/test_topics.py
             自动分类:关键词命中、分组顺序、边界
-      6965 B  tests/test_update.py
+      6958 B  tests/test_update.py
             更新检查:版本比较、Release 解析、下载校验
-      1699 B  tests/test_version.py
-      5536 B  tests/test_wbi.py
+      1698 B  tests/test_version.py
+      5535 B  tests/test_wbi.py
             签名与编码测试(官方向量锚定)
-      2736 B  tests/test_winproc.py
+      2731 B  tests/test_winproc.py
             外部命令静默执行(不弹控制台窗口)
 
 — 开发工具 dev/ -----------------------------------
-      4519 B  dev/README.md
+      4498 B  dev/README.md
             开发与测试说明
-      2535 B  dev/build_exe.py
+      2527 B  dev/build_exe.py
             打包单文件 exe(需要 PyInstaller)
-      2863 B  dev/build_installer.py
+      2858 B  dev/build_installer.py
             打 Windows 安装包(内嵌 exe + 安装向导)
-      3342 B  dev/bump_version.py
+      3340 B  dev/bump_version.py
             按规则升版本号(修 bug / 加功能)
-      2325 B  dev/check_imports.py
+      2324 B  dev/check_imports.py
             无第三方 linter 时的未使用 import 检查
-      2970 B  dev/demo_app.py
-      7924 B  dev/demo_data.py
+      2966 B  dev/demo_app.py
+      7918 B  dev/demo_data.py
             示例数据:17 条示例视频 + 封面 + 日程(截图与演示用)
        117 B  dev/edit-lab.cmd
             用记事本打开卡片实验室
-      8698 B  dev/installer_app.py
+      8691 B  dev/installer_app.py
             安装器界面与安装/卸载流程
-      9383 B  dev/lab_card.py
+      9377 B  dev/lab_card.py
             卡片样式练习场(改它不影响主程序)
       5142 B  dev/make_demo_covers.py
-     11129 B  dev/make_manifest.py
+     11080 B  dev/make_manifest.py
             生成本文件
-     14347 B  dev/make_screenshots.py
+     14336 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
-      1726 B  dev/probe_network.py
+      1721 B  dev/probe_network.py
             手动联调脚本:匿名打真实接口验证协议链路
        486 B  dev/run-lab.cmd
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     38983 B  dev/smoke_ui.py
+     38969 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
-      2605 B  dev/test_startup.py
+      2598 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
 
 — 资源 assets/ ----------------------------------
-     85735 B  assets/bilifocus-icon.ico
+     94343 B  assets/favfocus-icon.ico
             应用图标(16~256 八个尺寸)
-     17192 B  assets/icon-128.png
-    149309 B  assets/icon-512.png
+     18710 B  assets/icon-128.png
+    171140 B  assets/icon-512.png
             512 透明圆角图标(官网/favicon 用)
      42770 B  assets/icon-art.jpg
-            图标原画(手绘 bilifocus 灯泡小人)
-    216088 B  assets/icon-preview.png
+            图标原画(手绘 favfocus 灯泡小人)
+    234028 B  assets/icon-preview.png
             图标各尺寸预览图
-      5118 B  assets/make_icon.py
+      5255 B  assets/make_icon.py
             从手绘原画生成图标(灯泡小人)
 
 — 示例封面 dev/demo-covers/ -----------------------
@@ -226,28 +226,28 @@ BiliFocus 2.4.1 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-    149309 B  docs/icon.png
-     42579 B  docs/index.html
+    171140 B  docs/icon.png
+     42961 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
-      2481 B  .github/workflows/release.yml
+      2473 B  .github/workflows/release.yml
             CI:推 v* 标签自动打 exe 并发布 Release
-      1138 B  .github/workflows/tests.yml
+      1137 B  .github/workflows/tests.yml
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-      4946 B  docs/promo/介绍文案.md
+      4940 B  docs/promo/介绍文案.md
       4201 B  docs/promo/录制与发布流程.md
-      7151 B  docs/promo/视频剧本.md
+      7148 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
-     34327 B  docs/screenshots/farewell.png
-    218285 B  docs/screenshots/grouped.png
-     14547 B  docs/screenshots/qr-login.png
-    253124 B  docs/screenshots/reminder.png
-     68712 B  docs/screenshots/schedule.png
-     87744 B  docs/screenshots/splash.png
-    257892 B  docs/screenshots/ui.png
-     62510 B  docs/screenshots/update.png
+     36156 B  docs/screenshots/farewell.png
+    221565 B  docs/screenshots/grouped.png
+     14550 B  docs/screenshots/qr-login.png
+    248350 B  docs/screenshots/reminder.png
+     68745 B  docs/screenshots/schedule.png
+     75167 B  docs/screenshots/splash.png
+    253159 B  docs/screenshots/ui.png
+     62913 B  docs/screenshots/update.png
 
 共 137 个文件。

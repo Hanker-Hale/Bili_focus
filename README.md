@@ -1,4 +1,4 @@
-# BiliFocus
+# FavFocus
 
 **只看收藏夹,不被推荐流带走。** 一个 Windows 桌面小工具:打开就是你的 B 站收藏夹,
 点开即全屏播放,看完自动记进度,下次接着看。
@@ -22,6 +22,10 @@
 > 截图使用**示例数据**(示例收藏夹、示例视频标题),不含任何真实账号信息;
 > 需要重新生成可以运行 `python dev/make_screenshots.py`。
 
+> **改名说明**:项目原名 BiliFocus,2026-10 起改名为 **FavFocus**。
+> 旧版数据目录 `%APPDATA%\bili-focus` 会在首次运行时自动复制到 `%APPDATA%\favfocus`;
+> 新安装器会自动关掉并清理旧版 BiliFocus(旧数据保留)。
+
 ## 功能一览
 
 - **只看收藏夹**:没有首页推荐、没有弹幕列表,只有你收藏的东西
@@ -36,20 +40,20 @@
 - **零第三方依赖**:只用 Python 标准库 + tkinter(内置了一个 MIT 的二维码编码器)
 
 > 需要 Python 3.10+ 和 tkinter(Windows 官方安装包默认带)。登录后所有数据只存本机
-> `%APPDATA%\bili-focus`,不上传任何服务器。
+> `%APPDATA%\favfocus`,不上传任何服务器。
 
 ---
 
 ## 下载安装(普通用户)
 
-1. 到仓库的 **Releases** 页面下载最新的 `BiliFocus-Setup-x.y.z.exe`;
-2. 双击 → 点「安装」(默认装到 `%LOCALAPPDATA%\Programs\BiliFocus`,**不需要管理员权限**);
+1. 到仓库的 **Releases** 页面下载最新的 `FavFocus-Setup-x.y.z.exe`;
+2. 双击 → 点「安装」(默认装到 `%LOCALAPPDATA%\Programs\FavFocus`,**不需要管理员权限**);
 3. 从桌面 / 开始菜单打开,点「手机扫码登录」扫一下。
 
 安装器会创建桌面和开始菜单快捷方式,并在 Windows「设置 → 应用」里登记卸载入口。
 卸载时会问一句:要不要同时删除观看记录(默认保留)。
 
-> 数据始终在本机 `%APPDATA%\bili-focus`,和绿色版 exe 完全通用——两者可以互相替换,
+> 数据始终在本机 `%APPDATA%\favfocus`,和绿色版 exe 完全通用——两者可以互相替换,
 > 登录态 / 进度 / 日程都接着用。
 
 ## 检查更新与一键更新
@@ -64,12 +68,12 @@
   启动安装器,**自动关闭当前程序、覆盖安装、装完自动重新打开**;
 - **绿色版用户**:点「立即更新」直接打开 Releases 页面,自己下载;
 - **隐私**:只读 GitHub 公开的 Release 信息,不发送任何用户数据;
-- **可关掉**:设置环境变量 `BILI_FOCUS_NO_UPDATE_CHECK=1` 即可完全禁用。
+- **可关掉**:设置环境变量 `FAVFOCUS_NO_UPDATE_CHECK=1` 即可完全禁用。
 
 命令行也能查:
 
 ```powershell
-bilifocus-cli.cmd update
+favfocus-cli.cmd update
 ```
 
 > 注意:检查的是**仓库发布过的 Release**。如果仓库还只有代码、没发 Release,
@@ -97,7 +101,7 @@ bilifocus-cli.cmd update
 
 判断口径:**用户"用起来"有变化 → 升版本(优化=patch,新功能=minor);只是"看起来"变化 → 不升。**
 
-升版本用脚本(会同时改 `pyproject.toml` 和 `bilifocus/__init__.py`):
+升版本用脚本(会同时改 `pyproject.toml` 和 `favfocus/__init__.py`):
 
 ```powershell
 python dev/bump_version.py patch   # 修完 bug
@@ -108,9 +112,9 @@ python dev/bump_version.py minor   # 加完功能
 
 | 事情 | 怎么做 |
 |---|---|
-| 改版本号 | 改 `pyproject.toml` 的 `version` 和 `bilifocus/__init__.py` 的 `__version__`(两处保持一致) |
-| 发新版 | `git tag v2.0.1` → `git push origin v2.0.1`,CI 自动打 `BiliFocus.exe` + `BiliFocus-Setup-2.0.1.exe` 并挂到 Release |
-| 老用户更新 | 下载新安装包**覆盖安装**即可:若旧版本正在运行,安装器会自动关掉它;程序文件替换,`%APPDATA%\bili-focus` 的数据完全保留 |
+| 改版本号 | 改 `pyproject.toml` 的 `version` 和 `favfocus/__init__.py` 的 `__version__`(两处保持一致) |
+| 发新版 | `git tag v2.0.1` → `git push origin v2.0.1`,CI 自动打 `FavFocus.exe` + `FavFocus-Setup-2.0.1.exe` 并挂到 Release |
+| 老用户更新 | 下载新安装包**覆盖安装**即可:若旧版本正在运行,安装器会自动关掉它;程序文件替换,`%APPDATA%\favfocus` 的数据完全保留 |
 | 为什么不做静默自动更新 | 覆盖安装已经是"下载→双击→安装";后台静默替换程序会引入安全和排查成本,不值得 |
 
 安装后在 Windows「设置 → 应用」里能看到版本号;想回旧版本,下载那版安装包覆盖安装即可。
@@ -122,8 +126,8 @@ python -m pip install pyinstaller
 python dev/build_exe.py
 ```
 
-产物是 `dist/BiliFocus.exe`(约 12 MB,单文件)。双击就能跑,目标机器不需要装 Python。
-图标、字体、二维码库都打进包里;数据仍然只写本机 `%APPDATA%\bili-focus`。
+产物是 `dist/FavFocus.exe`(约 12 MB,单文件)。双击就能跑,目标机器不需要装 Python。
+图标、字体、二维码库都打进包里;数据仍然只写本机 `%APPDATA%\favfocus`。
 
 > 分发建议:把 exe 传到 GitHub 的 **Releases** 里,而不是直接塞进仓库
 > (二进制文件进 git 会让仓库越来越重,`dist/` 已经在 `.gitignore` 里)。
@@ -135,7 +139,7 @@ python dev/build_exe.py
 分层是单向的:界面层(`ui_*.py`)只调用服务层(`service.py`)的公开方法,底层不依赖界面。
 
 ```
-bilifocus/
+favfocus/
   wbi.py            WBI 签名(纯函数,官方向量验证)
   http.py           传输层(限速 + 重试,可注入替身)
   models.py         数据模型(脏数据兜底)
@@ -167,32 +171,32 @@ bilifocus/
 把仓库克隆到本地,所有命令都在仓库根目录执行:
 
 ```powershell
-git clone <你的仓库地址> BiliFocus
-cd BiliFocus
+git clone <你的仓库地址> FavFocus
+cd FavFocus
 ```
 
 ```powershell
-cd BiliFocus
+cd FavFocus
 
 # 1. 登录:终端里显示二维码,用 B 站手机客户端扫一下
-python -m bilifocus login --qrcode
+python -m favfocus login --qrcode
 
 #    (不想扫码也可以:login --browser 走独立浏览器,或 login 手动粘 SESSDATA)
 
 # 2. 看有哪些收藏夹
-python -m bilifocus folders
+python -m favfocus folders
 
 # 3. 列内容(第一次会记住 fid)
-python -m bilifocus list --fid 12345678
+python -m favfocus list --fid 12345678
 
 # 4. 自检
-python -m bilifocus doctor
+python -m favfocus doctor
 ```
 
-图形界面(当前版本):双击 `启动 BiliFocus.cmd`(实际调用 `bilifocus.cmd`),或
-`python -m bilifocus.ui_tk`。登录框的默认按钮是 **「手机扫码登录」**。
+图形界面(当前版本):双击 `启动 FavFocus.cmd`(实际调用 `favfocus.cmd`),或
+`python -m favfocus.ui_tk`。登录框的默认按钮是 **「手机扫码登录」**。
 
-命令行版用 `bilifocus-cli.cmd`,例如 `bilifocus-cli.cmd list --fid 12345678`。
+命令行版用 `favfocus-cli.cmd`,例如 `favfocus-cli.cmd list --fid 12345678`。
 
 ---
 
@@ -243,12 +247,12 @@ B 站下发,**不经过任何第三方服务**(没有把二维码交给外部图
 **SESSDATA 从哪来**:B 站成功时会同时/或只通过 `Set-Cookie` 下发 Cookie,
 所以代码依次尝试 `data.cookie_info.cookies` → `data.url` 查询参数 → `Set-Cookie`
 响应头 → 跟随跨域地址再读一次。如果仍然提示「没拿到 SESSDATA」,
-设环境变量 `BILI_FOCUS_QR_DEBUG=1` 再运行 `login --qrcode`,
+设环境变量 `FAVFOCUS_QR_DEBUG=1` 再运行 `login --qrcode`,
 它会把响应结构打到终端(只打印字段名和值的长度,不打印任何凭证),把输出发我即可。
 
 二维码是本地编码的,不依赖 Pillow 之类的大库——内置了 Project Nayuki 的
 [QR Code generator](https://www.nayuki.io/page/qr-code-generator-library)(MIT 许可,
-原文件逐字保留在 `bilifocus/vendor/qrcodegen.py`)。
+原文件逐字保留在 `favfocus/vendor/qrcodegen.py`)。
 
 ---
 
@@ -276,12 +280,12 @@ B 站下发,**不经过任何第三方服务**(没有把二维码交给外部图
 
 | 路径 | 内容 |
 |---|---|
-| `%APPDATA%\bili-focus\browser-profile\` | 那个独立浏览器的配置(含登录态) |
-| `%APPDATA%\bili-focus\state.json` | 软件自己存的 SESSDATA |
+| `%APPDATA%\favfocus\browser-profile\` | 那个独立浏览器的配置(含登录态) |
+| `%APPDATA%\favfocus\state.json` | 软件自己存的 SESSDATA |
 
 两个都在 APPDATA,**不在项目目录里**,所以打包/分享代码不会带出登录态。
 
-要彻底清掉:`python -m bilifocus logout --forget-browser`。
+要彻底清掉:`python -m favfocus logout --forget-browser`。
 
 ### 限制
 
@@ -424,7 +428,7 @@ B 站下发,**不经过任何第三方服务**(没有把二维码交给外部图
 - 取总分最高的类别,总分不到 2 分归「其他」;
 - 类别顺序:条数多的在前,「其他」永远最后。
 
-当前的类别(词表在 `bilifocus/topics.py`,想改直接改):
+当前的类别(词表在 `favfocus/topics.py`,想改直接改):
 
 `编程开发` · `AI / 机器学习` · `数学` · `英语 / 外刊` · `图形学 / 渲染` ·
 `公开课 / 大学课程` · `科普 / 杂谈` · `其他`
@@ -531,7 +535,7 @@ B 站下发,**不经过任何第三方服务**(没有把二维码交给外部图
 界面里默认每 **180 秒**核对一次,只有在**真的有新内容**时才重画列表,并保持你
 当前选中项不动。没变化就完全安静。
 
-**关掉它**:把 `%APPDATA%\bili-focus\state.json` 里的 `auto_sync_seconds` 改成 `0`。
+**关掉它**:把 `%APPDATA%\favfocus\state.json` 里的 `auto_sync_seconds` 改成 `0`。
 
 **实测(真实接口,55 条收藏):**
 
@@ -547,9 +551,9 @@ B 站下发,**不经过任何第三方服务**(没有把二维码交给外部图
 ## 给前端用的 API
 
 ```python
-from bilifocus import FavoritesService
+from favfocus import FavoritesService
 
-service = FavoritesService()          # 默认读 %APPDATA%\bili-focus
+service = FavoritesService()          # 默认读 %APPDATA%\favfocus
 
 # 登录(失败抛 AuthRequiredError,不会留下无效凭证)
 state = service.login("SESSDATA=...")
@@ -601,10 +605,10 @@ service.export_json(view, "out/fav.json")
 `Video` 上直接可用:`title` / `upper` / `duration_text` / `bvid` / `url` /
 `is_valid` / `is_openable` / `key`(已看标记用的稳定键)。
 
-**错误处理**:所有可预期失败都继承 `BiliFocusError`。前端按类型分支即可:
+**错误处理**:所有可预期失败都继承 `FavFocusError`。前端按类型分支即可:
 
 ```python
-from bilifocus import AuthRequiredError, PermissionDeniedError, RiskControlError
+from favfocus import AuthRequiredError, PermissionDeniedError, RiskControlError
 
 try:
     view = service.videos(fid)
@@ -621,13 +625,13 @@ except RiskControlError:
 ## 测试
 
 ```powershell
-cd BiliFocus
+cd FavFocus
 
 # 单元测试(不联网)
 python -m unittest discover -s tests -t .
 
 # 加上真实网络集成测试
-$env:BILI_FOCUS_INTEGRATION='1'
+$env:FAVFOCUS_INTEGRATION='1'
 python -m unittest discover -s tests -t .
 ```
 
@@ -676,23 +680,23 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 
 | 文件 | 作用 |
 |---|---|
-| `bilifocus/*.py` | 底层包(签名、传输、模型、存储、服务、CLI) |
-| `bilifocus/browser_login.py` | 独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端) |
-| `bilifocus/qrlogin.py` | 手机扫码登录(生成二维码、轮询状态、取 SESSDATA) |
-| `bilifocus/vendor/qrcodegen.py` | 内置二维码编码器(MIT,Nayuki,逐字保留) |
-| `bilifocus/ui_cards.py` | 封面卡片网格(Canvas + 异步加载封面 + 响应式列数) |
-| `bilifocus/ui_splash.py` | 启动页(Canvas 矢量动画,无图片资源) |
-| `bilifocus/player.py` | 播放器:自动全屏 + CDP 采样观看进度 + 续播 |
-| `bilifocus/topics.py` | 自动分类:本地关键词打分 + 分组排序 |
-| `bilifocus/schedule.py` | 日程:时间解析、排序、下一项、跨天重置 |
-| `bilifocus/ui_schedule.py` | 日程面板(自己设定时间 + 内容) |
-| `bilifocus/ui_farewell.py` | 退出小结卡(亲爱的{用户名} + 观看时长 + 已看完比例) |
-| `bilifocus/install.py` | 安装/卸载逻辑(注册表、快捷方式、覆盖安装) |
-| `bilifocus/theme.py` | 配色、字体、DPI 适配、卡片尺寸(界面与网格共用) |
-| `bilifocus/ui_tk.py` | 可替换的桌面壳 |
-| `bilifocus.cmd` | 界面启动器(双击用) |
-| `启动 BiliFocus.cmd` | 中文名包装,指向 `bilifocus.cmd` |
-| `bilifocus-cli.cmd` | 命令行启动器 |
+| `favfocus/*.py` | 底层包(签名、传输、模型、存储、服务、CLI) |
+| `favfocus/browser_login.py` | 独立浏览器登录 + CDP 取 Cookie(自带 WebSocket 客户端) |
+| `favfocus/qrlogin.py` | 手机扫码登录(生成二维码、轮询状态、取 SESSDATA) |
+| `favfocus/vendor/qrcodegen.py` | 内置二维码编码器(MIT,Nayuki,逐字保留) |
+| `favfocus/ui_cards.py` | 封面卡片网格(Canvas + 异步加载封面 + 响应式列数) |
+| `favfocus/ui_splash.py` | 启动页(Canvas 矢量动画,无图片资源) |
+| `favfocus/player.py` | 播放器:自动全屏 + CDP 采样观看进度 + 续播 |
+| `favfocus/topics.py` | 自动分类:本地关键词打分 + 分组排序 |
+| `favfocus/schedule.py` | 日程:时间解析、排序、下一项、跨天重置 |
+| `favfocus/ui_schedule.py` | 日程面板(自己设定时间 + 内容) |
+| `favfocus/ui_farewell.py` | 退出小结卡(亲爱的{用户名} + 观看时长 + 已看完比例) |
+| `favfocus/install.py` | 安装/卸载逻辑(注册表、快捷方式、覆盖安装) |
+| `favfocus/theme.py` | 配色、字体、DPI 适配、卡片尺寸(界面与网格共用) |
+| `favfocus/ui_tk.py` | 可替换的桌面壳 |
+| `favfocus.cmd` | 界面启动器(双击用) |
+| `启动 FavFocus.cmd` | 中文名包装,指向 `favfocus.cmd` |
+| `favfocus-cli.cmd` | 命令行启动器 |
 | \	ests/\ | 331 项离线测试 + 3 项联网集成测试(共 334) |
 | `dev/smoke_ui.py` / `dev/test_startup.py` | 界面冒烟与启动链路测试 |
 | `dev/check_imports.py` | 轻量未使用 import 检查(无第三方 linter 时用) |
@@ -707,11 +711,11 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 
 | 文件 | 内容 |
 |---|---|
-| `%APPDATA%\bili-focus\state.json` | 凭证、已看标记、界面偏好(小、常改) |
-| `%APPDATA%\bili-focus\cache\fav-<fid>.json` | 收藏夹缓存(大、可丢) |
-| `%APPDATA%\bili-focus\player.log` | 播放器启动日志(排查「视频一开就退」用,可删) |
+| `%APPDATA%\favfocus\state.json` | 凭证、已看标记、界面偏好(小、常改) |
+| `%APPDATA%\favfocus\cache\fav-<fid>.json` | 收藏夹缓存(大、可丢) |
+| `%APPDATA%\favfocus\player.log` | 播放器启动日志(排查「视频一开就退」用,可删) |
 
-用 `BILI_FOCUS_HOME` 环境变量可以整体改到别的目录(测试和便携用法靠它)。
+用 `FAVFOCUS_HOME` 环境变量可以整体改到别的目录(测试和便携用法靠它)。
 
 刻意分成两个文件:标记一条已看不该顺带重写整个收藏夹列表。
 
@@ -733,7 +737,7 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 - 旧版本升级上来的明文凭证,第一次启动时**自动就地加密**;
 - 解除登录(换登录 / 退出)会删掉密文。
 
-想确认当前状态:`bilifocus-cli.cmd status` 里会显示 `has_sessdata`,但不会打印凭证本身。
+想确认当前状态:`favfocus-cli.cmd status` 里会显示 `has_sessdata`,但不会打印凭证本身。
 
 ## 持续集成(GitHub Actions)
 
@@ -742,7 +746,7 @@ python dev/test_startup.py  # 用无效凭证跑完整启动链路
 | 文件 | 触发 | 做什么 |
 |---|---|---|
 | `.github/workflows/tests.yml` | push 到 main / PR | 在 Windows 上跑 Python 3.10–3.13 四套:单元测试 + import 检查 + 界面冒烟 + 构建 wheel |
-| `.github/workflows/release.yml` | 推 `v*` 标签 | 跑测试 → 用 PyInstaller 打 `BiliFocus.exe` → 挂到 GitHub Release |
+| `.github/workflows/release.yml` | 推 `v*` 标签 | 跑测试 → 用 PyInstaller 打 `FavFocus.exe` → 挂到 GitHub Release |
 
 发布新版本只要:
 
@@ -751,11 +755,11 @@ git tag v2.1.0
 git push origin v2.1.0
 ```
 
-跑完就能在 Releases 页面下载 `BiliFocus.exe`。仓库地址确定后,可以把这个徽章加在
+跑完就能在 Releases 页面下载 `FavFocus.exe`。仓库地址确定后,可以把这个徽章加在
 README 顶部(把 `<用户名>` 换成你的):
 
 ```markdown
-![tests](https://github.com/<用户名>/BiliFocus/actions/workflows/tests.yml/badge.svg)
+![tests](https://github.com/<用户名>/FavFocus/actions/workflows/tests.yml/badge.svg)
 ```
 
 ## 几个设计决定
@@ -791,10 +795,10 @@ README 顶部(把 `<用户名>` 换成你的):
 
 ## 从 v1 迁移
 
-v1 是单文件 `bili_focus.py`。现在它只剩一个转发壳:
+v1 是单文件脚本。现在入口 `favfocus.py` 只剩一个转发壳:
 
 ```python
-from bilifocus.ui_tk import main
+from favfocus.ui_tk import main
 ```
 
 `state.json` 结构兼容(v1 的 `{cookies, watched, ui}` 会被自动补上 `schema: 2`),

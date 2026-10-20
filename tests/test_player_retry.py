@@ -7,9 +7,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from bilifocus import player as player_mod
-from bilifocus import winproc
-from bilifocus.player import BrowserPlayer, PlaybackError, PlaybackResult
+from favfocus import player as player_mod
+from favfocus import winproc
+from favfocus.player import BrowserPlayer, PlaybackError, PlaybackResult
 
 
 class FakeProcess:

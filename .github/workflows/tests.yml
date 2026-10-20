@@ -35,7 +35,7 @@ jobs:
         run: python -m unittest discover -s tests -t . -v
 
       - name: 未使用 import 检查
-        run: python dev/check_imports.py bilifocus tests dev
+        run: python dev/check_imports.py favfocus tests dev
 
       - name: 界面冒烟(需要桌面会话;失败不阻断)
         continue-on-error: true

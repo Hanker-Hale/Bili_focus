@@ -6,10 +6,10 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from bilifocus.client import BiliClient
-from bilifocus.http import HttpResponse
-from bilifocus.service import FavoritesService
-from bilifocus.store import CacheStore, StateStore
+from favfocus.client import BiliClient
+from favfocus.http import HttpResponse
+from favfocus.service import FavoritesService
+from favfocus.store import CacheStore, StateStore
 
 # 官方文档里的样例密钥(每天会变,但作为固定输入足够)
 IMG_KEY = "7cd084941338484aae1ad9425b84077c"

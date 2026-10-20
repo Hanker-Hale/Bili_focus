@@ -29,8 +29,8 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import demo_data  # noqa: E402
-from bilifocus import theme, ui_tk  # noqa: E402
-from bilifocus.models import FavoritesView  # noqa: E402
+from favfocus import theme, ui_tk  # noqa: E402
+from favfocus.models import FavoritesView  # noqa: E402
 
 
 def pump(root: tk.Tk, seconds: float) -> None:
@@ -45,7 +45,7 @@ def main() -> int:
     # 高 DPI 下也清晰:必须在 tk.Tk() 之前调用
     theme.enable_dpi_awareness()
     # 录屏时别弹"发现新版本"横幅,画面干净一点
-    os.environ["BILI_FOCUS_NO_UPDATE_CHECK"] = "1"
+    os.environ["FAVFOCUS_NO_UPDATE_CHECK"] = "1"
 
     service, videos, folder = demo_data.build_demo()
 

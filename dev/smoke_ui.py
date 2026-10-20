@@ -12,14 +12,14 @@ import time
 import tkinter as tk
 from pathlib import Path
 
-sandbox = tempfile.mkdtemp(prefix="bili-focus-smoke-")
-os.environ["BILI_FOCUS_HOME"] = sandbox
+sandbox = tempfile.mkdtemp(prefix="favfocus-smoke-")
+os.environ["FAVFOCUS_HOME"] = sandbox
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import bilifocus.ui_tk as ui  # noqa: E402
-from bilifocus.models import FavoritesView, Video  # noqa: E402
-from bilifocus.service import FavoritesService  # noqa: E402
-from bilifocus.store import StateStore  # noqa: E402
+import favfocus.ui_tk as ui  # noqa: E402
+from favfocus.models import FavoritesView, Video  # noqa: E402
+from favfocus.service import FavoritesService  # noqa: E402
+from favfocus.store import StateStore  # noqa: E402
 
 failures = []
 
@@ -410,7 +410,7 @@ app._set_topic(sample[0], "graphics")
 pump(root)
 forced = service.topic_overrides()
 check("topic override persisted", forced.get(sample[0].key) == "graphics", str(forced))
-grouped_ids = [group.id for group in __import__("bilifocus.topics", fromlist=["group"]).group(
+grouped_ids = [group.id for group in __import__("favfocus.topics", fromlist=["group"]).group(
     app.visible, forced
 )]
 check("grid regroups with the override", "graphics" in grouped_ids, str(grouped_ids))
@@ -419,7 +419,7 @@ pump(root)
 check("restoring auto topic clears the override", service.topic_overrides() == {}, str(service.topic_overrides()))
 
 # ── 播放:自动全屏 → 记录进度 → 下次续播 ───────────────────────────────
-from bilifocus.player import PlaybackResult  # noqa: E402
+from favfocus.player import PlaybackResult  # noqa: E402
 
 played_urls: list[str] = []
 
@@ -570,7 +570,7 @@ check(
 probe_grid.destroy()
 
 # ── 扫码登录窗口:注入假会话,不联网 ─────────────────────────────────
-from bilifocus.qrlogin import QrPollResult, QrTicket  # noqa: E402
+from favfocus.qrlogin import QrPollResult, QrTicket  # noqa: E402
 
 
 class FakeQrSession:
@@ -633,7 +633,7 @@ app._auto_sync_tick()
 pump(root)
 check("auto sync skips while previous run is in flight", auto_calls == [], str(auto_calls))
 # ── 登录态失效:只提示,不删凭证(以前会静默清掉 SESSDATA)───────────
-from bilifocus.models import LoginState  # noqa: E402
+from favfocus.models import LoginState  # noqa: E402
 
 service.store.set_sessdata("demo-token")
 saved_login_state = service.login_state
@@ -688,7 +688,7 @@ for round_no in range(1, 4):
     )
 
 # ── 日程:绑定视频 / 重复规则 / 到点提醒 / 面板 ──────────────────────
-from bilifocus import schedule as schedule_mod  # noqa: E402
+from favfocus import schedule as schedule_mod  # noqa: E402
 
 plan_video = sample[0]
 text_item = service.add_schedule("20:00", "看高等数学")
@@ -848,7 +848,7 @@ check(
 # ── 检查更新:全屏更新提示 / 触发策略 / 一键更新流程 ───────────────
 import tempfile  # noqa: E402
 
-from bilifocus import update as update_mod  # noqa: E402
+from favfocus import update as update_mod  # noqa: E402
 
 fake_info = update_mod.ReleaseInfo(
     version="9.9.9",

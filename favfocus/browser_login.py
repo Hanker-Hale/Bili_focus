@@ -28,13 +28,13 @@ from pathlib import Path
 
 from .winproc import run_hidden, taskkill
 
-from .errors import BiliFocusError
+from .errors import FavFocusError
 
 LOGIN_URL = "https://www.bilibili.com/"
 WEB_SOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 
-class BrowserLoginError(BiliFocusError):
+class BrowserLoginError(FavFocusError):
     """取登录态失败,消息面向用户。"""
 
 

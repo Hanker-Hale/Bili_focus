@@ -9,11 +9,11 @@ from __future__ import annotations
 from typing import Any
 
 
-class BiliFocusError(Exception):
+class FavFocusError(Exception):
     """本库所有异常的基类。捕获它就捕获了全部可预期失败。"""
 
 
-class NetworkError(BiliFocusError):
+class NetworkError(FavFocusError):
     """连不上、超时、TLS 失败等传输层问题。通常值得重试。"""
 
     def __init__(self, message: str, *, url: str | None = None):
@@ -21,11 +21,11 @@ class NetworkError(BiliFocusError):
         self.url = url
 
 
-class InvalidResponseError(BiliFocusError):
+class InvalidResponseError(FavFocusError):
     """响应不是预期的 JSON(常见于被风控页拦截返回 HTML)。"""
 
 
-class ApiError(BiliFocusError):
+class ApiError(FavFocusError):
     """B 站返回了 code != 0。"""
 
     def __init__(

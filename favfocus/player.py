@@ -31,7 +31,7 @@ from .browser_login import (
     find_browser,
     find_free_port,
 )
-from .errors import BiliFocusError
+from .errors import FavFocusError
 from .winproc import taskkill, wait_pid_gone
 
 # 采样间隔:2 秒足够算准观看时长,又不会把 CDP 打满
@@ -62,7 +62,7 @@ SAMPLE_JS = r"""
 """
 
 
-class PlaybackError(BiliFocusError):
+class PlaybackError(FavFocusError):
     """播放过程中的可预期失败。"""
 
 

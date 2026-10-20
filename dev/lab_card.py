@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """卡片实验室 —— 给零基础用的练习场。
 
-**注意:主界面已经有卡片网格了**(`bilifocus/ui_cards.py`)。这个文件是"沙盒":
+**注意:主界面已经有卡片网格了**(`favfocus/ui_cards.py`)。这个文件是"沙盒":
 改它不会影响正式程序,适合放心乱试新样式,试出满意的再搬进 ui_cards.py。
 
 ════════════════════════════════════════════════════════════════
@@ -44,10 +44,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from bilifocus.covers import CoverFetcher
-from bilifocus.models import Video
-from bilifocus.service import FavoritesService
-from bilifocus.theme import enable_dpi_awareness, font, init_display, init_fonts
+from favfocus.covers import CoverFetcher
+from favfocus.models import Video
+from favfocus.service import FavoritesService
+from favfocus.theme import enable_dpi_awareness, font, init_display, init_fonts
 
 # ════════════════════════════════════════════════════════════════
 #   ★ 旋钮区 —— 只改等号右边的值,别动左边的名字
@@ -169,7 +169,7 @@ def load_videos(service: FavoritesService, count: int = 3) -> list[Video]:
     """取几条真实收藏。老缓存里没有封面地址时,自动刷新一次。"""
     fid = service.default_fid
     if not fid:
-        raise SystemExit("还没有默认收藏夹。先运行: python -m bilifocus list --fid <你的fid>")
+        raise SystemExit("还没有默认收藏夹。先运行: python -m favfocus list --fid <你的fid>")
     view = service.videos(fid)
     if not any(video.pic for video in view.videos):
         print("缓存里没有封面地址,刷新一次…")

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""从手绘原画生成 BiliFocus 的应用图标。
+"""从手绘原画生成 FavFocus 的应用图标。
 
-原画:`assets/icon-art.jpg`(1080x1080,浅蓝底 + 手写 bilifocus + 灯泡小人)。
+原画:`assets/icon-art.jpg`(1080x1080,浅蓝底 + 手写 favfocus + 灯泡小人)。
 
 小尺寸(16/24/32/40)单独裁"灯泡 + 小人"区域:原画上的文字在 16px 下会糊成一片,
 只保留图形主体,任务栏/开始菜单里才认得出来。ICO 里每个尺寸放各自渲染的 PNG,
 所以这里手写 ICO 容器,而不是让 PIL 用一张图缩放出所有尺寸。
 
 产物:
-  assets/bilifocus-icon.ico   应用图标(16~256 七个尺寸,exe/安装器/窗口都用它)
+  assets/favfocus-icon.ico   应用图标(16~256 七个尺寸,exe/安装器/窗口都用它)
   assets/icon-512.png         512 透明圆角 PNG(官网 logo / favicon / 文档)
   assets/icon-preview.png     各尺寸在白/纸/深色背景下的预览
 
@@ -27,13 +27,13 @@ from PIL import Image, ImageDraw
 
 HERE = Path(__file__).resolve().parent
 ART_PATH = HERE / "icon-art.jpg"
-ICO_PATH = HERE / "bilifocus-icon.ico"
+ICO_PATH = HERE / "favfocus-icon.ico"
 PNG_PATH = HERE / "icon-512.png"
 PNG128_PATH = HERE / "icon-128.png"
 PREVIEW_PATH = HERE / "icon-preview.png"
 
 SIZES = (16, 24, 32, 40, 48, 64, 128, 256)
-SMALL_CUTOFF = 40          # <= 这个尺寸裁灯泡特写
+SMALL_CUTOFF = 40          # 保留常量供文档说明;改名后所有尺寸都用灯泡特写(原画上的旧名字不能再用)
 CORNER_RADIUS = 0.18       # 圆角比例(0 = 方角)
 SUPERSAMPLE = 4
 
@@ -61,13 +61,13 @@ def _art() -> Image.Image:
 
 
 def _render(size: int) -> Image.Image:
+    """所有尺寸都裁"灯泡 + 小人"特写:原画上的手写词是旧名字,不能再当新图标用。"""
     art = _art()
     width, height = art.size
-    if size <= SMALL_CUTOFF:
-        left, top, right, bottom = CROP_BOX
-        art = art.crop(
-            (int(width * left), int(height * top), int(width * right), int(height * bottom))
-        )
+    left, top, right, bottom = CROP_BOX
+    art = art.crop(
+        (int(width * left), int(height * top), int(width * right), int(height * bottom))
+    )
     return _rounded(art.resize((size, size), Image.LANCZOS))
 
 

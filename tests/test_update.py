@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from bilifocus import update
+from favfocus import update
 
 
 class VersionTests(unittest.TestCase):
@@ -27,8 +27,8 @@ class VersionTests(unittest.TestCase):
 
     def test_urls(self):
         self.assertIn("/releases/download/v2.2.0/", update.installer_url_for("2.2.0"))
-        self.assertTrue(update.installer_url_for("2.2.0").endswith("BiliFocus-Setup-2.2.0.exe"))
-        self.assertTrue(update.portable_url_for("2.2.0").endswith("BiliFocus.exe"))
+        self.assertTrue(update.installer_url_for("2.2.0").endswith("FavFocus-Setup-2.2.0.exe"))
+        self.assertTrue(update.portable_url_for("2.2.0").endswith("FavFocus.exe"))
 
 
 class ReleaseParseTests(unittest.TestCase):
@@ -40,11 +40,11 @@ class ReleaseParseTests(unittest.TestCase):
                 "body": "本次更新:日程封面",
                 "assets": [
                     {
-                        "name": "BiliFocus-Setup-2.2.0.exe",
+                        "name": "FavFocus-Setup-2.2.0.exe",
                         "browser_download_url": "https://example.com/setup.exe",
                     },
                     {
-                        "name": "BiliFocus.exe",
+                        "name": "FavFocus.exe",
                         "browser_download_url": "https://example.com/app.exe",
                     },
                 ],
@@ -159,11 +159,11 @@ class OneClickTests(unittest.TestCase):
 
     def test_launch_installer_writes_script(self):
         with mock.patch.object(update.winproc, "run_detached") as detached:
-            ok = update.launch_installer(Path(r"C:\Temp\BiliFocus-Setup-2.2.0.exe"))
+            ok = update.launch_installer(Path(r"C:\Temp\FavFocus-Setup-2.2.0.exe"))
         self.assertTrue(ok)
         self.assertTrue(detached.called)
         script = Path(detached.call_args[0][0][-1])
-        self.assertTrue(script.name.startswith("bilifocus-update-"))
+        self.assertTrue(script.name.startswith("favfocus-update-"))
         script.unlink(missing_ok=True)
 
 

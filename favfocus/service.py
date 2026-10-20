@@ -107,7 +107,11 @@ class FavoritesService:
     @property
     def default_mid(self) -> int | None:
         """收藏夹所属用户 mid:优先环境变量,其次本机记住的(登录时写入)。"""
-        candidates = (os.environ.get("BILI_FOCUS_MID"), self.store.get_pref("mid"))
+        candidates = (
+            os.environ.get("FAVFOCUS_MID"),
+            os.environ.get("BILI_FOCUS_MID"),
+            self.store.get_pref("mid"),
+        )
         for candidate in candidates:
             try:
                 value = int(candidate) if candidate else 0

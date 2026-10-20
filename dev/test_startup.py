@@ -15,13 +15,13 @@ import tempfile
 import time
 import tkinter as tk
 
-sandbox = tempfile.mkdtemp(prefix="bili-focus-startup-")
-os.environ["BILI_FOCUS_HOME"] = sandbox
+sandbox = tempfile.mkdtemp(prefix="favfocus-startup-")
+os.environ["FAVFOCUS_HOME"] = sandbox
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import bilifocus.ui_tk as ui  # noqa: E402
-from bilifocus.service import FavoritesService  # noqa: E402
-from bilifocus.store import StateStore  # noqa: E402
+import favfocus.ui_tk as ui  # noqa: E402
+from favfocus.service import FavoritesService  # noqa: E402
+from favfocus.store import StateStore  # noqa: E402
 
 failures = []
 

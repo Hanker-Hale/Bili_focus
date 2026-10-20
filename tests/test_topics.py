@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus import topics
-from bilifocus.models import Video
+from favfocus import topics
+from favfocus.models import Video
 
 
 def make(bvid: str, title: str = "", upper: str = "u", intro: str = "") -> Video:

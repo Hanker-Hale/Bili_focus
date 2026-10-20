@@ -1,7 +1,7 @@
 """传输层:一个最小的 GET 抽象,便于注入假实现做测试。
 
 为什么不让 client 直接用 urllib:底层要能被单测覆盖,而单元测试不该打真实
-网络。`UrllibTransport` 是唯一的联网实现,`bilifocus.client` 只依赖
+网络。`UrllibTransport` 是唯一的联网实现,`favfocus.client` 只依赖
 `Transport` 协议。
 """
 

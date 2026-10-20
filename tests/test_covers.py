@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bilifocus.covers import PNG_MAGIC, CoverFetcher
+from favfocus.covers import PNG_MAGIC, CoverFetcher
 
 FAKE_PNG = PNG_MAGIC + b"fake-image-body"
 

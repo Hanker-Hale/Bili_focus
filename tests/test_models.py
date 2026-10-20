@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus.models import Folder, LoginState, Page, Video
+from favfocus.models import Folder, LoginState, Page, Video
 
 
 class VideoTests(unittest.TestCase):

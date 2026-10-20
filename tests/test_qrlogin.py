@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus.qrlogin import (
+from favfocus.qrlogin import (
     STATUS_EXPIRED,
     STATUS_SCANNED,
     STATUS_SUCCESS,

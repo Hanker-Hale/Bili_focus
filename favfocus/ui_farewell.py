@@ -51,7 +51,7 @@ class FarewellDialog(tk.Toplevel):
         self._on_close = on_close
         self._finished = False
 
-        self.title("BiliFocus — 今日小结")
+        self.title("FavFocus — 今日小结")
         self.configure(bg=BG)
         self.resizable(False, False)
         self.transient(parent)
@@ -94,7 +94,7 @@ class FarewellDialog(tk.Toplevel):
             tk.Label(body, image=self._icon_photo, bg=BG).pack()
         else:
             # 图标文件缺失时退回纯文字,不让小结打不开
-            tk.Label(body, text="BiliFocus", bg=BG, fg=ACCENT, font=font(14, "bold")).pack()
+            tk.Label(body, text="FavFocus", bg=BG, fg=ACCENT, font=font(14, "bold")).pack()
 
         tk.Label(
             body,

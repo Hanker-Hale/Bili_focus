@@ -1,11 +1,11 @@
 """兼容入口:旧版单文件脚本的位置。
 
-真正实现在 `bilifocus/` 包里。保留这个文件是为了让旧启动方式继续可用:
+真正实现在 `favfocus/` 包里。保留这个文件是为了让旧启动方式继续可用:
 
-- `python bili_focus.py`              -> 打开界面
-- `python bili_focus.py --fid 123`    -> 打开指定收藏夹
-- `python bili_focus.py --uninstall`  -> 卸载(Windows 设置里点卸载也会走这里)
-- `python bili_focus.py --self-test`  -> 旧版自检,现在等价于 `doctor --offline`
+- `python favfocus.py`              -> 打开界面
+- `python favfocus.py --fid 123`    -> 打开指定收藏夹
+- `python favfocus.py --uninstall`  -> 卸载(Windows 设置里点卸载也会走这里)
+- `python favfocus.py --self-test`  -> 旧版自检,现在等价于 `doctor --offline`
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ import sys
 
 
 def _uninstall(silent: bool) -> int:
-    from bilifocus import install
+    from favfocus import install
 
     if silent:
         install.uninstall(remove_data=False)
@@ -46,10 +46,10 @@ def main() -> int:
     if "--uninstall" in args:
         return _uninstall("--silent" in args)
 
-    from bilifocus import ui_tk
+    from favfocus import ui_tk
 
     if "--self-test" in args:
-        from bilifocus.cli import main as cli_main
+        from favfocus.cli import main as cli_main
 
         return cli_main(["doctor", "--offline"])
     return ui_tk.main(args)

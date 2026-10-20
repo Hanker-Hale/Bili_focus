@@ -42,10 +42,10 @@ jobs:
       - name: 校验产物
         shell: pwsh
         run: |
-          $exe = "dist/BiliFocus.exe"
+          $exe = "dist/FavFocus.exe"
           if (-not (Test-Path $exe)) { throw "没找到 $exe" }
           "exe 大小: {0:N1} MB" -f ((Get-Item $exe).Length / 1MB)
-          $setup = Get-ChildItem "dist/BiliFocus-Setup-*.exe" | Select-Object -First 1
+          $setup = Get-ChildItem "dist/FavFocus-Setup-*.exe" | Select-Object -First 1
           if (-not $setup) { throw "没找到安装包" }
           "安装包: {0} ({1:N1} MB)" -f $setup.Name, ($setup.Length / 1MB)
 
@@ -61,8 +61,8 @@ jobs:
             fi
             echo
             echo
-            echo "**安装包**:下载 \`BiliFocus-Setup-*.exe\` 双击安装(不需要装 Python)"
-            echo "**绿色版**:下载 \`BiliFocus.exe\` 双击即用"
+            echo "**安装包**:下载 \`FavFocus-Setup-*.exe\` 双击安装(不需要装 Python)"
+            echo "**绿色版**:下载 \`FavFocus.exe\` 双击即用"
             echo "覆盖安装会保留本机数据(登录态/进度/日程)"
           } > release-notes.md
 
@@ -70,12 +70,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/BiliFocus.exe
-            dist/BiliFocus-Setup-*.exe
+            dist/FavFocus.exe
+            dist/FavFocus-Setup-*.exe
           body_path: release-notes.md
 
       - name: 同时存一份构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: BiliFocus-exe
-          path: dist/BiliFocus.exe
+          name: FavFocus-exe
+          path: dist/FavFocus.exe

@@ -7,7 +7,7 @@ import re
 import unittest
 from pathlib import Path
 
-from bilifocus import __version__
+from favfocus import __version__
 
 ROOT = Path(__file__).resolve().parent.parent
 

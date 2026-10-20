@@ -25,8 +25,8 @@ import sys
 
 PREFIX_DPAPI = "dpapi:"
 PREFIX_PLAIN = "plain:"
-_ENTROPY = b"BiliFocus::SESSDATA::v1"
-_DESCRIPTION = "BiliFocus SESSDATA"
+_ENTROPY = b"FavFocus::SESSDATA::v1"
+_DESCRIPTION = "FavFocus SESSDATA"
 
 
 class _DataBlob(ctypes.Structure):

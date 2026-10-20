@@ -34,14 +34,14 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # 先把数据目录指到临时沙盒,避免碰到真实配置
-os.environ["BILI_FOCUS_HOME"] = tempfile.mkdtemp(prefix="bilifocus-shots-")
+os.environ["FAVFOCUS_HOME"] = tempfile.mkdtemp(prefix="favfocus-shots-")
 
 import demo_data  # noqa: E402
-from bilifocus import theme, ui_tk  # noqa: E402
-from bilifocus.models import FavoritesView  # noqa: E402
-from bilifocus.ui_farewell import FarewellDialog, FarewellSummary  # noqa: E402
-from bilifocus.qrlogin import QrLoginSession  # noqa: E402
-from bilifocus.ui_schedule import ScheduleDialog  # noqa: E402
+from favfocus import theme, ui_tk  # noqa: E402
+from favfocus.models import FavoritesView  # noqa: E402
+from favfocus.ui_farewell import FarewellDialog, FarewellSummary  # noqa: E402
+from favfocus.qrlogin import QrLoginSession  # noqa: E402
+from favfocus.ui_schedule import ScheduleDialog  # noqa: E402
 
 OUT_DIR = ROOT / "docs" / "screenshots"
 TARGET_WIDTH = 1600
@@ -260,7 +260,7 @@ def shot_main(collapsed: set[str], name: str) -> None:
 def visible_root() -> tk.Tk:
     """对话框需要一个可见的父窗口才能被正常映射和截图。"""
     root = tk.Tk()
-    root.title("BiliFocus")
+    root.title("FavFocus")
     root.configure(bg=theme.BG)
     root.geometry("760x560+60+60")
     root.update_idletasks()
@@ -270,7 +270,7 @@ def visible_root() -> tk.Tk:
 
 def shot_update_prompt() -> None:
     """发现新版本横幅(版本号用示例值)。"""
-    from bilifocus import update as update_mod
+    from favfocus import update as update_mod
 
     service, videos, folder = demo_data.build_demo()
     service.mark_watched(videos[0].key)
@@ -312,7 +312,7 @@ def shot_schedule() -> None:
     service, videos, _folder = demo_data.build_demo()
     service.mark_watched(videos[0].key)
     # 日程面板的封面是另一种尺寸,单独种一份缓存(否则截图里会显示"封面加载中")
-    from bilifocus.ui_schedule import cover_size
+    from favfocus.ui_schedule import cover_size
 
     cover_w, cover_h = cover_size()
     demo_data.seed_covers(service.store.home, videos, cover_w, cover_h)

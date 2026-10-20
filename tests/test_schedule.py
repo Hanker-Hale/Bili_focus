@@ -8,10 +8,10 @@ import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from bilifocus import schedule as sc
-from bilifocus.models import Video
-from bilifocus.service import FavoritesService
-from bilifocus.store import StateStore
+from favfocus import schedule as sc
+from favfocus.models import Video
+from favfocus.service import FavoritesService
+from favfocus.store import StateStore
 
 
 def at(hour: int, minute: int, *, days_ago: int = 0) -> float:

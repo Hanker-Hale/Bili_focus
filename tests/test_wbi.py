@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus.wbi import (
+from favfocus.wbi import (
     MIXIN_KEY_ENC_TAB,
     encode_query,
     encode_value,

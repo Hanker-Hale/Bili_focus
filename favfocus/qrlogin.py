@@ -22,7 +22,7 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Callable
 
-from .errors import BiliFocusError, NetworkError, InvalidResponseError
+from .errors import FavFocusError, NetworkError, InvalidResponseError
 from .vendor import qrcodegen
 
 GENERATE_URL = "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
@@ -77,7 +77,7 @@ class QrPollResult:
         return self.status == STATUS_EXPIRED
 
 
-class QrLoginError(BiliFocusError):
+class QrLoginError(FavFocusError):
     """扫码登录过程中的可预期失败。"""
 
 
@@ -164,7 +164,7 @@ class QrLoginSession:
                 try:
                     _payload, redirect_headers = self._fetch(str(data["url"]))
                     sessdata = extract_sessdata_from_headers(redirect_headers)
-                except BiliFocusError:
+                except FavFocusError:
                     sessdata = None
             if not sessdata:
                 raise QrLoginError(_missing_sessdata_message(data, headers))
@@ -290,7 +290,7 @@ def _missing_sessdata_message(data: dict, headers: dict[str, list[str]] | None) 
 
 
 # ── 排查开关 ──────────────────────────────────────────────────────────
-# 设环境变量 BILI_FOCUS_QR_DEBUG=1 后,每次轮询会把响应结构打到 stderr
+# 设环境变量 FAVFOCUS_QR_DEBUG=1 后,每次轮询会把响应结构打到 stderr
 # (只打字段名和值的长度,不打印任何凭证内容),方便定位 B 站格式变化。
 _SENSITIVE = ("sessdata", "token", "cookie", "jct", "dedeuserid", "url", "sign")
 
@@ -298,7 +298,7 @@ _SENSITIVE = ("sessdata", "token", "cookie", "jct", "dedeuserid", "url", "sign")
 def _debug_enabled() -> bool:
     import os
 
-    return os.environ.get("BILI_FOCUS_QR_DEBUG", "").strip() in ("1", "true", "yes")
+    return os.environ.get("FAVFOCUS_QR_DEBUG", "").strip() in ("1", "true", "yes")
 
 
 def _redact(key: str, value) -> str:

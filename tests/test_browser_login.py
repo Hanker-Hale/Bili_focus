@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus.browser_login import BrowserLogin, BrowserLoginError, _MiniWebSocket
+from favfocus.browser_login import BrowserLogin, BrowserLoginError, _MiniWebSocket
 
 
 class ExtractSessdataTests(unittest.TestCase):
@@ -96,10 +96,10 @@ class FrameTests(unittest.TestCase):
 
 class ErrorTypeTests(unittest.TestCase):
     def test_error_is_catchable_as_library_error(self):
-        """CLI 只 catch BiliFocusError,所以浏览器登录的错误要能被它接住。"""
-        from bilifocus.errors import BiliFocusError
+        """CLI 只 catch FavFocusError,所以浏览器登录的错误要能被它接住。"""
+        from favfocus.errors import FavFocusError
 
-        self.assertTrue(issubclass(BrowserLoginError, BiliFocusError))
+        self.assertTrue(issubclass(BrowserLoginError, FavFocusError))
 
 
 if __name__ == "__main__":

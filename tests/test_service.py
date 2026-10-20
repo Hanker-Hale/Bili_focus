@@ -8,10 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bilifocus.errors import AuthRequiredError
-from bilifocus.models import Video
-from bilifocus.service import FavoritesService, normalize_sessdata, search
-from bilifocus.store import StateStore
+from favfocus.errors import AuthRequiredError
+from favfocus.models import Video
+from favfocus.service import FavoritesService, normalize_sessdata, search
+from favfocus.store import StateStore
 
 from tests.fakes import (
     FAV,
@@ -80,7 +80,7 @@ class LoginTests(ServiceTestCase):
 
     def test_login_via_browser_uses_captured_value(self):
         """浏览器登录只是"取值的来源"不同,之后的验证与保存必须走同一条路。"""
-        import bilifocus.browser_login as browser_login
+        import favfocus.browser_login as browser_login
 
         harness = self.harness({NAV: json_response(nav_payload(is_login=True, uname="丙"))})
         original = browser_login.BrowserLogin.capture
@@ -101,7 +101,7 @@ class LoginTests(ServiceTestCase):
         self.assertEqual(harness.service.store.sessdata, "captured%2Cvalue")
 
     def test_login_via_browser_rolls_back_on_invalid_capture(self):
-        import bilifocus.browser_login as browser_login
+        import favfocus.browser_login as browser_login
 
         harness = self.harness({NAV: json_response(nav_payload(is_login=False))})
         original = browser_login.BrowserLogin.capture

@@ -23,9 +23,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from bilifocus.models import Folder, Video  # noqa: E402
-from bilifocus.service import FavoritesService  # noqa: E402
-from bilifocus.store import StateStore  # noqa: E402
+from favfocus.models import Folder, Video  # noqa: E402
+from favfocus.service import FavoritesService  # noqa: E402
+from favfocus.store import StateStore  # noqa: E402
 
 DEMO_FID = 10001
 DEMO_USERNAME = "示例用户"
@@ -82,7 +82,7 @@ def seed_covers(
     注意:缓存 key 用的是 `Video.cover_url(w, h)`(带 @宽x高 后缀的转码地址),
     不是原始 pic,所以宽高必须和网格实际用的一致。
     """
-    from bilifocus import theme
+    from favfocus import theme
 
     width = cover_w or theme.CARD_WIDTH
     height = cover_h or theme.COVER_HEIGHT
@@ -111,7 +111,7 @@ def seed_covers(
 def build_demo(home: Path | None = None) -> tuple[FavoritesService, list[Video], Folder]:
     """搭一套示例数据,返回 (service, videos, folder)。"""
     if home is None:
-        home = Path(tempfile.mkdtemp(prefix="bilifocus-demo-"))
+        home = Path(tempfile.mkdtemp(prefix="favfocus-demo-"))
     home = Path(home)
     home.mkdir(parents=True, exist_ok=True)
 
@@ -197,7 +197,7 @@ def build_demo(home: Path | None = None) -> tuple[FavoritesService, list[Video],
 
 
 def main() -> int:
-    home = Path(tempfile.mkdtemp(prefix="bilifocus-demo-"))
+    home = Path(tempfile.mkdtemp(prefix="favfocus-demo-"))
     service, videos, folder = build_demo(home)
     print(f"示例数据目录:{home}")
     print(f"收藏夹:{folder.title} ({folder.media_count} 条)")

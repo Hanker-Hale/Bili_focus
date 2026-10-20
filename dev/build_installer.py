@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""打 Windows 安装包:dist/BiliFocus-Setup-<版本>.exe
+"""打 Windows 安装包:dist/FavFocus-Setup-<版本>.exe
 
 分成两步:
 
-1. `dev/build_exe.py` 打出 `dist/BiliFocus.exe`(程序本体);
+1. `dev/build_exe.py` 打出 `dist/FavFocus.exe`(程序本体);
 2. 把本体作为 payload 塞进一个带 Tk 向导的安装器,再打成单文件安装包。
 
     python dev/build_installer.py
@@ -27,11 +27,11 @@ for _stream in (sys.stdout, sys.stderr):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from bilifocus import install  # noqa: E402
+from favfocus import install  # noqa: E402
 
 VERSION = install.version()
 APP_EXE = ROOT / "dist" / install.EXE_NAME
-INSTALLER_NAME = f"BiliFocus-Setup-{VERSION}"
+INSTALLER_NAME = f"FavFocus-Setup-{VERSION}"
 SETUP_EXE = ROOT / "dist" / f"{INSTALLER_NAME}.exe"
 BUILD_DIR = ROOT / "build-installer"
 
@@ -56,7 +56,7 @@ def main() -> int:
     if BUILD_DIR.exists():
         shutil.rmtree(BUILD_DIR)
 
-    icon = ROOT / "assets" / "bilifocus-icon.ico"
+    icon = ROOT / "assets" / "favfocus-icon.ico"
     command = [
         sys.executable,
         "-m",

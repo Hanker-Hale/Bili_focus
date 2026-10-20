@@ -1,4 +1,4 @@
-"""`python -m bilifocus` -> 命令行入口。"""
+"""`python -m favfocus` -> 命令行入口。"""
 
 from __future__ import annotations
 

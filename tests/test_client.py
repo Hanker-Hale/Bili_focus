@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from bilifocus.client import BiliClient
-from bilifocus.errors import (
+from favfocus.client import BiliClient
+from favfocus.errors import (
     ApiError,
     AuthRequiredError,
     InvalidResponseError,
@@ -15,7 +15,7 @@ from bilifocus.errors import (
     RiskControlError,
     SignatureError,
 )
-from bilifocus.http import HttpResponse
+from favfocus.http import HttpResponse
 
 from tests.fakes import (
     IMG_KEY,

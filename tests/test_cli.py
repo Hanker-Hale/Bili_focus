@@ -9,7 +9,7 @@ import unittest
 from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
 
-from bilifocus.cli import build_parser, display_width, main, pad, truncate
+from favfocus.cli import build_parser, display_width, main, pad, truncate
 from tests.fakes import (
     FAV,
     FOLDERS,
@@ -69,7 +69,7 @@ class ParserTests(unittest.TestCase):
         buffer = io.StringIO()
         with redirect_stdout(buffer):
             self.assertEqual(main([]), 0)
-        self.assertIn("bilifocus", buffer.getvalue())
+        self.assertIn("favfocus", buffer.getvalue())
 
 
 class CommandTests(unittest.TestCase):

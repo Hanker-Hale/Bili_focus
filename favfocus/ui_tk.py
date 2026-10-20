@@ -5,7 +5,7 @@
 重写界面时,底层不需要动。
 
 替换方式:照着 `FocusApp` 用到的服务方法写一个新前端即可,可用方法见
-`bilifocus.service.FavoritesService`。
+`favfocus.service.FavoritesService`。
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from tkinter import messagebox, ttk
 from . import __version__ as APP_VERSION
 from . import theme
 from .covers import CoverFetcher
-from .errors import AuthRequiredError, BiliFocusError
+from .errors import AuthRequiredError, FavFocusError
 from .models import Video, format_seconds
 from .player import BrowserPlayer
 from . import schedule as schedule_mod
@@ -54,7 +54,7 @@ from .ui_farewell import FarewellDialog, FarewellSummary
 from .ui_schedule import ScheduleDialog
 from .ui_splash import SplashOverlay
 
-APP_NAME = "BiliFocus"
+APP_NAME = "FavFocus"
 POLL_INTERVAL_MS = 40
 
 # 自动增量:每隔这么久核对一次收藏夹有没有新内容。只请求第 1 页,很便宜。
@@ -647,8 +647,8 @@ class FocusApp:
         self.version_label.bind("<Button-1>", lambda _event: self._check_updates_now())
 
     def _apply_window_icon(self) -> None:
-        """把窗口/任务栏图标换成 assets/bilifocus-icon.ico(失败就保持默认)。"""
-        icon = Path(__file__).resolve().parent.parent / "assets" / "bilifocus-icon.ico"
+        """把窗口/任务栏图标换成 assets/favfocus-icon.ico(失败就保持默认)。"""
+        icon = Path(__file__).resolve().parent.parent / "assets" / "favfocus-icon.ico"
         if not icon.is_file():
             return
         try:
@@ -800,7 +800,7 @@ class FocusApp:
             return
         try:
             state = self.service.login(dialog.result)
-        except (BiliFocusError, ValueError) as error:
+        except (FavFocusError, ValueError) as error:
             self._set_status(f"登录失败:{error}", ERROR)
             self._show_placeholder(f"登录失败:\n\n{error}")
             return
@@ -1433,7 +1433,7 @@ class FocusApp:
         """
         if self._closing:
             return
-        if os.environ.get("BILI_FOCUS_NO_UPDATE_CHECK"):
+        if os.environ.get("FAVFOCUS_NO_UPDATE_CHECK") or os.environ.get("BILI_FOCUS_NO_UPDATE_CHECK"):
             return
         if not manual and self._update_checked:
             return
@@ -1506,7 +1506,7 @@ class FocusApp:
             self._update_icon = icon
             tk.Label(content, image=icon, bg=BG).pack(pady=(0, px(12)))
 
-        tk.Label(content, text="BiliFocus 有新版本", bg=BG, fg=FG, font=font(18, "bold")).pack()
+        tk.Label(content, text="FavFocus 有新版本", bg=BG, fg=FG, font=font(18, "bold")).pack()
         self._update_version_label = tk.Label(
             content,
             text=f"当前 v{APP_VERSION}  ·  最新 v{info.version}",
@@ -1548,7 +1548,7 @@ class FocusApp:
         )
         tk.Checkbutton(
             content,
-            text="启动 BiliFocus 时自动下载并安装更新",
+            text="启动 FavFocus 时自动下载并安装更新",
             variable=self._auto_install_var,
             command=self._save_auto_install_pref,
             bg=BG,
@@ -1611,7 +1611,7 @@ class FocusApp:
         lines: list[str] = []
         for line in raw.splitlines():
             clean = line.strip().lstrip("-*·• ").replace("**", "").strip()
-            if not clean or clean.lower().startswith("bilifocus v"):
+            if not clean or clean.lower().startswith("favfocus v"):
                 continue
             if clean.startswith(("安装包", "绿色版", "覆盖安装", "数据只存", "登录方式")):
                 continue
@@ -1917,7 +1917,7 @@ class FocusApp:
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(prog="bilifocus.ui_tk", description="BiliFocus 桌面界面")
+    parser = argparse.ArgumentParser(prog="favfocus.ui_tk", description="FavFocus 桌面界面")
     parser.add_argument("--fid", type=int, help="直接打开这个收藏夹")
     parser.add_argument("--mid", type=int, default=0, help="收藏夹所属用户 mid(默认用本机登录时记住的)")
     args = parser.parse_args(argv)

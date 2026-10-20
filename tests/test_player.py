@@ -8,7 +8,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from bilifocus.player import (
+from favfocus.player import (
     SAMPLE_JS,
     BrowserPlayer,
     PlaybackError,

@@ -6,7 +6,7 @@ import subprocess
 import unittest
 from unittest import mock
 
-from bilifocus import winproc
+from favfocus import winproc
 
 
 class RunHiddenTests(unittest.TestCase):
@@ -21,7 +21,7 @@ class RunHiddenTests(unittest.TestCase):
             captured.update(kwargs)
             return subprocess.CompletedProcess(command, 0, "", "")
 
-        with mock.patch("bilifocus.winproc.subprocess.run", side_effect=fake_run):
+        with mock.patch("favfocus.winproc.subprocess.run", side_effect=fake_run):
             winproc.run_hidden(["cmd", "/c", "echo hi"])
 
         self.assertTrue(captured.get("creationflags", 0) & winproc.CREATE_NO_WINDOW)
@@ -38,7 +38,7 @@ class RunHiddenTests(unittest.TestCase):
             captured.update(kwargs)
             return mock.Mock()
 
-        with mock.patch("bilifocus.winproc.subprocess.Popen", side_effect=fake_popen):
+        with mock.patch("favfocus.winproc.subprocess.Popen", side_effect=fake_popen):
             winproc.run_detached(["cmd", "/c", "exit"])
 
         flags = captured.get("creationflags", 0)
@@ -51,13 +51,13 @@ class NoVisibleWindowTests(unittest.TestCase):
         """播放器/登录模块里不该再直接调用 subprocess.run(会弹窗)。"""
         from pathlib import Path
 
-        root = Path(__file__).resolve().parent.parent / "bilifocus"
+        root = Path(__file__).resolve().parent.parent / "favfocus"
         for name in ("player.py", "browser_login.py"):
             text = (root / name).read_text(encoding="utf-8")
             self.assertNotIn("subprocess.run(", text, f"{name} 里还有没隐藏的 subprocess.run")
 
     def test_stale_instances_goes_through_run_hidden(self):
-        from bilifocus import browser_login
+        from favfocus import browser_login
 
         calls = []
 

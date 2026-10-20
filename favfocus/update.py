@@ -5,7 +5,7 @@
 1. 先问 GitHub API:`/repos/<repo>/releases/latest`;
 2. API 不通(限流/被墙)就退到 Release 的 Atom 订阅,从标题/链接里取版本号;
 3. 拿到版本号后,按固定命名规则拼出安装包下载地址
-   (`releases/download/v<版本>/BiliFocus-Setup-<版本>.exe`)。
+   (`releases/download/v<版本>/FavFocus-Setup-<版本>.exe`)。
 
 只做"发现自己有新版本 → 引导下载",不做后台静默替换程序。
 """
@@ -24,12 +24,16 @@ from pathlib import Path
 
 from . import install, winproc
 
-REPO = os.environ.get("BILI_FOCUS_REPO", "Hanker-Hale/Bili_focus")
+REPO = (
+    os.environ.get("FAVFOCUS_REPO")
+    or os.environ.get("BILI_FOCUS_REPO")
+    or "Hanker-Hale/Bili_focus"
+)
 API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 ATOM_FEED = f"https://github.com/{REPO}/releases.atom"
 PAGE_LATEST = f"https://github.com/{REPO}/releases/latest"
-USER_AGENT = "BiliFocus-update-check"
-INSTALLER_PREFIX = "BiliFocus-Setup-"
+USER_AGENT = "FavFocus-update-check"
+INSTALLER_PREFIX = "FavFocus-Setup-"
 MIN_INSTALLER_BYTES = 5 * 1024 * 1024  # 安装包 20MB+,小于这个肯定不对
 
 
@@ -71,7 +75,7 @@ def installer_url_for(version: str) -> str:
 
 
 def portable_url_for(version: str) -> str:
-    return f"https://github.com/{REPO}/releases/download/v{version}/BiliFocus.exe"
+    return f"https://github.com/{REPO}/releases/download/v{version}/FavFocus.exe"
 
 
 # -- 取最新版本 ------------------------------------------------------------
@@ -112,7 +116,7 @@ def _from_api(payload: bytes | None) -> ReleaseInfo | None:
             continue
         if name.startswith(INSTALLER_PREFIX) and name.lower().endswith(".exe"):
             installer_url = installer_url or url
-        elif name.lower() == "bilifocus.exe":
+        elif name.lower() == "favfocus.exe":
             portable_url = portable_url or url
     return ReleaseInfo(
         version=version,
@@ -181,9 +185,9 @@ def download(
     timeout: float = 120.0,
 ) -> Path:
     """下载到临时目录;progress(0~100) 会定期回调。"""
-    folder = Path(dest_dir) if dest_dir else Path(tempfile.mkdtemp(prefix="bilifocus-update-"))
+    folder = Path(dest_dir) if dest_dir else Path(tempfile.mkdtemp(prefix="favfocus-update-"))
     folder.mkdir(parents=True, exist_ok=True)
-    target = folder / (filename or "BiliFocus-Setup.exe")
+    target = folder / (filename or "FavFocus-Setup.exe")
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         total = int(response.headers.get("Content-Length") or 0)
@@ -229,7 +233,7 @@ def can_one_click() -> bool:
 
 def launch_installer(installer: Path, *, relaunch: bool = True) -> bool:
     """启动安装包(等应用退出后安装),装完自动重新打开程序。"""
-    script = Path(tempfile.gettempdir()) / f"bilifocus-update-{os.getpid()}.cmd"
+    script = Path(tempfile.gettempdir()) / f"favfocus-update-{os.getpid()}.cmd"
     target = install.installed_exe()
     lines = [
         "@echo off",

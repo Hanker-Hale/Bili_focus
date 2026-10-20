@@ -8,25 +8,25 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from bilifocus import install
+from favfocus import install
 
 
 class PathTests(unittest.TestCase):
     def test_install_dir_uses_localappdata(self):
         with mock.patch.dict(os.environ, {"LOCALAPPDATA": r"C:\Temp\Local"}):
             self.assertEqual(
-                install.install_dir(), Path(r"C:\Temp\Local") / "Programs" / "BiliFocus"
+                install.install_dir(), Path(r"C:\Temp\Local") / "Programs" / "FavFocus"
             )
 
     def test_data_dir_uses_appdata(self):
         with mock.patch.dict(os.environ, {"APPDATA": r"C:\Temp\Roaming"}):
-            self.assertEqual(install.data_dir(), Path(r"C:\Temp\Roaming") / "bili-focus")
+            self.assertEqual(install.data_dir(), Path(r"C:\Temp\Roaming") / "favfocus")
 
     def test_shortcut_locations(self):
         with tempfile.TemporaryDirectory() as home:
             with mock.patch.dict(os.environ, {"USERPROFILE": home, "APPDATA": home}):
                 self.assertEqual(
-                    install.desktop_shortcut(), Path(home) / "Desktop" / "BiliFocus.lnk"
+                    install.desktop_shortcut(), Path(home) / "Desktop" / "FavFocus.lnk"
                 )
                 self.assertIn(
                     "Start Menu",
@@ -34,7 +34,7 @@ class PathTests(unittest.TestCase):
                 )
 
     def test_version_matches_package(self):
-        from bilifocus import __version__
+        from favfocus import __version__
 
         self.assertEqual(install.version(), __version__)
 
@@ -57,7 +57,7 @@ class PathTests(unittest.TestCase):
 
 class PayloadTests(unittest.TestCase):
     def test_installer_payload_resolution(self):
-        """安装器在开发态应指向 dist/BiliFocus.exe。"""
+        """安装器在开发态应指向 dist/FavFocus.exe。"""
         import importlib.util
 
         spec = importlib.util.spec_from_file_location(

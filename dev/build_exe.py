@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""把 BiliFocus 打包成单文件 exe(Windows)。
+"""把 FavFocus 打包成单文件 exe(Windows)。
 
 用法(仓库根目录):
 
     python dev/build_exe.py
 
-产物:`dist/BiliFocus.exe`(双击运行,不需要装 Python)。
+产物:`dist/FavFocus.exe`(双击运行,不需要装 Python)。
 
 需要先装 PyInstaller:
 
@@ -28,7 +28,7 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 ROOT = Path(__file__).resolve().parent.parent
-ICON = ROOT / "assets" / "bilifocus-icon.ico"
+ICON = ROOT / "assets" / "favfocus-icon.ico"
 DIST = ROOT / "dist"
 BUILD = ROOT / "build"
 
@@ -57,15 +57,15 @@ def main() -> int:
         "--clean",
         "--onefile",              # 打成单个 exe
         "--windowed",              # 双击不弹黑框
-        "--name", "BiliFocus",
+        "--name", "FavFocus",
         "--icon", str(ICON),
         "--add-data", f"{ICON.parent}{';'}{ICON.parent.name}",  # 图标进包,运行时能取到
-        "--collect-submodules", "bilifocus",                      # 懒加载的模块也收进来
+        "--collect-submodules", "favfocus",                      # 懒加载的模块也收进来
         "--paths", str(ROOT),
         "--distpath", str(DIST),
         "--workpath", str(BUILD),
         "--specpath", str(BUILD),
-        str(ROOT / "bili_focus.py"),   # 入口(兼容壳 → ui_tk.main)
+        str(ROOT / "favfocus.py"),   # 入口(兼容壳 → ui_tk.main)
     ]
     print("开始打包…")
     result = subprocess.run(command, cwd=ROOT)
@@ -73,7 +73,7 @@ def main() -> int:
         print("打包失败,看上面的输出。")
         return result.returncode
 
-    exe = DIST / "BiliFocus.exe"
+    exe = DIST / "FavFocus.exe"
     if not exe.is_file():
         print("打包似乎成功,但没找到 exe?")
         return 1

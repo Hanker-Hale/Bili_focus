@@ -142,7 +142,7 @@ class SplashOverlay(tk.Frame):
 
         title_y = center_y + size // 2 + theme.px(26)
         self.canvas.coords(self._title_id, center_x, title_y)
-        self.canvas.itemconfigure(self._title_id, text="BiliFocus")
+        self.canvas.itemconfigure(self._title_id, text="FavFocus")
 
         tagline_y = title_y + theme.px(30)
         self.canvas.coords(self._tagline_id, center_x, tagline_y)
