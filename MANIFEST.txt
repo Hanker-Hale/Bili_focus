@@ -1,4 +1,4 @@
-BiliFocus 2.3.2 —— 文件清单
+BiliFocus 2.4.0 —— 文件清单
 ==============================================
 
 用法:
@@ -16,7 +16,7 @@ BiliFocus 2.3.2 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     11194 B  MANIFEST.txt
+     11233 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
      34696 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
@@ -66,7 +66,7 @@ BiliFocus 2.3.2 —— 文件清单
             服务门面:缓存、进度、统计、日程、导出
      18827 B  bilifocus/store.py
             持久化:state.json + cache,原子写、并发安全
-      5468 B  bilifocus/theme.py
+      5518 B  bilifocus/theme.py
             配色 / 字体 / DPI 适配 / 卡片尺寸
       6687 B  bilifocus/topics.py
             自动分类:本地关键词打分 + 分组排序
@@ -74,7 +74,7 @@ BiliFocus 2.3.2 —— 文件清单
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
       7521 B  bilifocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
-     34375 B  bilifocus/ui_schedule.py
+     34395 B  bilifocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
      13465 B  bilifocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
@@ -227,7 +227,7 @@ BiliFocus 2.3.2 —— 文件清单
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
     149309 B  docs/icon.png
-     41829 B  docs/index.html
+     42182 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -241,13 +241,13 @@ BiliFocus 2.3.2 —— 文件清单
       4201 B  docs/promo/录制与发布流程.md
       7147 B  docs/promo/视频剧本.md
       1088 B  docs/promo/视频字幕-90秒.srt
-     33931 B  docs/screenshots/farewell.png
-    232181 B  docs/screenshots/grouped.png
-     14523 B  docs/screenshots/qr-login.png
-    262902 B  docs/screenshots/reminder.png
-     67370 B  docs/screenshots/schedule.png
-     80543 B  docs/screenshots/splash.png
-    268237 B  docs/screenshots/ui.png
-    263366 B  docs/screenshots/update.png
+     34341 B  docs/screenshots/farewell.png
+    222952 B  docs/screenshots/grouped.png
+     14545 B  docs/screenshots/qr-login.png
+    249807 B  docs/screenshots/reminder.png
+     68723 B  docs/screenshots/schedule.png
+     76071 B  docs/screenshots/splash.png
+    254592 B  docs/screenshots/ui.png
+    250661 B  docs/screenshots/update.png
 
 共 137 个文件。

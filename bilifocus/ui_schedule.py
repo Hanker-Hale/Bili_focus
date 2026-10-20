@@ -24,6 +24,7 @@ from .models import format_seconds
 from .service import FavoritesService
 from .theme import (
     ACCENT,
+    ACCENT_DARK,
     BG,
     BG_ALT,
     BORDER,
@@ -289,7 +290,7 @@ class ScheduleDialog(tk.Toplevel):
             bg=ACCENT,
             fg="#ffffff",
             relief="flat",
-            activebackground="#0A6A8B",
+            activebackground=ACCENT_DARK,
             activeforeground="#ffffff",
             font=font(9, "bold"),
             padx=px(16),

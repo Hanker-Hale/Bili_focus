@@ -14,27 +14,27 @@ from __future__ import annotations
 import sys
 
 # ── 底色(米白系)────────────────────────────────────────────────
-BG = "#F6F1E7"            # 页面底色:米白
-BG_ALT = "#EDE6D8"        # 输入框 / 次要按钮
-CARD_BG = "#FFFCF5"       # 卡片:比页面更亮
-CARD_HOVER = "#F1EADA"
-BORDER = "#DFD6C4"
-PLACEHOLDER_BG = "#E8E0CF"
+BG = "#FCFAF6"            # 页面底色:米白(更接近纸白)
+BG_ALT = "#F4F0E8"        # 输入框 / 次要按钮
+CARD_BG = "#FFFFFF"       # 卡片:纯白,让卡片从米白底上浮起来
+CARD_HOVER = "#F7F3EB"
+BORDER = "#E8E1D4"
+PLACEHOLDER_BG = "#F0EBE2"
 
 # ── 文字(偏黑,不是纯黑,避免刺眼)──────────────────────────────
 FG = "#12100C"            # 主文字:近黑
 FG_DIM = "#4F4739"        # 次要文字
-WATCHED_FG = "#9A8F7C"    # 已看过的标题
+WATCHED_FG = "#A49B8B"    # 已看过的标题
 
 # ── 强调与语义色 ────────────────────────────────────────────────
-ACCENT = "#0B7BA0"        # 浅底上用深青蓝,对比度更好
-ACCENT_DARK = "#08607D"
+ACCENT = "#2A80BE"        # 天蓝:比原来的青蓝更亮、更"天空"
+ACCENT_DARK = "#1E6A9F"
 WARN = "#8A5B0A"
 ERROR = "#A32C22"
 
 # ── 时长角标 ────────────────────────────────────────────────────
 BADGE_BG = "#12100C"
-BADGE_FG = "#FFFCF5"
+BADGE_FG = "#FFFFFF"
 
 # ── 卡片尺寸(基准值;真实值 = 基准 × DPI 缩放)──────────────────
 _BASE_CARD_WIDTH = 244
