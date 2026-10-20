@@ -18,7 +18,7 @@ BiliFocus 2.4.0 —— 文件清单
             MIT 许可证(含内置二维码库的署名)
      11233 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
-     34696 B  README.md
+     34901 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
       1743 B  bili_focus.py
             旧版入口的兼容壳(GUI / --self-test)
@@ -143,7 +143,7 @@ BiliFocus 2.4.0 —— 文件清单
             打包单文件 exe(需要 PyInstaller)
       2863 B  dev/build_installer.py
             打 Windows 安装包(内嵌 exe + 安装向导)
-      2872 B  dev/bump_version.py
+      3126 B  dev/bump_version.py
             按规则升版本号(修 bug / 加功能)
       2325 B  dev/check_imports.py
             无第三方 linter 时的未使用 import 检查
