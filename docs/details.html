@@ -400,6 +400,10 @@
   @media (prefers-reduced-motion: reduce) {
     body { animation: none; }
   }
+
+  .star-line { margin-top: 16px; font-size: 14px; color: var(--ink-soft); }
+  .star-line a { color: var(--sky-deep); border-bottom: 1px solid rgba(42, 128, 190, .25); padding-bottom: 1px; }
+  .star-line a:hover { border-color: var(--sky-deep); }
 </style>
 </head>
 <body>
@@ -418,7 +422,7 @@
       <a href="#download">下载</a>
       <a href="#faq">常见问题</a>
     </nav>
-    <a class="nav-cta" id="nav-download" href="#download">
+    <a class="nav-cta" id="nav-download" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus-Setup-2.2.3.exe" download data-download-setup>
       下载 Windows 版
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
     </a>
@@ -438,7 +442,7 @@
           还能自动分类、排观看日程,关掉时给你一张今日小结。
         </p>
         <div class="head-actions">
-          <a class="btn btn-primary" href="#download">
+          <a class="btn btn-primary" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus-Setup-2.2.3.exe" download data-download-setup>
             下载安装包
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
           </a>
@@ -592,7 +596,7 @@
       <div class="section-head reveal">
         <span class="eyebrow">下载</span>
         <h2>30 秒装好,打开就能用</h2>
-        <p>不需要装 Python,也不需要浏览器插件。安装包和绿色版都在 GitHub Releases 上。</p>
+        <p>不需要装 Python,也不需要浏览器插件。点下面按钮直接下载安装包,不跳转 GitHub。</p>
       </div>
       <div class="download-grid">
         <article class="dl-card primary reveal">
@@ -605,7 +609,7 @@
             <li>以后有新版本,应用内一键更新</li>
             <li>覆盖安装会保留所有本机数据</li>
           </ul>
-          <a class="btn btn-primary" id="setup-download" href="https://github.com/Hanker-Hale/FavFocus/releases/latest" target="_blank" rel="noopener">
+          <a class="btn btn-primary" id="setup-download" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus-Setup-2.2.3.exe" download data-download-setup>
             下载安装包
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
           </a>
@@ -619,12 +623,13 @@
             <li>数据同样只存本机 <code>%APPDATA%\favfocus</code></li>
             <li>更新时请手动下载新版替换</li>
           </ul>
-          <a class="btn btn-ghost" id="portable-download" href="https://github.com/Hanker-Hale/FavFocus/releases" target="_blank" rel="noopener">
+          <a class="btn btn-ghost" id="portable-download" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus.exe" download data-download-portable>
             下载绿色版
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
           </a>
         </article>
       </div>
+      <p class="star-line reveal">如果它帮上了忙,欢迎去 <a href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">GitHub 点个 Star ⭐</a>,这是对独立开发最大的支持。</p>
       <div class="dl-links reveal">
         <a href="https://github.com/Hanker-Hale/FavFocus/releases" target="_blank" rel="noopener">所有版本 / 更新记录 →</a>
         <a href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">GitHub 仓库 →</a>
@@ -808,7 +813,7 @@
     document.querySelectorAll('.reveal:not(.in)').forEach((el) => el.classList.add('in'));
   }, 1200);
 
-  // 从 GitHub 取最新 Release:版本号 / 文件大小 / 直链;失败时退回 Releases 页面
+  // 从 GitHub 取最新 Release:版本号 / 文件大小 / 直链;失败时保留内置直链
   const REPO = 'Hanker-Hale/FavFocus';
   const RELEASES = `https://github.com/${REPO}/releases`;
   const setupLink = document.getElementById('setup-download');
@@ -837,12 +842,16 @@
         if (label) label.textContent = `v${version}`;
       }
       if (setup) {
-        setupLink.href = setup.browser_download_url;
+        document.querySelectorAll('a[data-download-setup]').forEach((link) => {
+          link.href = setup.browser_download_url;
+        });
         const size = document.getElementById('setup-size');
         if (size) size.textContent = fmtSize(setup.size);
       }
       if (portable) {
-        portableLink.href = portable.browser_download_url;
+        document.querySelectorAll('a[data-download-portable]').forEach((link) => {
+          link.href = portable.browser_download_url;
+        });
         const size = document.getElementById('portable-size');
         if (size) size.textContent = fmtSize(portable.size);
       }

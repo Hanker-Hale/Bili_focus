@@ -216,6 +216,10 @@
   @media (prefers-reduced-motion: reduce) {
     .transition-veil { transition: none; }
   }
+
+  .star-line { margin-top: 18px; font-size: 14px; color: var(--ink-soft); }
+  .star-line a { color: var(--sky-deep); border-bottom: 1px solid rgba(42, 128, 190, .25); padding-bottom: 1px; }
+  .star-line a:hover { border-color: var(--sky-deep); }
 </style>
 </head>
 <body>
@@ -235,10 +239,10 @@
     </a>
     <nav class="nav-links">
       <a class="hide-sm" href="details.html" data-transition>详情</a>
-      <a class="hide-sm" href="details.html#download">下载</a>
+      <a class="hide-sm" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus-Setup-2.2.3.exe" download data-download-setup>下载</a>
       <a href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">GitHub</a>
     </nav>
-    <a class="nav-cta" href="https://github.com/Hanker-Hale/FavFocus/releases/latest" target="_blank" rel="noopener">
+    <a class="nav-cta" href="https://github.com/Hanker-Hale/FavFocus/releases/download/v2.2.3/FavFocus-Setup-2.2.3.exe" download data-download-setup>
       下载 Windows 版
     </a>
   </div>
@@ -264,6 +268,7 @@
       </a>
     </div>
     <p class="meta-line">全屏播放 · 进度续播 · 自动分类 · 观看日程</p>
+    <p class="star-line">觉得有用的话,去 <a href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">GitHub 点个 Star ⭐</a> 支持一下。</p>
   </div>
   <a class="scroll-hint" href="details.html" data-transition aria-label="查看详情">查看详情</a>
 </main>
@@ -318,6 +323,27 @@
       enterDetails(link.href);
     });
   });
+
+
+  // 下载按钮直接指向 exe 资产,不跳 GitHub 页面;能取到最新 release 就替换成最新直链
+  (async () => {
+    try {
+      const response = await fetch('https://api.github.com/repos/Hanker-Hale/FavFocus/releases/latest', {
+        headers: { Accept: 'application/vnd.github+json' },
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const assets = data.assets || [];
+      const setup = assets.find((asset) => /^FavFocus-Setup-.+\.exe$/i.test(asset.name));
+      if (setup) {
+        document.querySelectorAll('a[data-download-setup]').forEach((link) => {
+          link.href = setup.browser_download_url;
+        });
+      }
+    } catch (error) {
+      console.info('使用内置下载直链:', error.message);
+    }
+  })();
 </script>
 </body>
 </html>
