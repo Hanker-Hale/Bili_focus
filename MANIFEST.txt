@@ -78,7 +78,7 @@ FavFocus 2.2.3 —— 文件清单
             日程面板:自己设定时间 + 内容
       9626 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     82136 B  favfocus/ui_tk.py
+     82405 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
       9820 B  favfocus/update.py
             检查更新、下载安装包、一键更新
@@ -228,7 +228,7 @@ FavFocus 2.2.3 —— 文件清单
          0 B  docs/.nojekyll
      45015 B  docs/details.html
     111985 B  docs/icon.png
-     16064 B  docs/index.html
+     16067 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -287,6 +287,7 @@ FavFocus 2.2.3 —— 文件清单
     165763 B  assets/splash-frames/frame-046.png
     165604 B  assets/splash-frames/frame-047.png
     166786 B  assets/splash-frames/frame-048.png
+    186438 B  docs/media/eye-intro-4x.mp4
      53625 B  docs/media/eye-intro.mp4
      29383 B  docs/screenshots/farewell.png
     221651 B  docs/screenshots/grouped.png
@@ -297,4 +298,4 @@ FavFocus 2.2.3 —— 文件清单
     253242 B  docs/screenshots/ui.png
      59417 B  docs/screenshots/update.png
 
-共 184 个文件。
+共 185 个文件。

@@ -469,6 +469,9 @@ class FocusApp:
         if bootstrap:
             self.root.after(120, self._bootstrap)
         self._schedule_auto_sync()
+        # 等所有控件/定时器都挂好后再做一次首次绘制,保证开屏第一帧直接可见
+        self.root.update_idletasks()
+        self.root.update()
 
     # -- 界面构建 ---------------------------------------------------------
     def _build_ui(self) -> None:
@@ -748,8 +751,10 @@ class FocusApp:
                 continue
             self._splash_hidden_widgets.append((child, child.pack_info()))
             child.pack_forget()
-        # 先把启动页的几何算好,主循环一启动就是满屏开屏,不会先露出底部栏
+        # 先把窗口映射、启动页第一帧画出来,再进主循环:
+        # 这样用户看到的第一眼就是完整画面,不会先闪一下蓝底/底部栏
         self.root.update_idletasks()
+        self.root.update()
 
     def _bind_keys(self) -> None:
         self.root.bind("<Control-f>", lambda _event: self._focus_search())
