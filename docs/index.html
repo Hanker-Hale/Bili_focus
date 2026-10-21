@@ -220,6 +220,90 @@
   .star-line { margin-top: 18px; font-size: 14px; color: var(--ink-soft); }
   .star-line a { color: var(--sky-deep); border-bottom: 1px solid rgba(42, 128, 190, .25); padding-bottom: 1px; }
   .star-line a:hover { border-color: var(--sky-deep); }
+
+  /* 侧边支持牌:在右侧、不挡中间主视觉 */
+  .support-card {
+    position: fixed;
+    right: clamp(18px, 3vw, 44px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 35;
+    width: 236px;
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .82);
+    border: 1px solid rgba(42, 128, 190, .18);
+    box-shadow: 0 18px 48px rgba(42, 80, 110, .14);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .support-kicker {
+    font-size: 11px;
+    letter-spacing: .16em;
+    color: var(--sky-deep);
+    text-transform: uppercase;
+  }
+  .support-card p {
+    margin: 10px 0 14px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--ink-soft);
+  }
+  .support-actions { display: flex; flex-direction: column; gap: 8px; }
+  .support-actions button {
+    border: 0;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font: inherit;
+    font-size: 13.5px;
+    cursor: pointer;
+    background: var(--sky-deep);
+    color: #fff;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .support-actions button + button {
+    background: rgba(42, 128, 190, .08);
+    color: var(--sky-deep);
+  }
+  .support-actions button:hover { transform: translateY(-1px); }
+  .support-actions button + button:hover { background: rgba(42, 128, 190, .16); }
+
+  .donate-modal[hidden] { display: none; }
+  .donate-modal {
+    position: fixed; inset: 0; z-index: 120;
+    display: grid; place-items: center; padding: 20px;
+    background: rgba(24, 44, 56, .42);
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  }
+  .donate-dialog {
+    position: relative;
+    width: min(340px, 88vw);
+    padding: 24px 24px 20px;
+    border-radius: 20px;
+    background: var(--cream, #FCFAF6);
+    box-shadow: 0 30px 80px rgba(20, 40, 56, .25);
+    text-align: center;
+  }
+  .donate-dialog h3 { margin: 4px 0 14px; font-size: 20px; color: var(--ink); }
+  .donate-dialog img {
+    width: min(260px, 64vw);
+    height: auto;
+    border-radius: 10px;
+    image-rendering: pixelated;
+    background: #fff;
+  }
+  .donate-dialog p { margin: 14px 0 0; font-size: 13px; color: var(--ink-soft); }
+  .donate-close {
+    position: absolute; top: 10px; right: 12px;
+    width: 32px; height: 32px; border: 0; border-radius: 50%;
+    background: transparent; color: var(--ink-soft);
+    font-size: 22px; line-height: 1; cursor: pointer;
+  }
+  .donate-close:hover { background: rgba(42, 128, 190, .08); }
+
+  @media (max-width: 1120px) {
+    .support-card { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -272,6 +356,24 @@
   </div>
   <a class="scroll-hint" href="details.html" data-transition aria-label="查看详情">查看详情</a>
 </main>
+
+<aside class="support-card" id="support-card" aria-label="支持 FavFocus">
+  <span class="support-kicker">支持 FavFocus</span>
+  <p>你如果真的钱多并且想支持一下的话……</p>
+  <div class="support-actions">
+    <button type="button" data-donate="wechat">微信支付</button>
+    <button type="button" data-donate="alipay">支付宝</button>
+  </div>
+</aside>
+
+<div class="donate-modal" id="donate-modal" hidden>
+  <div class="donate-dialog" role="dialog" aria-modal="true" aria-labelledby="donate-title">
+    <button class="donate-close" type="button" aria-label="关闭">×</button>
+    <h3 id="donate-title">微信支付</h3>
+    <img id="donate-qr" src="wechat-qr.png" alt="微信支付二维码" width="260" height="260">
+    <p>扫码随意支持,感谢你让 FavFocus 继续更新。</p>
+  </div>
+</div>
 
 <div class="transition-veil" id="transition-veil" aria-hidden="true">
   <video class="transition-video" id="transition-video" src="media/eye-intro-4x.mp4" muted playsinline preload="auto"></video>
@@ -344,6 +446,46 @@
       console.info('使用内置下载直链:', error.message);
     }
   })();
+
+
+  // 侧边支持牌:点微信/支付宝,弹出对应二维码
+  const donateModal = document.getElementById('donate-modal');
+  const donateTitle = document.getElementById('donate-title');
+  const donateQr = document.getElementById('donate-qr');
+  const donateMap = {
+    wechat: { title: '微信支付', src: 'wechat-qr.png' },
+    alipay: { title: '支付宝', src: 'alipay-qr.png' },
+  };
+
+  function openDonate(key) {
+    const item = donateMap[key];
+    if (!item || !donateModal) return;
+    donateTitle.textContent = item.title;
+    donateQr.src = item.src;
+    donateQr.alt = item.title + '二维码';
+    donateModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDonate() {
+    if (!donateModal || donateModal.hidden) return;
+    donateModal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-donate]').forEach((button) => {
+    button.addEventListener('click', () => openDonate(button.dataset.donate));
+  });
+  if (donateModal) {
+    donateModal.addEventListener('click', (event) => {
+      if (event.target === donateModal) closeDonate();
+    });
+    const closeButton = donateModal.querySelector('.donate-close');
+    if (closeButton) closeButton.addEventListener('click', closeDonate);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeDonate();
+    });
+  }
 </script>
 </body>
 </html>
