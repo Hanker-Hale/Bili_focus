@@ -85,11 +85,19 @@ def breathe_close(windows, on_done, duration_ms: int = 1200, step_ms: int = 20) 
 class FarewellDialog(tk.Toplevel):
     """今日小结。点「再见」(或回车/ESC)才真正退出程序。"""
 
-    def __init__(self, parent: tk.Misc, summary: FarewellSummary, on_close):
+    def __init__(
+        self,
+        parent: tk.Misc,
+        summary: FarewellSummary,
+        on_close,
+        auto_close_ms: int | None = None,
+    ):
         super().__init__(parent)
         self.summary = summary
         self._on_close = on_close
         self._finished = False
+        self._auto_close_job = None
+        self._auto_close_seconds = round(auto_close_ms / 1000) if auto_close_ms else None
 
         self.title("FavFocus — 今日小结")
         self.configure(bg=BG)
@@ -108,6 +116,8 @@ class FarewellDialog(tk.Toplevel):
             self.winfo_reqwidth() + px(4),
             self.winfo_reqheight() + px(4),
         )
+        if auto_close_ms:
+            self._auto_close_job = self.after(auto_close_ms, self._finish)
 
     # -- 图标 -------------------------------------------------------------
     def _load_icon(self):
@@ -169,6 +179,14 @@ class FarewellDialog(tk.Toplevel):
             pady=px(5),
             font=font(10),
         ).pack(pady=(px(18), 0))
+        if self._auto_close_seconds:
+            tk.Label(
+                body,
+                text=f"{self._auto_close_seconds} 秒后自动关闭",
+                bg=BG,
+                fg=WATCHED_FG,
+                font=font(9),
+            ).pack(pady=(px(8), 0))
 
     def _build_digest(self, parent: tk.Frame) -> None:
         digest = self.summary.digest
@@ -243,6 +261,12 @@ class FarewellDialog(tk.Toplevel):
         if self._finished:
             return
         self._finished = True
+        if self._auto_close_job is not None:
+            try:
+                self.after_cancel(self._auto_close_job)
+            except tk.TclError:
+                pass
+            self._auto_close_job = None
         try:
             self.grab_release()
         except tk.TclError:

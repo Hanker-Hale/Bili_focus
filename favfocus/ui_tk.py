@@ -50,7 +50,7 @@ from .theme import (
     px,
 )
 from .ui_cards import CardGrid
-from .ui_farewell import breathe_close
+from .ui_farewell import FarewellDialog, FarewellSummary, breathe_close
 from .ui_schedule import ScheduleDialog
 from .ui_splash import SplashOverlay
 
@@ -1410,7 +1410,7 @@ class FocusApp:
         self.fullscreen = True
 
     def _on_close_button(self) -> None:
-        """右上角 ×:**直接淡出并退出应用**,不弹小结、不闪窗口。"""
+        """右上角 ×:弹出今日小结;点「再见」或等 4 秒后平滑淡出退出。"""
         self._on_close()
 
     # -- 日程 -------------------------------------------------------------
@@ -1918,6 +1918,20 @@ class FocusApp:
         except Exception:  # noqa: BLE001 - 记住名字失败不该影响登录
             pass
 
+    def _build_farewell(self) -> FarewellSummary | None:
+        videos = list(self.videos)
+        if not videos and not self.username:
+            return None  # 从没用过,没什么好总结的
+        digest = self.service.digest(videos) if videos else {}
+        return FarewellSummary(
+            username=self.username,
+            session_watch_seconds=self.session_watch_seconds,
+            session_plays=self.session_plays,
+            total_watch_seconds=self.service.total_watch_seconds(),
+            digest=digest,
+            progress_count=len(self.service.store.progress),
+        )
+
     def _on_close(self, animate: bool = True) -> None:
         if self._closing:
             return
@@ -1949,10 +1963,25 @@ class FocusApp:
         except Exception:  # noqa: BLE001 - 关闭时不该再抛
             pass
 
-        if animate:
-            breathe_close([self.root], self.root.destroy)
-        else:
-            self.root.destroy()
+        summary = self._build_farewell()
+        if summary is None:
+            if animate:
+                breathe_close([self.root], self.root.destroy)
+            else:
+                self.root.destroy()
+            return
+        try:
+            FarewellDialog(
+                self.root,
+                summary,
+                on_close=self.root.destroy,
+                auto_close_ms=4000 if animate else 0,
+            )
+        except Exception:  # noqa: BLE001 - 小结失败不能拦住退出
+            if animate:
+                breathe_close([self.root], self.root.destroy)
+            else:
+                self.root.destroy()
 
 
 def main(argv: list[str] | None = None) -> int:

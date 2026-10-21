@@ -980,39 +980,39 @@ check("window has a minimize button", hasattr(app, "minimize_btn") and bool(app.
 app._enter_fullscreen()
 pump(root, rounds=5)
 app._on_close_button()
-pump(root, rounds=5)
-check("close button quits the app from fullscreen", app._closing is True)
+pump(root, rounds=30)
+check("close button quits from fullscreen", app._closing is True)
 check("close button keeps fullscreen while quitting", app.fullscreen is True)
-check(
-    "direct close does not open farewell dialog",
-    not any(child.__class__.__name__ == "FarewellDialog" for child in root.winfo_children()),
-)
-for _ in range(10):
-    root.update()
-    time.sleep(0.03)
-try:
-    alpha = float(root.attributes("-alpha"))
-except tk.TclError:
-    alpha = 0.0
-check("close fades out instead of flickering", alpha < 0.95, str(alpha))
 
-deadline = time.time() + 3
-closed = False
-while time.time() < deadline:
-    try:
-        root.update()
-    except tk.TclError:
-        closed = True
-        break
-    try:
-        if not root.winfo_exists():
-            closed = True
-            break
-    except tk.TclError:
-        closed = True
-        break
-    time.sleep(0.02)
-check("direct close exits the app", closed)
+farewell = next(
+    (child for child in root.winfo_children() if isinstance(child, ui.FarewellDialog)), None
+)
+check("farewell dialog is kept on close", farewell is not None)
+check(
+    "farewell uses the new app icon",
+    farewell is not None and getattr(farewell, "_icon_photo", None) is not None,
+)
+farewell_texts = collect_texts(farewell) if farewell is not None else []
+check(
+    "farewell greeting starts with 亲爱的",
+    any(t.strip() == "亲爱的 测试用户" for t in farewell_texts),
+    str(farewell_texts[:3]),
+)
+check("farewell shows finished count", any("已看完" in t for t in farewell_texts), str(farewell_texts[:6]))
+check("farewell has goodbye button", any("再见" in t for t in farewell_texts))
+check(
+    "farewell auto closes in a few seconds",
+    farewell is not None and farewell._auto_close_job is not None,
+)
+
+if farewell is not None:
+    farewell._finish(animate=False)
+pump(root)
+try:
+    still_open = bool(root.winfo_exists())
+except tk.TclError:
+    still_open = False
+check("farewell exits the app", not still_open)
 
 
 print()

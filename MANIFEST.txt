@@ -1,4 +1,4 @@
-FavFocus 2.2.2 —— 文件清单
+FavFocus 2.2.3 —— 文件清单
 ==============================================
 
 用法:
@@ -72,13 +72,13 @@ FavFocus 2.2.2 —— 文件清单
             自动分类:本地关键词打分 + 分组排序
      33650 B  favfocus/ui_cards.py
             卡片网格:单画布绘制 + 虚拟化 + 平滑滚动
-      9300 B  favfocus/ui_farewell.py
+     10115 B  favfocus/ui_farewell.py
             退出小结卡(观看时长 + 已看完比例)
      34395 B  favfocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
      13464 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     79758 B  favfocus/ui_tk.py
+     80957 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
       9820 B  favfocus/update.py
             检查更新、下载安装包、一键更新
@@ -167,7 +167,7 @@ FavFocus 2.2.2 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     38589 B  dev/smoke_ui.py
+     38893 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2598 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
@@ -226,7 +226,7 @@ FavFocus 2.2.2 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-     43433 B  docs/details.html
+     43770 B  docs/details.html
     111985 B  docs/icon.png
      12910 B  docs/index.html
 
