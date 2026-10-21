@@ -221,22 +221,75 @@
   .star-line a { color: var(--sky-deep); border-bottom: 1px solid rgba(42, 128, 190, .25); padding-bottom: 1px; }
   .star-line a:hover { border-color: var(--sky-deep); }
 
-  /* 侧边支持牌:在右侧、不挡中间主视觉 */
+  /* 右侧「赞赏」角标:点它才展开支持牌 */
+  .support-badge {
+    position: fixed;
+    right: 0;
+    top: 58%;
+    z-index: 36;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 13px 9px;
+    border: 1px solid rgba(42, 128, 190, .22);
+    border-right: 0;
+    border-radius: 14px 0 0 14px;
+    background: linear-gradient(180deg, #64C0FF, #2A80BE);
+    color: #fff;
+    font: inherit;
+    font-size: 12.5px;
+    letter-spacing: .18em;
+    writing-mode: vertical-rl;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(42, 80, 110, .2);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .support-badge:hover { transform: translate(-2px, -50%); box-shadow: 0 14px 36px rgba(42, 80, 110, .26); }
+  .support-badge .badge-star { writing-mode: horizontal-tb; font-size: 16px; }
+
   .support-card {
     position: fixed;
-    right: clamp(18px, 3vw, 44px);
+    right: 56px;
     top: 50%;
-    transform: translateY(-50%);
     z-index: 35;
     width: 236px;
+    max-width: calc(100vw - 40px);
     padding: 18px 18px 16px;
     border-radius: 18px;
-    background: rgba(255, 255, 255, .82);
+    background: rgba(255, 255, 255, .9);
     border: 1px solid rgba(42, 128, 190, .18);
     box-shadow: 0 18px 48px rgba(42, 80, 110, .14);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(12px, -50%);
+    transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
   }
+  .support-card.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(0, -50%);
+    transition: opacity .22s ease, transform .22s ease;
+  }
+  .support-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .support-close:hover { background: rgba(42, 128, 190, .08); }
   .support-kicker {
     font-size: 11px;
     letter-spacing: .16em;
@@ -302,7 +355,29 @@
   .donate-close:hover { background: rgba(42, 128, 190, .08); }
 
   @media (max-width: 1120px) {
-    .support-card { display: none; }
+    .support-badge {
+      top: auto;
+      right: 16px;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: none;
+      flex-direction: row;
+      writing-mode: horizontal-tb;
+      letter-spacing: .08em;
+      padding: 10px 16px;
+      border-right: 1px solid rgba(42, 128, 190, .22);
+      border-radius: 999px;
+    }
+    .support-badge:hover { transform: translateY(-2px); }
+    .support-card {
+      right: 16px;
+      left: 16px;
+      top: auto;
+      bottom: 78px;
+      width: auto;
+      max-width: none;
+      transform: translateY(12px);
+    }
+    .support-card.is-open { transform: translateY(0); }
   }
 </style>
 </head>
@@ -357,7 +432,12 @@
   <a class="scroll-hint" href="details.html" data-transition aria-label="查看详情">查看详情</a>
 </main>
 
+<button class="support-badge" id="support-badge" type="button" aria-controls="support-card" aria-expanded="false">
+  <span class="badge-star">★</span>赞赏
+</button>
+
 <aside class="support-card" id="support-card" aria-label="支持 FavFocus">
+  <button class="support-close" id="support-close" type="button" aria-label="收起赞赏">×</button>
   <span class="support-kicker">支持 FavFocus</span>
   <p>你如果真的钱多并且想支持一下的话……</p>
   <div class="support-actions">
@@ -473,6 +553,27 @@
     document.body.style.overflow = '';
   }
 
+  // 赞赏角标:默认收起,点角标才弹出支持牌
+  const supportCard = document.getElementById('support-card');
+  const supportBadge = document.getElementById('support-badge');
+  const supportClose = document.getElementById('support-close');
+
+  function setSupport(open) {
+    if (!supportCard || !supportBadge) return;
+    supportCard.classList.toggle('is-open', open);
+    supportBadge.setAttribute('aria-expanded', String(open));
+  }
+
+  if (supportBadge && supportCard) {
+    supportBadge.addEventListener('click', () => setSupport(!supportCard.classList.contains('is-open')));
+    if (supportClose) supportClose.addEventListener('click', () => setSupport(false));
+    document.addEventListener('click', (event) => {
+      if (!supportCard.classList.contains('is-open')) return;
+      if (supportCard.contains(event.target) || supportBadge.contains(event.target)) return;
+      setSupport(false);
+    });
+  }
+
   document.querySelectorAll('[data-donate]').forEach((button) => {
     button.addEventListener('click', () => openDonate(button.dataset.donate));
   });
@@ -483,7 +584,12 @@
     const closeButton = donateModal.querySelector('.donate-close');
     if (closeButton) closeButton.addEventListener('click', closeDonate);
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeDonate();
+      if (event.key !== 'Escape') return;
+      if (!donateModal.hidden) {
+        closeDonate();
+      } else {
+        setSupport(false);
+      }
     });
   }
 </script>

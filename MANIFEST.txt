@@ -16,7 +16,7 @@ FavFocus 2.2.3 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     13570 B  MANIFEST.txt
+     13638 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
      35571 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
@@ -229,7 +229,7 @@ FavFocus 2.2.3 —— 文件清单
     238638 B  docs/alipay-qr.png
      45015 B  docs/details.html
     111985 B  docs/icon.png
-     20976 B  docs/index.html
+     24469 B  docs/index.html
      96297 B  docs/wechat-qr.png
 
 — CI .github/workflows/ -----------------------
