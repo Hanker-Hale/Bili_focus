@@ -226,7 +226,7 @@ FavFocus 2.2.3 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-     43770 B  docs/details.html
+     43774 B  docs/details.html
     111985 B  docs/icon.png
      12910 B  docs/index.html
 
