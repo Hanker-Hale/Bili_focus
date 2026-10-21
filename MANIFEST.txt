@@ -76,9 +76,9 @@ FavFocus 2.2.3 —— 文件清单
             退出小结卡(观看时长 + 已看完比例)
      34395 B  favfocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-      9625 B  favfocus/ui_splash.py
+      9626 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
-     81994 B  favfocus/ui_tk.py
+     82136 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
       9820 B  favfocus/update.py
             检查更新、下载安装包、一键更新

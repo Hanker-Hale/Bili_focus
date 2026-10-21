@@ -16,7 +16,7 @@ from pathlib import Path
 from . import theme
 
 TICK_MS = 40
-FRAME_MS = 41           # 24fps,整段视频 4 倍速约 2 秒
+FRAME_MS = 60           # 约 17fps,整段视频约 3 秒放完
 DOT_COUNT = 3           # 兼容旧代码/测试的常量
 FRAME_DIR = Path(__file__).resolve().parent.parent / "assets" / "splash-frames"
 SPLASH_BLUE = "#81DAFC"  # 和视频底色一致

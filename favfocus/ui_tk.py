@@ -748,6 +748,8 @@ class FocusApp:
                 continue
             self._splash_hidden_widgets.append((child, child.pack_info()))
             child.pack_forget()
+        # 先把启动页的几何算好,主循环一启动就是满屏开屏,不会先露出底部栏
+        self.root.update_idletasks()
 
     def _bind_keys(self) -> None:
         self.root.bind("<Control-f>", lambda _event: self._focus_search())
