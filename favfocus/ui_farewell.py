@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import math
 import tkinter as tk
 from dataclasses import dataclass, field
 
@@ -44,22 +45,17 @@ def _center_over(window: tk.Misc, parent: tk.Misc, width: int, height: int) -> N
 
 
 
-def breathe_close(windows, on_done, duration_ms: int = 1500, step_ms: int = 20) -> None:
-    """把窗口透明度按"呼吸"曲线降到 0,再执行收尾。
+def breathe_close(windows, on_done, duration_ms: int = 1200, step_ms: int = 20) -> None:
+    """把窗口透明度平滑地降到 0(1 → 0,中途不回升),再执行收尾。
 
-    曲线:1 → 0.66 → 0.94 → 0.52 → 0.82 → 0.30 → 0,先慢慢暗下去、
-    再回一点、再暗下去,最后彻底消失,比直接 destroy 温和。
+    用余弦缓动:开始和结束慢、中间稍快,看起来是慢慢淡出,
+    不会出现忽明忽暗的闪烁。
     """
-    keys = [(0.0, 1.0), (0.22, 0.66), (0.40, 0.94), (0.58, 0.52), (0.74, 0.82), (0.88, 0.30), (1.0, 0.0)]
     frames = max(1, duration_ms // step_ms)
 
     def alpha_at(progress: float) -> float:
-        for (start_t, start_a), (end_t, end_a) in zip(keys, keys[1:]):
-            if progress <= end_t:
-                ratio = (progress - start_t) / max(end_t - start_t, 1e-6)
-                ratio = ratio * ratio * (3 - 2 * ratio)  # ease in-out
-                return start_a + (end_a - start_a) * ratio
-        return 0.0
+        eased = 0.5 - 0.5 * math.cos(math.pi * min(1.0, max(0.0, progress)))
+        return max(0.0, 1.0 - eased)
 
     def apply(value: float) -> None:
         for window in windows:
