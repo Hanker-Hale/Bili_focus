@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import math
 import time
 import tkinter as tk
 from pathlib import Path
@@ -17,7 +16,7 @@ from pathlib import Path
 from . import theme
 
 TICK_MS = 40
-FRAME_MS = 83           # 12fps,整段视频 2 倍速约 4 秒
+FRAME_MS = 41           # 24fps,整段视频 4 倍速约 2 秒
 DOT_COUNT = 3           # 兼容旧代码/测试的常量
 FRAME_DIR = Path(__file__).resolve().parent.parent / "assets" / "splash-frames"
 SPLASH_BLUE = "#81DAFC"  # 和视频底色一致
@@ -183,23 +182,18 @@ class SplashOverlay(tk.Frame):
         if not self.winfo_exists():
             return
         if self._using_frames:
-            # 按真实时间对齐:即使单帧渲染慢,也保证整段视频 2 倍速放完
-            elapsed_ms = (time.monotonic() - self._play_started) * 1000
-            target = min(len(self._frames) - 1, int(elapsed_ms / FRAME_MS))
-            if target != self._frame_index:
-                image = self._load_image(target, self._frame_factor)
+            # 按顺序播放每一帧,不跳帧;渲染慢时整体稍慢一点,也不丢画面
+            if self._frame_index + 1 < len(self._frames):
+                self._frame_index += 1
+                image = self._load_image(self._frame_index, self._frame_factor)
                 if image is not None and self._frame_image_id is not None:
-                    self._frame_index = target
                     self._current_image = image
                     self.canvas.itemconfigure(self._frame_image_id, image=image)
-                    bob = math.sin(time.monotonic() * 2.0) * theme.px(1)
-                    self.canvas.coords(
-                        self._frame_image_id,
-                        self._frame_pos[0],
-                        self._frame_pos[1] + bob,
-                    )
-            if self._frame_index < len(self._frames) - 1:
-                self._job = self.after(FRAME_MS, self._tick)
+                # 按固定 4 倍速时间轴排下一帧:处理慢时少等,处理快时多等,
+                # 但每一帧都会显示,不跳帧
+                next_at = self._play_started + (self._frame_index + 1) * (FRAME_MS / 1000)
+                delay = max(1, int((next_at - time.monotonic()) * 1000))
+                self._job = self.after(delay, self._tick)
             else:
                 # 视频放完:停在最后一帧,直到应用准备好
                 self._job = self.after(250, self._hold)

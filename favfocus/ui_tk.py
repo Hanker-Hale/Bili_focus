@@ -741,6 +741,13 @@ class FocusApp:
         )
 
         self.splash.lift()  # 最后建出来的底部栏也在它下面
+        # 开屏期间把主界面暂时收起来:只重绘启动页,帧率才跟得上
+        self._splash_hidden_widgets: list[tuple[tk.Misc, dict]] = []
+        for child in self.root.winfo_children():
+            if child is self.splash or child.winfo_manager() != "pack":
+                continue
+            self._splash_hidden_widgets.append((child, child.pack_info()))
+            child.pack_forget()
 
     def _bind_keys(self) -> None:
         self.root.bind("<Control-f>", lambda _event: self._focus_search())
@@ -1092,6 +1099,18 @@ class FocusApp:
             self.root.after(remaining, self._hide_splash)
             return
         splash.hide()
+        self._restore_splash_ui()
+
+    def _restore_splash_ui(self) -> None:
+        hidden = getattr(self, "_splash_hidden_widgets", None)
+        if not hidden:
+            return
+        self._splash_hidden_widgets = []
+        for child, info in hidden:
+            try:
+                child.pack(**info)
+            except tk.TclError:
+                pass
 
     def _splash_status(self, text: str) -> None:
         """启动阶段的进度文案:只更新启动页,不打扰底部状态栏。"""
