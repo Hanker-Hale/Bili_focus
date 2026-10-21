@@ -50,7 +50,7 @@ from .theme import (
     px,
 )
 from .ui_cards import CardGrid
-from .ui_farewell import FarewellDialog, FarewellSummary
+from .ui_farewell import FarewellDialog, FarewellSummary, breathe_close
 from .ui_schedule import ScheduleDialog
 from .ui_splash import SplashOverlay
 
@@ -449,8 +449,11 @@ class FocusApp:
         self._auto_install_var = None
         self.session_watch_seconds: float = 0.0
         self.session_plays: int = 0
+        self._minimize_pending = False
+        self._minimize_from_fullscreen = False
 
         self._build_ui()
+        self.root.bind("<Map>", self._on_root_mapped, add="+")
         self._bind_keys()
         self.fullscreen = False
         if fullscreen:
@@ -529,6 +532,27 @@ class FocusApp:
         self.close_btn.bind(
             "<Leave>",
             lambda _event: self.close_btn.configure(bg=BG, fg=FG_DIM),
+        )
+
+        # 最小化:放在 × 左边,和 × 一样低调
+        self.minimize_btn = tk.Label(
+            bar,
+            text="–",
+            bg=BG,
+            fg=FG_DIM,
+            font=font(14),
+            padx=px(8),
+            cursor="hand2",
+        )
+        self.minimize_btn.pack(side="right", padx=(0, 0))
+        self.minimize_btn.bind("<Button-1>", lambda _event: self._minimize_window())
+        self.minimize_btn.bind(
+            "<Enter>",
+            lambda _event: self.minimize_btn.configure(bg=BG_ALT, fg=FG),
+        )
+        self.minimize_btn.bind(
+            "<Leave>",
+            lambda _event: self.minimize_btn.configure(bg=BG, fg=FG_DIM),
         )
 
         self.group_var = tk.BooleanVar(value=bool(self.service.store.get_pref("auto_group", True)))
@@ -1346,6 +1370,45 @@ class FocusApp:
             return
         self._clear_search()
 
+    def _minimize_window(self) -> None:
+        """最小化到任务栏;全屏状态下先退全屏,恢复时再自动回全屏。"""
+        if self._closing:
+            return
+        self._minimize_from_fullscreen = bool(getattr(self, "fullscreen", False))
+        self._minimize_pending = True
+        if self._minimize_from_fullscreen:
+            try:
+                self.root.attributes("-fullscreen", False)
+            except tk.TclError:
+                pass
+        try:
+            self.root.iconify()
+        except tk.TclError:
+            self._minimize_pending = False
+
+    def _on_root_mapped(self, _event=None) -> None:
+        """从任务栏恢复窗口后,如果原来在全屏就重新进全屏。"""
+        if not getattr(self, "_minimize_pending", False):
+            return
+        try:
+            if self.root.state() == "iconic":
+                return
+        except tk.TclError:
+            return
+        self._minimize_pending = False
+        if getattr(self, "_minimize_from_fullscreen", False):
+            self._minimize_from_fullscreen = False
+            self.root.after(30, self._restore_fullscreen_after_minimize)
+
+    def _restore_fullscreen_after_minimize(self) -> None:
+        if self._closing:
+            return
+        try:
+            self.root.attributes("-fullscreen", True)
+        except tk.TclError:
+            pass
+        self.fullscreen = True
+
     def _on_close_button(self) -> None:
         """右上角 ×:**直接退出应用,不退出全屏**。
 
@@ -1906,7 +1969,7 @@ class FocusApp:
 
         summary = self._build_farewell()
         if summary is None:
-            self.root.destroy()
+            breathe_close([self.root], self.root.destroy)
             return
         try:
             FarewellDialog(self.root, summary, on_close=self.root.destroy)

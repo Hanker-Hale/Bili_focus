@@ -1010,9 +1010,10 @@ check(
     str(farewell_texts),
 )
 check("farewell has goodbye button", any("再见" in t for t in farewell_texts))
+check("window has a minimize button", hasattr(app, "minimize_btn") and bool(app.minimize_btn.winfo_ismapped()))
 
 if farewell is not None:
-    farewell._finish()
+    farewell._finish(animate=False)
 pump(root)
 try:
     still_open = bool(root.winfo_exists())
