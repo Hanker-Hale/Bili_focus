@@ -13,9 +13,7 @@ import time
 import tkinter as tk
 from pathlib import Path
 
-from . import __version__ as APP_VERSION
 from . import theme
-from .theme import BG, FG, FG_DIM, font
 
 TICK_MS = 40
 FRAME_MS = 50
@@ -27,6 +25,7 @@ RAY_DIM = "#A9DDFF"
 RAY_BRIGHT = CREAM
 
 FRAME_DIR = Path(__file__).resolve().parent.parent / "assets" / "splash-frames"
+SPLASH_BLUE = "#81DAFC"  # 和视频底色一致
 
 
 def blend(color_a: str, color_b: str, ratio: float) -> str:
@@ -42,8 +41,8 @@ class SplashOverlay(tk.Frame):
     """覆盖在内容区上的启动画面。"""
 
     def __init__(self, master: tk.Misc, message: str = "正在准备…"):
-        super().__init__(master, bg=BG)
-        self.canvas = tk.Canvas(self, bg=BG, highlightthickness=0, bd=0)
+        super().__init__(master, bg=SPLASH_BLUE)
+        self.canvas = tk.Canvas(self, bg=SPLASH_BLUE, highlightthickness=0, bd=0)
         self.canvas.pack(fill="both", expand=True)
 
         self._message = message
@@ -68,11 +67,6 @@ class SplashOverlay(tk.Frame):
         self._frame_pos = (0, 0)
         self._frame_size = 0
         self._using_frames = False
-
-        self._title_id = self.canvas.create_text(0, 0, text="", font=font(20, "bold"), fill=FG)
-        self._tagline_id = self.canvas.create_text(0, 0, text="", font=font(10), fill=FG_DIM)
-        self._status_id = self.canvas.create_text(0, 0, text=message, font=font(9), fill=FG_DIM)
-        self._footer_id = self.canvas.create_text(0, 0, text="", font=font(8), fill=FG_DIM)
 
         self.canvas.bind("<Configure>", self._on_resize)
         self.start()
@@ -121,13 +115,14 @@ class SplashOverlay(tk.Frame):
         self._shown_at = time.monotonic()
         try:
             self.place(relx=0, rely=0, relwidth=1, relheight=1)
+            self.lift()
         except tk.TclError:
             pass
         self.start()
 
     def set_status(self, message: str) -> None:
+        # 开屏画面只保留视频动画,状态文字只保存在内部,不绘制
         self._message = message
-        self.canvas.itemconfigure(self._status_id, text=message)
 
     @property
     def message(self) -> str:
@@ -157,11 +152,15 @@ class SplashOverlay(tk.Frame):
 
         width, height = self._size
         center_x = width // 2
-        center_y = int(height * 0.35)
+        center_y = height // 2
 
         if self._frames:
-            target = min(320, int(height * 0.42), int(width * 0.5))
-            factor = 1 if target >= 240 else 2
+            # 画面里只有视频本身:眼睛约占屏幕 60% 宽,铺满整块底色
+            frame_w = self._frames[0].width()
+            frame_h = self._frames[0].height()
+            factor = 1
+            while (frame_w / factor > width * 0.98 or frame_h / factor > height * 0.98) and factor < 8:
+                factor *= 2
             if factor != self._frame_factor or not self._display_frames:
                 self._display_frames = [
                     frame if factor == 1 else frame.subsample(factor) for frame in self._frames
@@ -170,32 +169,16 @@ class SplashOverlay(tk.Frame):
             self._using_frames = True
             self._frame_index %= len(self._display_frames)
             self._frame_pos = (center_x, center_y)
-            self._frame_size = self._display_frames[0].width()
             self._frame_image_id = self.canvas.create_image(
                 center_x,
                 center_y,
                 image=self._display_frames[self._frame_index],
                 tags=("logo", "splash-frame"),
             )
-            title_y = center_y + self._frame_size // 2 + theme.px(26)
         else:
             self._using_frames = False
-            size = min(theme.px(150), int(height * 0.34))
+            size = min(width, height) // 2
             self._draw_bulb_scene(center_x, center_y, size)
-            title_y = center_y + size // 2 + theme.px(26)
-
-        self.canvas.coords(self._title_id, center_x, title_y)
-        self.canvas.itemconfigure(self._title_id, text="FavFocus")
-
-        tagline_y = title_y + theme.px(30)
-        self.canvas.coords(self._tagline_id, center_x, tagline_y)
-        self.canvas.itemconfigure(self._tagline_id, text="只看收藏夹,不被推荐流带走")
-
-        self.canvas.coords(self._status_id, center_x, tagline_y + theme.px(34))
-        self.canvas.coords(self._footer_id, center_x, height - theme.px(28))
-        self.canvas.itemconfigure(self._footer_id, text=f"v{APP_VERSION} · 只看不发,打开即走")
-
-        if not self._using_frames:
             self._paint(0.0)
 
     def _draw_bulb_scene(self, center_x: int, center_y: int, size: int) -> None:
@@ -291,6 +274,8 @@ class SplashOverlay(tk.Frame):
         self._job = None
         if not self.winfo_exists():
             return
+        if self.winfo_ismapped():
+            self.lift()  # 防止全屏切换/布局把底部栏又抬到启动页上面
         if self._using_frames:
             self._advance_frame()
             self._job = self.after(FRAME_MS, self._tick)

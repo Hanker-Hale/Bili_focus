@@ -631,7 +631,7 @@ class FocusApp:
         self.grid_view.canvas.bind("<Return>", lambda _event: self.play_selected())
         self.grid_view.canvas.bind("<space>", lambda _event: self.toggle_watched())
 
-        self.splash = SplashOverlay(self.content, "正在检查登录状态…")
+        self.splash = SplashOverlay(self.root, "正在检查登录状态…")
         self.splash.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         foot = tk.Frame(self.root, bg=BG)
@@ -739,6 +739,8 @@ class FocusApp:
             font=font(9),
             cursor="hand2",
         )
+
+        self.splash.lift()  # 最后建出来的底部栏也在它下面
 
     def _bind_keys(self) -> None:
         self.root.bind("<Control-f>", lambda _event: self._focus_search())
@@ -1363,6 +1365,9 @@ class FocusApp:
         else:
             self._enter_fullscreen()
             self._set_status("已进入全屏,按 ESC 退出")
+        splash = getattr(self, "splash", None)
+        if splash is not None:
+            splash.lift()  # 全屏切换会改变层级,启动页要重新压到最上面
 
     def _on_escape(self) -> None:
         if getattr(self, "fullscreen", False):
