@@ -196,6 +196,26 @@
     .glow, .scroll-hint::after, .hero > * { animation: none !important; }
     .hero > * { opacity: 1; transform: none; }
   }
+
+  /* 进入详情页时的开屏动画:整屏天蓝 + 眼睛动画,渐入渐出 */
+  .transition-veil {
+    position: fixed; inset: 0; z-index: 80;
+    display: grid; place-items: center;
+    background: #81DAFC;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .45s ease, visibility 0s linear .45s;
+  }
+  .transition-veil.active {
+    opacity: 1; visibility: visible;
+    transition: opacity .3s ease;
+  }
+  .transition-video {
+    width: min(86vmin, 720px); height: auto; display: block;
+    background: #81DAFC;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .transition-veil { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -214,7 +234,7 @@
       FavFocus
     </a>
     <nav class="nav-links">
-      <a class="hide-sm" href="details.html">详情</a>
+      <a class="hide-sm" href="details.html" data-transition>详情</a>
       <a class="hide-sm" href="details.html#download">下载</a>
       <a href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">GitHub</a>
     </nav>
@@ -235,7 +255,7 @@
     </p>
     <div class="actions">
       <a class="btn btn-primary" href="details.html" data-transition>
-        进入详情
+        查看详情
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
       <a class="btn btn-ghost" href="https://github.com/Hanker-Hale/FavFocus" target="_blank" rel="noopener">
@@ -245,8 +265,12 @@
     </div>
     <p class="meta-line">全屏播放 · 进度续播 · 自动分类 · 观看日程</p>
   </div>
-  <a class="scroll-hint" href="details.html" data-transition aria-label="进入详情">进入详情</a>
+  <a class="scroll-hint" href="details.html" data-transition aria-label="查看详情">查看详情</a>
 </main>
+
+<div class="transition-veil" id="transition-veil" aria-hidden="true">
+  <video class="transition-video" id="transition-video" src="media/eye-intro.mp4" muted playsinline preload="auto"></video>
+</div>
 
 <footer>
   © <span id="year">2026</span> Hanker Hale · FavFocus &nbsp;·&nbsp; 非官方项目,与哔哩哔哩无关联
@@ -255,12 +279,43 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // 进入详情前做一次极短的淡出,免得页面硬切
+  // 进入详情前播放开屏动画:渐入 → 播完 → 渐出 → 打开详情页
+  const veil = document.getElementById('transition-veil');
+  const transitionVideo = document.getElementById('transition-video');
+  let transitioning = false;
+
+  function enterDetails(href) {
+    if (transitioning) return;
+    transitioning = true;
+    document.body.classList.add('leaving');
+    if (veil) veil.classList.add('active');
+
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      window.location.href = href;
+    };
+
+    if (transitionVideo) {
+      try {
+        transitionVideo.currentTime = 0;
+        const played = transitionVideo.play();
+        if (played && typeof played.catch === 'function') {
+          played.catch(() => setTimeout(finish, 700));
+        }
+        transitionVideo.addEventListener('ended', () => setTimeout(finish, 120), { once: true });
+      } catch (error) {
+        setTimeout(finish, 700);
+      }
+    }
+    setTimeout(finish, 2500);
+  }
+
   document.querySelectorAll('a[data-transition]').forEach((link) => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      document.body.classList.add('leaving');
-      setTimeout(() => { window.location.href = link.href; }, 200);
+      enterDetails(link.href);
     });
   });
 </script>

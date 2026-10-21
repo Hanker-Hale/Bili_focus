@@ -107,16 +107,17 @@ def _write_png(path: Path, width: int, height: int, rgb_rows: list[bytes]) -> No
 
 
 def grab(window: tk.Misc, target_width: int = TARGET_WIDTH) -> bytes:
-    """抓窗口内容,等比缩到 target_width 宽,返回 PNG 字节。"""
+    """抓窗口内容,等比缩到 target_width 宽,返回 PNG 字节。
+
+    用 PrintWindow 渲染窗口本身,而不是从屏幕 BitBlt——这样别的窗口、
+    输入法候选框不会混进截图里。
+    """
     hwnd = _window_handle(window)
     user32.SetForegroundWindow(hwnd)
-    time.sleep(0.45)
+    time.sleep(0.3)
 
-    # 只抓客户区:去掉 Windows 标题栏和边框,截图更干净
     client = wintypes.RECT()
     user32.GetClientRect(hwnd, ctypes.byref(client))
-    origin = POINT(0, 0)
-    user32.ClientToScreen(hwnd, ctypes.byref(origin))
     width = client.right - client.left
     height = client.bottom - client.top
     if width <= 0 or height <= 0:
@@ -127,40 +128,60 @@ def grab(window: tk.Misc, target_width: int = TARGET_WIDTH) -> bytes:
     out_h = max(1, int(height * scale))
 
     screen_dc = user32.GetDC(0)
-    mem_dc = gdi32.CreateCompatibleDC(screen_dc)
-    info = BITMAPINFO()
-    info.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
-    info.bmiHeader.biWidth = out_w
-    info.bmiHeader.biHeight = -out_h  # 负数 = 自上而下
-    info.bmiHeader.biPlanes = 1
-    info.bmiHeader.biBitCount = 32
-    info.bmiHeader.biCompression = 0  # BI_RGB
-    bits = ctypes.c_void_p()
-    bitmap = gdi32.CreateDIBSection(
-        mem_dc, ctypes.byref(info), 0, ctypes.byref(bits), None, 0
+    src_dc = gdi32.CreateCompatibleDC(screen_dc)
+    src_info = BITMAPINFO()
+    src_info.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+    src_info.bmiHeader.biWidth = width
+    src_info.bmiHeader.biHeight = -height
+    src_info.bmiHeader.biPlanes = 1
+    src_info.bmiHeader.biBitCount = 32
+    src_info.bmiHeader.biCompression = 0
+    src_bits = ctypes.c_void_p()
+    src_bitmap = gdi32.CreateDIBSection(
+        src_dc, ctypes.byref(src_info), 0, ctypes.byref(src_bits), None, 0
     )
-    old = gdi32.SelectObject(mem_dc, bitmap)
-    gdi32.SetStretchBltMode(mem_dc, 4)  # HALFTONE
-    gdi32.StretchBlt(
-        mem_dc, 0, 0, out_w, out_h, screen_dc, origin.x, origin.y, width, height, 0x00CC0020
-    )
+    old_src = gdi32.SelectObject(src_dc, src_bitmap)
 
-    buffer = (ctypes.c_ubyte * (out_w * out_h * 4)).from_address(bits.value)
+    printed = user32.PrintWindow(hwnd, src_dc, 3)  # PW_CLIENTONLY | PW_RENDERFULLCONTENT
+    if not printed:
+        origin = POINT(0, 0)
+        user32.ClientToScreen(hwnd, ctypes.byref(origin))
+        gdi32.BitBlt(src_dc, 0, 0, width, height, screen_dc, origin.x, origin.y, 0x00CC0020)
+
+    dst_dc = gdi32.CreateCompatibleDC(screen_dc)
+    dst_info = BITMAPINFO()
+    dst_info.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+    dst_info.bmiHeader.biWidth = out_w
+    dst_info.bmiHeader.biHeight = -out_h
+    dst_info.bmiHeader.biPlanes = 1
+    dst_info.bmiHeader.biBitCount = 32
+    dst_info.bmiHeader.biCompression = 0
+    dst_bits = ctypes.c_void_p()
+    dst_bitmap = gdi32.CreateDIBSection(
+        dst_dc, ctypes.byref(dst_info), 0, ctypes.byref(dst_bits), None, 0
+    )
+    old_dst = gdi32.SelectObject(dst_dc, dst_bitmap)
+    gdi32.SetStretchBltMode(dst_dc, 4)  # HALFTONE
+    gdi32.StretchBlt(dst_dc, 0, 0, out_w, out_h, src_dc, 0, 0, width, height, 0x00CC0020)
+
+    buffer = (ctypes.c_ubyte * (out_w * out_h * 4)).from_address(dst_bits.value)
     data = bytes(buffer)
     rows = []
     for y in range(out_h):
-        start = y * out_w * 4
-        line = data[start : start + out_w * 4]
-        # BGRA -> RGB
+        start_index = y * out_w * 4
+        line = data[start_index : start_index + out_w * 4]
         rgb = bytearray(out_w * 3)
         rgb[0::3] = line[2::4]
         rgb[1::3] = line[1::4]
         rgb[2::3] = line[0::4]
         rows.append(bytes(rgb))
 
-    gdi32.SelectObject(mem_dc, old)
-    gdi32.DeleteObject(bitmap)
-    gdi32.DeleteDC(mem_dc)
+    gdi32.SelectObject(dst_dc, old_dst)
+    gdi32.DeleteObject(dst_bitmap)
+    gdi32.DeleteDC(dst_dc)
+    gdi32.SelectObject(src_dc, old_src)
+    gdi32.DeleteObject(src_bitmap)
+    gdi32.DeleteDC(src_dc)
     user32.ReleaseDC(0, screen_dc)
 
     tmp = tempfile.mktemp(suffix=".png")

@@ -1,13 +1,9 @@
-"""启动页:灯泡 + 光线的手绘动画。
+"""启动页:手绘眼睛动画(由用户提供的开屏视频逐帧抽取)。
 
-和手绘图标同一套语言:
+动画素材在 `assets/splash-frames/`(320×320、20fps、圆角透明);
+运行时用 Tk 逐帧播放,不依赖 Pillow/视频解码器。
 
-- 浅蓝天蓝底(badge)+ 米白灯泡(玻璃罩、灯颈、灯座、灯丝);
-- **光线那几条短杠从灯泡周围依次亮起、拉长、变白**,像在"充能",
-  用这个代替普通转圈/点状加载器;
-- 整个图形做 ±2px 的呼吸浮动,不抢眼。
-
-动画只用 tkinter Canvas,不依赖图片和 Pillow,任何 DPI 都清晰。
+如果素材缺失,退回原来的"灯泡 + 光线"手绘动画(纯 Canvas 绘制)。
 """
 
 from __future__ import annotations
@@ -15,18 +11,22 @@ from __future__ import annotations
 import math
 import time
 import tkinter as tk
+from pathlib import Path
 
 from . import __version__ as APP_VERSION
 from . import theme
 from .theme import BG, FG, FG_DIM, font
 
 TICK_MS = 40
+FRAME_MS = 50
 DOT_COUNT = 3          # 兼容旧代码/测试的常量;新动画不再用圆点
-RAY_COUNT = 9          # 灯泡周围的光线数量
-BADGE_BLUE = "#64C0FF"  # 和新图标底色一致
+RAY_COUNT = 9          # 灯泡回退动画的光线数量
+BADGE_BLUE = "#64C0FF"
 CREAM = "#FFFAF0"
 RAY_DIM = "#A9DDFF"
 RAY_BRIGHT = CREAM
+
+FRAME_DIR = Path(__file__).resolve().parent.parent / "assets" / "splash-frames"
 
 
 def blend(color_a: str, color_b: str, ratio: float) -> str:
@@ -53,11 +53,22 @@ class SplashOverlay(tk.Frame):
         self._size = (0, 0)
 
         # 静态元素在 _layout() 里创建一次,动效只改它们的坐标/颜色
-        self._logo_ids: list[int] = []      # 底片 + 灯泡本体(一起做呼吸浮动)
-        self._ray_ids: list[int] = []       # 光线短杠(加载动画主角)
+        self._logo_ids: list[int] = []
+        self._ray_ids: list[int] = []
         self._ray_angles: list[float] = []
         self._bulb_center = (0, 0)
         self._bulb_radius = 0
+
+        # 视频逐帧动画
+        self._frames = self._load_frames()
+        self._display_frames: list[tk.PhotoImage] = []
+        self._frame_factor = 1
+        self._frame_index = 0
+        self._frame_image_id = None
+        self._frame_pos = (0, 0)
+        self._frame_size = 0
+        self._using_frames = False
+
         self._title_id = self.canvas.create_text(0, 0, text="", font=font(20, "bold"), fill=FG)
         self._tagline_id = self.canvas.create_text(0, 0, text="", font=font(10), fill=FG_DIM)
         self._status_id = self.canvas.create_text(0, 0, text=message, font=font(9), fill=FG_DIM)
@@ -66,10 +77,22 @@ class SplashOverlay(tk.Frame):
         self.canvas.bind("<Configure>", self._on_resize)
         self.start()
 
+    # -- 素材 -------------------------------------------------------------
+    def _load_frames(self) -> list[tk.PhotoImage]:
+        if not FRAME_DIR.is_dir():
+            return []
+        frames: list[tk.PhotoImage] = []
+        try:
+            for path in sorted(FRAME_DIR.glob("frame-*.png")):
+                frames.append(tk.PhotoImage(file=str(path)))
+        except tk.TclError:
+            return []
+        return frames
+
     # -- 生命周期 ---------------------------------------------------------
     def start(self) -> None:
         if self._job is None:
-            self._job = self.after(TICK_MS, self._tick)
+            self._job = self.after(FRAME_MS if self._using_frames else TICK_MS, self._tick)
 
     def remaining_ms(self, min_visible_ms: int = 600) -> int:
         """还要至少显示多久(毫秒)。用来避免启动太快时闪一下就没了。"""
@@ -124,23 +147,43 @@ class SplashOverlay(tk.Frame):
         self._layout()
 
     def _layout(self) -> None:
-        # 尺寸变化会重新布局:必须先把上一套图形删掉,否则会和旧的叠在一起
         self.canvas.delete("logo")
         self.canvas.delete("splash-ray")
         self.canvas.delete("splash-dots")
         self._logo_ids = []
         self._ray_ids = []
         self._ray_angles = []
+        self._frame_image_id = None
 
         width, height = self._size
         center_x = width // 2
-        # 全部按窗口高度取百分比,窗口矮时整体缩小,文字不会叠在一起
-        center_y = int(height * 0.38)
-        size = min(theme.px(150), int(height * 0.34))
+        center_y = int(height * 0.35)
 
-        self._draw_bulb_scene(center_x, center_y, size)
+        if self._frames:
+            target = min(320, int(height * 0.42), int(width * 0.5))
+            factor = 1 if target >= 240 else 2
+            if factor != self._frame_factor or not self._display_frames:
+                self._display_frames = [
+                    frame if factor == 1 else frame.subsample(factor) for frame in self._frames
+                ]
+                self._frame_factor = factor
+            self._using_frames = True
+            self._frame_index %= len(self._display_frames)
+            self._frame_pos = (center_x, center_y)
+            self._frame_size = self._display_frames[0].width()
+            self._frame_image_id = self.canvas.create_image(
+                center_x,
+                center_y,
+                image=self._display_frames[self._frame_index],
+                tags=("logo", "splash-frame"),
+            )
+            title_y = center_y + self._frame_size // 2 + theme.px(26)
+        else:
+            self._using_frames = False
+            size = min(theme.px(150), int(height * 0.34))
+            self._draw_bulb_scene(center_x, center_y, size)
+            title_y = center_y + size // 2 + theme.px(26)
 
-        title_y = center_y + size // 2 + theme.px(26)
         self.canvas.coords(self._title_id, center_x, title_y)
         self.canvas.itemconfigure(self._title_id, text="FavFocus")
 
@@ -152,15 +195,15 @@ class SplashOverlay(tk.Frame):
         self.canvas.coords(self._footer_id, center_x, height - theme.px(28))
         self.canvas.itemconfigure(self._footer_id, text=f"v{APP_VERSION} · 只看不发,打开即走")
 
-        self._paint(0.0)
+        if not self._using_frames:
+            self._paint(0.0)
 
     def _draw_bulb_scene(self, center_x: int, center_y: int, size: int) -> None:
-        """画天蓝底片 + 米白灯泡 + 一圈光线短杠。"""
+        """回退动画:天蓝底片 + 米白灯泡 + 一圈光线短杠。"""
         radius = size // 2
         left, top = center_x - radius, center_y - radius
         right, bottom = center_x + radius, center_y + radius
 
-        # 圆角方底(用平滑多边形近似圆角矩形)
         corner = int(size * 0.22)
         points = [
             left + corner, top, right - corner, top, right, top + corner,
@@ -178,7 +221,6 @@ class SplashOverlay(tk.Frame):
         glass_radius = int(size * 0.20)
         glass_center = (center_x, int(center_y - size * 0.02))
 
-        # 玻璃罩
         self._logo_ids.append(
             self.canvas.create_oval(
                 glass_center[0] - glass_radius, glass_center[1] - glass_radius,
@@ -186,7 +228,6 @@ class SplashOverlay(tk.Frame):
                 outline=CREAM, width=thickness, tags=("logo",),
             )
         )
-        # 灯颈(两条斜线)
         neck_top = glass_center[1] + glass_radius - theme.px(2)
         neck_bottom = int(center_y + size * 0.17)
         self._logo_ids.append(
@@ -203,7 +244,6 @@ class SplashOverlay(tk.Frame):
                 fill=CREAM, width=thickness, capstyle="round", tags=("logo",),
             )
         )
-        # 灯座:三条逐渐变短的横线
         base_widths = (0.44, 0.34, 0.24)
         for index, ratio in enumerate(base_widths):
             y = neck_bottom + int(size * 0.035) * (index + 1)
@@ -214,7 +254,6 @@ class SplashOverlay(tk.Frame):
                     fill=CREAM, width=thickness, capstyle="round", tags=("logo",),
                 )
             )
-        # 灯丝:灯罩里的一个小波浪
         filament_y = glass_center[1] + int(glass_radius * 0.30)
         filament = [
             glass_center[0] - int(glass_radius * 0.34), filament_y,
@@ -229,7 +268,6 @@ class SplashOverlay(tk.Frame):
             )
         )
 
-        # 光线:绕灯泡一圈的短杠,加载时依次点亮
         self._bulb_center = glass_center
         self._bulb_radius = glass_radius
         ray_inner = glass_radius + int(size * 0.075)
@@ -253,28 +291,47 @@ class SplashOverlay(tk.Frame):
         self._job = None
         if not self.winfo_exists():
             return
-        self._phase += 0.12
-        self._paint(self._phase)
-        self._job = self.after(TICK_MS, self._tick)
+        if self._using_frames:
+            self._advance_frame()
+            self._job = self.after(FRAME_MS, self._tick)
+        else:
+            self._phase += 0.12
+            self._paint(self._phase)
+            self._job = self.after(TICK_MS, self._tick)
+
+    def _advance_frame(self) -> None:
+        if not self._using_frames or not self._display_frames or self._frame_image_id is None:
+            return
+        self._frame_index = (self._frame_index + 1) % len(self._display_frames)
+        try:
+            self.canvas.itemconfigure(
+                self._frame_image_id, image=self._display_frames[self._frame_index]
+            )
+            bob = math.sin(time.monotonic() * 2.0) * theme.px(2)
+            self.canvas.coords(
+                self._frame_image_id,
+                self._frame_pos[0],
+                self._frame_pos[1] + bob,
+            )
+        except tk.TclError:
+            pass
 
     def _paint(self, phase: float) -> None:
-        if not self._logo_ids:
+        if self._using_frames or not self._logo_ids:
             return
 
-        # 1) 底片 + 灯泡整体轻微上下呼吸(±2px)
         bob = math.sin(phase) * theme.px(2)
         for item in self._logo_ids:
             self.canvas.move(item, 0, bob - getattr(self, "_last_bob", 0.0))
         self._last_bob = bob
 
-        # 2) 光线依次亮起:从暗蓝到米白、长度和粗细一起变化
         center_x, center_y = self._bulb_center
         inner = self._bulb_radius + theme.px(18)
         outer = self._bulb_radius + theme.px(34)
         for index, item in enumerate(self._ray_ids):
             wave = math.sin(phase * 2.2 - index * 0.75)
-            level = (wave + 1) / 2            # 0..1
-            level = level ** 1.6              # 让"亮"的那一下更集中
+            level = (wave + 1) / 2
+            level = level ** 1.6
             angle = self._ray_angles[index]
             length = inner + (outer - inner) * (0.55 + 0.45 * level)
             x1 = center_x + math.cos(angle) * (inner - theme.px(2))

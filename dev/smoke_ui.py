@@ -70,7 +70,7 @@ check("initial placeholder shown", app.grid_view.count == 0)
 
 # ── 启动页:默认可见、有图形、在动、能改文案 ────────────────────────
 check("splash shown at startup", app.splash.visible)
-check("splash draws something", len(app.splash.canvas.find_all()) >= 8, str(len(app.splash.canvas.find_all())))
+check("splash draws something", len(app.splash.canvas.find_all()) >= 5, str(len(app.splash.canvas.find_all())))
 check("splash animation scheduled", app.splash._job is not None)
 app.splash.set_status("正在读取收藏夹…")
 check(
@@ -86,11 +86,19 @@ def splash_counts():
 
 
 before_counts = splash_counts()
-check(
-    "splash draws a bulb plus nine light rays",
-    before_counts[0] >= 6 and before_counts[1] == 9,
-    str(before_counts),
-)
+if getattr(app.splash, "_using_frames", False):
+    check("splash plays the intro video frames", len(app.splash._frames) >= 20, str(len(app.splash._frames)))
+    check(
+        "splash shows one video frame",
+        len(app.splash.canvas.find_withtag("splash-frame")) == 1,
+        str(app.splash.canvas.find_withtag("splash-frame")),
+    )
+else:
+    check(
+        "splash draws a bulb plus nine light rays",
+        before_counts[0] >= 6 and before_counts[1] == 9,
+        str(before_counts),
+    )
 app.splash._size = (0, 0)          # 强制下一次 Configure 重新布局
 root.geometry("900x620")
 pump(root, rounds=10)

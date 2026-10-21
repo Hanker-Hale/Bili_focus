@@ -76,7 +76,7 @@ FavFocus 2.2.3 —— 文件清单
             退出小结卡(观看时长 + 已看完比例)
      34395 B  favfocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-     13464 B  favfocus/ui_splash.py
+     15056 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
      80957 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
@@ -159,7 +159,7 @@ FavFocus 2.2.3 —— 文件清单
       5142 B  dev/make_demo_covers.py
      11151 B  dev/make_manifest.py
             生成本文件
-     14336 B  dev/make_screenshots.py
+     15284 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
       1721 B  dev/probe_network.py
             手动联调脚本:匿名打真实接口验证协议链路
@@ -167,7 +167,7 @@ FavFocus 2.2.3 —— 文件清单
             运行卡片实验室(出错时停住显示报错)
        396 B  dev/run-tests.cmd
             一键跑离线测试
-     38893 B  dev/smoke_ui.py
+     39269 B  dev/smoke_ui.py
             界面冒烟测试(真实 Tk 窗口,约 1 秒)
       2598 B  dev/test_startup.py
             启动链路测试:用无效凭证跑完整 bootstrap
@@ -226,9 +226,9 @@ FavFocus 2.2.3 —— 文件清单
 
 — 文档资源 docs/ ----------------------------------
          0 B  docs/.nojekyll
-     43774 B  docs/details.html
+     44081 B  docs/details.html
     111985 B  docs/icon.png
-     12910 B  docs/index.html
+     14697 B  docs/index.html
 
 — CI .github/workflows/ -----------------------
        794 B  .github/workflows/pages.yml
@@ -238,13 +238,44 @@ FavFocus 2.2.3 —— 文件清单
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-     29739 B  docs/screenshots/farewell.png
-    221563 B  docs/screenshots/grouped.png
-     14523 B  docs/screenshots/qr-login.png
-    252896 B  docs/screenshots/reminder.png
-     68721 B  docs/screenshots/schedule.png
-     75107 B  docs/screenshots/splash.png
-    253155 B  docs/screenshots/ui.png
-     59434 B  docs/screenshots/update.png
+     45627 B  assets/splash-frames/frame-001.png
+     45627 B  assets/splash-frames/frame-002.png
+     45563 B  assets/splash-frames/frame-003.png
+     45563 B  assets/splash-frames/frame-004.png
+     45541 B  assets/splash-frames/frame-005.png
+     45541 B  assets/splash-frames/frame-006.png
+     45507 B  assets/splash-frames/frame-007.png
+     45507 B  assets/splash-frames/frame-008.png
+     45476 B  assets/splash-frames/frame-009.png
+     45476 B  assets/splash-frames/frame-010.png
+     45370 B  assets/splash-frames/frame-011.png
+     45370 B  assets/splash-frames/frame-012.png
+     45638 B  assets/splash-frames/frame-013.png
+     45638 B  assets/splash-frames/frame-014.png
+     45557 B  assets/splash-frames/frame-015.png
+     45557 B  assets/splash-frames/frame-016.png
+     45029 B  assets/splash-frames/frame-017.png
+     45029 B  assets/splash-frames/frame-018.png
+     44978 B  assets/splash-frames/frame-019.png
+     44978 B  assets/splash-frames/frame-020.png
+     43406 B  assets/splash-frames/frame-021.png
+     43406 B  assets/splash-frames/frame-022.png
+     47112 B  assets/splash-frames/frame-023.png
+     47112 B  assets/splash-frames/frame-024.png
+     48397 B  assets/splash-frames/frame-025.png
+     48397 B  assets/splash-frames/frame-026.png
+     48458 B  assets/splash-frames/frame-027.png
+     48458 B  assets/splash-frames/frame-028.png
+     48349 B  assets/splash-frames/frame-029.png
+     48349 B  assets/splash-frames/frame-030.png
+     53625 B  docs/media/eye-intro.mp4
+     29383 B  docs/screenshots/farewell.png
+    218140 B  docs/screenshots/grouped.png
+     14210 B  docs/screenshots/qr-login.png
+    252948 B  docs/screenshots/reminder.png
+     88378 B  docs/screenshots/schedule.png
+     96094 B  docs/screenshots/splash.png
+    257717 B  docs/screenshots/ui.png
+     59417 B  docs/screenshots/update.png
 
-共 134 个文件。
+共 165 个文件。
