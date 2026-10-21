@@ -137,7 +137,7 @@ check("visible list matches", len(app.visible) == 2)
 check("first card auto-selected", app.grid_view.selected() is not None)
 
 # 有内容之后启动页必须退场(最多等它跑完最短展示时长)
-deadline = time.time() + 2.0
+deadline = time.time() + 6.0
 while app.splash.visible and time.time() < deadline:
     pump(root, rounds=5)
 check("splash hides once content is ready", not app.splash.visible)

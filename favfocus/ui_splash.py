@@ -1,9 +1,10 @@
-"""启动页:手绘眼睛动画(由用户提供的开屏视频逐帧抽取)。
+"""启动页:用户提供的眼睛/logo 动画。
 
-动画素材在 `assets/splash-frames/`(320×320、20fps、圆角透明);
-运行时用 Tk 逐帧播放,不依赖 Pillow/视频解码器。
+素材是整段视频按 2 倍速抽出的 49 帧(palette PNG,1800×1800);
+运行时按帧从磁盘加载,只保留当前一帧,内存占用可控。
 
-如果素材缺失,退回原来的"灯泡 + 光线"手绘动画(纯 Canvas 绘制)。
+启动页只显示这段动画,不再绘制标题、标语、状态或版本号。
+素材缺失时退回一个静态灯泡图形。
 """
 
 from __future__ import annotations
@@ -16,29 +17,15 @@ from pathlib import Path
 from . import theme
 
 TICK_MS = 40
-FRAME_MS = 50
-DOT_COUNT = 3          # 兼容旧代码/测试的常量;新动画不再用圆点
-RAY_COUNT = 9          # 灯泡回退动画的光线数量
-BADGE_BLUE = "#64C0FF"
-CREAM = "#FFFAF0"
-RAY_DIM = "#A9DDFF"
-RAY_BRIGHT = CREAM
-
+FRAME_MS = 83           # 12fps,整段视频 2 倍速约 4 秒
+DOT_COUNT = 3           # 兼容旧代码/测试的常量
 FRAME_DIR = Path(__file__).resolve().parent.parent / "assets" / "splash-frames"
 SPLASH_BLUE = "#81DAFC"  # 和视频底色一致
-
-
-def blend(color_a: str, color_b: str, ratio: float) -> str:
-    """按比例混合两个 #RRGGBB 颜色。"""
-    ratio = max(0.0, min(1.0, ratio))
-    a = [int(color_a[i : i + 2], 16) for i in (1, 3, 5)]
-    b = [int(color_b[i : i + 2], 16) for i in (1, 3, 5)]
-    mixed = [round(x + (y - x) * ratio) for x, y in zip(a, b)]
-    return "#{:02X}{:02X}{:02X}".format(*mixed)
+FRAME_SIZE = 1800
 
 
 class SplashOverlay(tk.Frame):
-    """覆盖在内容区上的启动画面。"""
+    """覆盖整个窗口的启动画面,只播放视频动画。"""
 
     def __init__(self, master: tk.Misc, message: str = "正在准备…"):
         super().__init__(master, bg=SPLASH_BLUE)
@@ -46,63 +33,64 @@ class SplashOverlay(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
 
         self._message = message
-        self._phase = 0.0
         self._shown_at = time.monotonic()
         self._job = None
+        self._guard_job = None
         self._size = (0, 0)
 
-        # 静态元素在 _layout() 里创建一次,动效只改它们的坐标/颜色
-        self._logo_ids: list[int] = []
-        self._ray_ids: list[int] = []
-        self._ray_angles: list[float] = []
-        self._bulb_center = (0, 0)
-        self._bulb_radius = 0
-
-        # 视频逐帧动画
-        self._frames = self._load_frames()
-        self._display_frames: list[tk.PhotoImage] = []
-        self._frame_factor = 1
+        self._frames = self._load_paths()
         self._frame_index = 0
+        self._frame_factor = 1
         self._frame_image_id = None
         self._frame_pos = (0, 0)
-        self._frame_size = 0
-        self._using_frames = False
+        self._current_image = None
+        self._play_started = time.monotonic()
+        self._using_frames = bool(self._frames)
+        self._min_visible_ms = max(700, len(self._frames) * FRAME_MS + 250) if self._frames else 700
 
         self.canvas.bind("<Configure>", self._on_resize)
         self.start()
 
     # -- 素材 -------------------------------------------------------------
-    def _load_frames(self) -> list[tk.PhotoImage]:
+    def _load_paths(self) -> list[Path]:
         if not FRAME_DIR.is_dir():
             return []
-        frames: list[tk.PhotoImage] = []
+        return sorted(FRAME_DIR.glob("frame-*.png"))
+
+    def _load_image(self, index: int, factor: int) -> tk.PhotoImage | None:
         try:
-            for path in sorted(FRAME_DIR.glob("frame-*.png")):
-                frames.append(tk.PhotoImage(file=str(path)))
-        except tk.TclError:
-            return []
-        return frames
+            image = tk.PhotoImage(file=str(self._frames[index]))
+        except (tk.TclError, IndexError):
+            return None
+        if factor > 1:
+            image = image.subsample(factor)
+        return image
 
     # -- 生命周期 ---------------------------------------------------------
     def start(self) -> None:
         if self._job is None:
             self._job = self.after(FRAME_MS if self._using_frames else TICK_MS, self._tick)
+        if self._guard_job is None:
+            self._guard_job = self.after(300, self._guard)
 
-    def remaining_ms(self, min_visible_ms: int = 600) -> int:
-        """还要至少显示多久(毫秒)。用来避免启动太快时闪一下就没了。"""
+    def remaining_ms(self, min_visible_ms: int | None = None) -> int:
+        """还要至少显示多久(毫秒),保证整段动画能放完。"""
+        if min_visible_ms is None:
+            min_visible_ms = self._min_visible_ms
         elapsed = (time.monotonic() - self._shown_at) * 1000
         return max(0, int(min_visible_ms - elapsed))
 
     def stop(self) -> None:
-        if self._job is not None:
-            try:
-                self.after_cancel(self._job)
-            except tk.TclError:
-                pass
-            self._job = None
+        for attr in ("_job", "_guard_job"):
+            job = getattr(self, attr, None)
+            if job is not None:
+                try:
+                    self.after_cancel(job)
+                except tk.TclError:
+                    pass
+                setattr(self, attr, None)
 
     def hide(self) -> None:
-        """让位给真实内容(调用方负责 place_forget 或 destroy)。"""
         self.stop()
         try:
             self.place_forget()
@@ -113,6 +101,7 @@ class SplashOverlay(tk.Frame):
         if message is not None:
             self.set_status(message)
         self._shown_at = time.monotonic()
+        self._play_started = time.monotonic()
         try:
             self.place(relx=0, rely=0, relwidth=1, relheight=1)
             self.lift()
@@ -121,7 +110,7 @@ class SplashOverlay(tk.Frame):
         self.start()
 
     def set_status(self, message: str) -> None:
-        # 开屏画面只保留视频动画,状态文字只保存在内部,不绘制
+        # 画面里不显示文字,状态只保存在内部
         self._message = message
 
     @property
@@ -144,197 +133,99 @@ class SplashOverlay(tk.Frame):
     def _layout(self) -> None:
         self.canvas.delete("logo")
         self.canvas.delete("splash-ray")
-        self.canvas.delete("splash-dots")
-        self._logo_ids = []
-        self._ray_ids = []
-        self._ray_angles = []
         self._frame_image_id = None
-
         width, height = self._size
-        center_x = width // 2
-        center_y = height // 2
+        center_x, center_y = width // 2, height // 2
 
-        if self._frames:
-            # 画面里只有视频本身:眼睛约占屏幕 60% 宽,铺满整块底色
-            frame_w = self._frames[0].width()
-            frame_h = self._frames[0].height()
-            factor = 1
-            while (frame_w / factor > width * 0.98 or frame_h / factor > height * 0.98) and factor < 8:
-                factor *= 2
-            if factor != self._frame_factor or not self._display_frames:
-                self._display_frames = [
-                    frame if factor == 1 else frame.subsample(factor) for frame in self._frames
-                ]
-                self._frame_factor = factor
-            self._using_frames = True
-            self._frame_index %= len(self._display_frames)
-            self._frame_pos = (center_x, center_y)
-            self._frame_image_id = self.canvas.create_image(
-                center_x,
-                center_y,
-                image=self._display_frames[self._frame_index],
-                tags=("logo", "splash-frame"),
-            )
-        else:
+        if not self._frames:
             self._using_frames = False
             size = min(width, height) // 2
-            self._draw_bulb_scene(center_x, center_y, size)
-            self._paint(0.0)
+            self._draw_fallback(center_x, center_y, size)
+            return
 
-    def _draw_bulb_scene(self, center_x: int, center_y: int, size: int) -> None:
-        """回退动画:天蓝底片 + 米白灯泡 + 一圈光线短杠。"""
+        # 大窗口直接显示 1800px 原图,小窗口才降一倍
+        factor = 2 if min(width, height) < 800 else 1
+        self._frame_factor = factor
+        self._using_frames = True
+        self._frame_index = min(self._frame_index, len(self._frames) - 1)
+        image = self._load_image(self._frame_index, factor)
+        if image is None:
+            self._using_frames = False
+            self._draw_fallback(center_x, center_y, min(width, height) // 2)
+            return
+        self._current_image = image
+        self._frame_pos = (center_x, center_y)
+        self._frame_image_id = self.canvas.create_image(
+            center_x,
+            center_y,
+            image=image,
+            tags=("logo", "splash-frame"),
+        )
+
+    def _draw_fallback(self, center_x: int, center_y: int, size: int) -> None:
+        """素材缺失时的静态灯泡,不参与动画。"""
         radius = size // 2
-        left, top = center_x - radius, center_y - radius
-        right, bottom = center_x + radius, center_y + radius
-
-        corner = int(size * 0.22)
-        points = [
-            left + corner, top, right - corner, top, right, top + corner,
-            right, bottom - corner, right - corner, bottom, left + corner, bottom,
-            left, bottom - corner, left, top + corner,
-        ]
-        self._logo_ids.append(
-            self.canvas.create_polygon(
-                points, smooth=True, splinesteps=18, fill=BADGE_BLUE, outline="",
-                tags=("logo",),
-            )
+        thickness = max(2, theme.px(4))
+        self.canvas.create_oval(
+            center_x - radius, center_y - radius,
+            center_x + radius, center_y + radius,
+            fill=SPLASH_BLUE, outline="",
         )
-
-        thickness = max(2, theme.px(3))
-        glass_radius = int(size * 0.20)
-        glass_center = (center_x, int(center_y - size * 0.02))
-
-        self._logo_ids.append(
-            self.canvas.create_oval(
-                glass_center[0] - glass_radius, glass_center[1] - glass_radius,
-                glass_center[0] + glass_radius, glass_center[1] + glass_radius,
-                outline=CREAM, width=thickness, tags=("logo",),
-            )
+        self.canvas.create_oval(
+            center_x - radius, center_y - radius,
+            center_x + radius, center_y + radius,
+            outline=theme.ACCENT, width=thickness,
         )
-        neck_top = glass_center[1] + glass_radius - theme.px(2)
-        neck_bottom = int(center_y + size * 0.17)
-        self._logo_ids.append(
-            self.canvas.create_line(
-                glass_center[0] - glass_radius * 0.42, neck_top,
-                glass_center[0] - glass_radius * 0.26, neck_bottom,
-                fill=CREAM, width=thickness, capstyle="round", tags=("logo",),
-            )
-        )
-        self._logo_ids.append(
-            self.canvas.create_line(
-                glass_center[0] + glass_radius * 0.42, neck_top,
-                glass_center[0] + glass_radius * 0.26, neck_bottom,
-                fill=CREAM, width=thickness, capstyle="round", tags=("logo",),
-            )
-        )
-        base_widths = (0.44, 0.34, 0.24)
-        for index, ratio in enumerate(base_widths):
-            y = neck_bottom + int(size * 0.035) * (index + 1)
-            half = int(glass_radius * ratio)
-            self._logo_ids.append(
-                self.canvas.create_line(
-                    center_x - half, y, center_x + half, y,
-                    fill=CREAM, width=thickness, capstyle="round", tags=("logo",),
-                )
-            )
-        filament_y = glass_center[1] + int(glass_radius * 0.30)
-        filament = [
-            glass_center[0] - int(glass_radius * 0.34), filament_y,
-            glass_center[0] - int(glass_radius * 0.12), filament_y - int(glass_radius * 0.34),
-            glass_center[0] + int(glass_radius * 0.12), filament_y,
-            glass_center[0] + int(glass_radius * 0.34), filament_y - int(glass_radius * 0.34),
-        ]
-        self._logo_ids.append(
-            self.canvas.create_line(
-                *filament, fill=CREAM, width=thickness, capstyle="round",
-                joinstyle="round", smooth=True, tags=("logo",),
-            )
-        )
-
-        self._bulb_center = glass_center
-        self._bulb_radius = glass_radius
-        ray_inner = glass_radius + int(size * 0.075)
-        ray_outer = glass_radius + int(size * 0.155)
-        for index in range(RAY_COUNT):
-            angle = math.radians(-150 + index * (300 / (RAY_COUNT - 1)))
-            x1 = glass_center[0] + math.cos(angle) * ray_inner
-            y1 = glass_center[1] + math.sin(angle) * ray_inner
-            x2 = glass_center[0] + math.cos(angle) * ray_outer
-            y2 = glass_center[1] + math.sin(angle) * ray_outer
-            self._ray_ids.append(
-                self.canvas.create_line(
-                    x1, y1, x2, y2, fill=RAY_DIM, width=max(2, theme.px(3)),
-                    capstyle="round", tags=("splash-ray",),
-                )
-            )
-            self._ray_angles.append(angle)
 
     # -- 动效 -------------------------------------------------------------
     def _tick(self) -> None:
         self._job = None
         if not self.winfo_exists():
             return
-        if self.winfo_ismapped():
-            self.lift()  # 防止全屏切换/布局把底部栏又抬到启动页上面
         if self._using_frames:
-            self._advance_frame()
-            self._job = self.after(FRAME_MS, self._tick)
+            # 按真实时间对齐:即使单帧渲染慢,也保证整段视频 2 倍速放完
+            elapsed_ms = (time.monotonic() - self._play_started) * 1000
+            target = min(len(self._frames) - 1, int(elapsed_ms / FRAME_MS))
+            if target != self._frame_index:
+                image = self._load_image(target, self._frame_factor)
+                if image is not None and self._frame_image_id is not None:
+                    self._frame_index = target
+                    self._current_image = image
+                    self.canvas.itemconfigure(self._frame_image_id, image=image)
+                    bob = math.sin(time.monotonic() * 2.0) * theme.px(1)
+                    self.canvas.coords(
+                        self._frame_image_id,
+                        self._frame_pos[0],
+                        self._frame_pos[1] + bob,
+                    )
+            if self._frame_index < len(self._frames) - 1:
+                self._job = self.after(FRAME_MS, self._tick)
+            else:
+                # 视频放完:停在最后一帧,直到应用准备好
+                self._job = self.after(250, self._hold)
         else:
-            self._phase += 0.12
-            self._paint(self._phase)
             self._job = self.after(TICK_MS, self._tick)
 
-    def _advance_frame(self) -> None:
-        if not self._using_frames or not self._display_frames or self._frame_image_id is None:
+    def _guard(self) -> None:
+        self._guard_job = None
+        if not self.winfo_exists() or not self.visible:
             return
-        self._frame_index = (self._frame_index + 1) % len(self._display_frames)
-        try:
-            self.canvas.itemconfigure(
-                self._frame_image_id, image=self._display_frames[self._frame_index]
-            )
-            bob = math.sin(time.monotonic() * 2.0) * theme.px(2)
-            self.canvas.coords(
-                self._frame_image_id,
-                self._frame_pos[0],
-                self._frame_pos[1] + bob,
-            )
-        except tk.TclError:
-            pass
+        self.lift()
+        self._guard_job = self.after(800, self._guard)
 
-    def _paint(self, phase: float) -> None:
-        if self._using_frames or not self._logo_ids:
+    def _hold(self) -> None:
+        self._job = None
+        if not self.winfo_exists():
             return
-
-        bob = math.sin(phase) * theme.px(2)
-        for item in self._logo_ids:
-            self.canvas.move(item, 0, bob - getattr(self, "_last_bob", 0.0))
-        self._last_bob = bob
-
-        center_x, center_y = self._bulb_center
-        inner = self._bulb_radius + theme.px(18)
-        outer = self._bulb_radius + theme.px(34)
-        for index, item in enumerate(self._ray_ids):
-            wave = math.sin(phase * 2.2 - index * 0.75)
-            level = (wave + 1) / 2
-            level = level ** 1.6
-            angle = self._ray_angles[index]
-            length = inner + (outer - inner) * (0.55 + 0.45 * level)
-            x1 = center_x + math.cos(angle) * (inner - theme.px(2))
-            y1 = center_y + math.sin(angle) * (inner - theme.px(2))
-            x2 = center_x + math.cos(angle) * length
-            y2 = center_y + math.sin(angle) * length
-            self.canvas.coords(item, x1, y1 + bob, x2, y2 + bob)
-            self.canvas.itemconfigure(
-                item,
-                fill=blend(RAY_DIM, RAY_BRIGHT, level),
-                width=max(2, int(theme.px(3) * (0.8 + 0.6 * level))),
-            )
+        if self.winfo_ismapped():
+            self.lift()
+        self._job = self.after(250, self._hold)
 
 
 def draw_bulb_mark(
     canvas: tk.Canvas, center_x: int, center_y: int, size: int, tags: tuple = ()
 ) -> list[int]:
-    """在任意 Canvas 上画一个静态的小灯泡(没有底片,给需要品牌图形的地方用)。"""
+    """在任意 Canvas 上画一个静态的小灯泡(没有底片)。"""
     ids: list[int] = []
     thickness = max(2, theme.px(3))
     glass_radius = int(size * 0.24)

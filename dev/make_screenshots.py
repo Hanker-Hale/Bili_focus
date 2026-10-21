@@ -209,7 +209,7 @@ def pump(window: tk.Misc, seconds: float = 1.2, rounds_each: int = 20) -> None:
 
 # ── 各个截图场景 ────────────────────────────────────────────────────────
 def shot_splash() -> None:
-    """启动动画:灯泡 + 光线。"""
+    """启动动画:视频放完后的最终画面。"""
     service, videos, folder = demo_data.build_demo()
     root = tk.Tk()
     app = ui_tk.FocusApp(
@@ -224,7 +224,7 @@ def shot_splash() -> None:
     app.folder_box.configure(values=[f"{folder.title} ({folder.media_count})"])
     app.folder_box.current(0)
     app.splash.set_status("正在读取收藏夹…")
-    pump(root, 1.3)  # 让光线动画跑起来
+    pump(root, 4.6)  # 等整段视频 2 倍速放完,截最后一帧
     save(root, "splash.png")
     root.destroy()
 

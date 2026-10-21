@@ -16,7 +16,7 @@ FavFocus 2.2.3 —— 文件清单
             忽略缓存/本地数据/打包产物
       1385 B  LICENSE
             MIT 许可证(含内置二维码库的署名)
-     12577 B  MANIFEST.txt
+     12077 B  MANIFEST.txt
             本文件清单(由 dev/make_manifest.py 生成)
      35571 B  README.md
             项目说明:功能、截图、快速开始、设计说明、测试
@@ -76,7 +76,7 @@ FavFocus 2.2.3 —— 文件清单
             退出小结卡(观看时长 + 已看完比例)
      34395 B  favfocus/ui_schedule.py
             日程面板:自己设定时间 + 内容
-     14569 B  favfocus/ui_splash.py
+      9795 B  favfocus/ui_splash.py
             启动页:Canvas 矢量动画(无图片资源)
      81202 B  favfocus/ui_tk.py
             桌面壳:工具栏、全屏、日程入口、退出小结
@@ -159,7 +159,7 @@ FavFocus 2.2.3 —— 文件清单
       5142 B  dev/make_demo_covers.py
      11151 B  dev/make_manifest.py
             生成本文件
-     15284 B  dev/make_screenshots.py
+     15321 B  dev/make_screenshots.py
             用示例数据重新生成 docs/screenshots(脱敏)
       1721 B  dev/probe_network.py
             手动联调脚本:匿名打真实接口验证协议链路
@@ -238,34 +238,63 @@ FavFocus 2.2.3 —— 文件清单
             CI:push/PR 跑四套 Python 版本的测试
 
 — 其他 ----------------------------------------
-    735939 B  assets/splash-frames/frame-000.png
-    735939 B  assets/splash-frames/frame-001.png
-    735352 B  assets/splash-frames/frame-002.png
-    735334 B  assets/splash-frames/frame-003.png
-    735372 B  assets/splash-frames/frame-004.png
-    735623 B  assets/splash-frames/frame-005.png
-    735623 B  assets/splash-frames/frame-006.png
-    736025 B  assets/splash-frames/frame-007.png
-    743868 B  assets/splash-frames/frame-008.png
-    743598 B  assets/splash-frames/frame-009.png
-    743598 B  assets/splash-frames/frame-010.png
-    733440 B  assets/splash-frames/frame-011.png
-    731431 B  assets/splash-frames/frame-012.png
-    683971 B  assets/splash-frames/frame-013.png
-    683971 B  assets/splash-frames/frame-014.png
-    745645 B  assets/splash-frames/frame-015.png
-    768319 B  assets/splash-frames/frame-016.png
-    779826 B  assets/splash-frames/frame-017.png
-    781101 B  assets/splash-frames/frame-018.png
-    781101 B  assets/splash-frames/frame-019.png
+    228372 B  assets/splash-frames/frame-000.png
+    228532 B  assets/splash-frames/frame-001.png
+    227739 B  assets/splash-frames/frame-002.png
+    229108 B  assets/splash-frames/frame-003.png
+    233303 B  assets/splash-frames/frame-004.png
+    234101 B  assets/splash-frames/frame-005.png
+    219045 B  assets/splash-frames/frame-006.png
+    247306 B  assets/splash-frames/frame-007.png
+    250571 B  assets/splash-frames/frame-008.png
+    250024 B  assets/splash-frames/frame-009.png
+    260317 B  assets/splash-frames/frame-010.png
+    255901 B  assets/splash-frames/frame-011.png
+    230223 B  assets/splash-frames/frame-012.png
+    192950 B  assets/splash-frames/frame-013.png
+    118657 B  assets/splash-frames/frame-014.png
+    119345 B  assets/splash-frames/frame-015.png
+    192939 B  assets/splash-frames/frame-016.png
+    246650 B  assets/splash-frames/frame-017.png
+    240246 B  assets/splash-frames/frame-018.png
+    242593 B  assets/splash-frames/frame-019.png
+    180519 B  assets/splash-frames/frame-020.png
+    118804 B  assets/splash-frames/frame-021.png
+    110190 B  assets/splash-frames/frame-022.png
+    151706 B  assets/splash-frames/frame-023.png
+    139047 B  assets/splash-frames/frame-024.png
+    142202 B  assets/splash-frames/frame-025.png
+    109165 B  assets/splash-frames/frame-026.png
+    108077 B  assets/splash-frames/frame-027.png
+    129262 B  assets/splash-frames/frame-028.png
+    146610 B  assets/splash-frames/frame-029.png
+    174151 B  assets/splash-frames/frame-030.png
+    184914 B  assets/splash-frames/frame-031.png
+    187650 B  assets/splash-frames/frame-032.png
+    190613 B  assets/splash-frames/frame-033.png
+    201543 B  assets/splash-frames/frame-034.png
+    198021 B  assets/splash-frames/frame-035.png
+    208862 B  assets/splash-frames/frame-036.png
+    217000 B  assets/splash-frames/frame-037.png
+    227757 B  assets/splash-frames/frame-038.png
+    228590 B  assets/splash-frames/frame-039.png
+    234296 B  assets/splash-frames/frame-040.png
+    233057 B  assets/splash-frames/frame-041.png
+    236908 B  assets/splash-frames/frame-042.png
+    243838 B  assets/splash-frames/frame-043.png
+    210124 B  assets/splash-frames/frame-044.png
+    227079 B  assets/splash-frames/frame-045.png
+    227472 B  assets/splash-frames/frame-046.png
+    227659 B  assets/splash-frames/frame-047.png
+    230518 B  assets/splash-frames/frame-048.png
      53625 B  docs/media/eye-intro.mp4
      29383 B  docs/screenshots/farewell.png
-    218140 B  docs/screenshots/grouped.png
+    288808 B  docs/screenshots/grouped.png
      14210 B  docs/screenshots/qr-login.png
-    252948 B  docs/screenshots/reminder.png
+    291986 B  docs/screenshots/reminder.png
      88378 B  docs/screenshots/schedule.png
-    439654 B  docs/screenshots/splash.png
-    257717 B  docs/screenshots/ui.png
-     59417 B  docs/screenshots/update.png
+    294762 B  docs/screenshots/splash.png
+    292099 B  docs/screenshots/ui.png
+    282680 B  docs/screenshots/update.png
 
-共 155 个文件。
+共 184 个文件。
